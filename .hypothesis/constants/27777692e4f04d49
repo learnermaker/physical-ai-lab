@@ -1,0 +1,4 @@
+# file: C:\Users\JIMSEELAN\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\gymnasium\utils\passive_env_checker.py
+# hypothesis_version: 6.151.9
+
+['_list', 'action', 'ansi', 'ascii', 'check_action_space', 'depth_array', 'human', 'kwargs', 'observation', 'options', 'render_fps', 'render_modes', 'reset', 'rgb_array', 'seed', 'step']

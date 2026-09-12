@@ -1,0 +1,1119 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1.1 Create root directory structure and static config files": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113525793
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113545285
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113650352
+      }
+    ],
+    "1.2 Create `environment.yml` for conda environment specification": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113526121
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113545713
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113650822
+      }
+    ],
+    "2.1 Create `requirements.txt` with all pinned and unpinned dependencies": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113526332
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113659641
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113771774
+      }
+    ],
+    "3.1 Create `setup.bat` (Windows primary path)": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113526609
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113780436
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113885675
+      }
+    ],
+    "3.2 Create `setup.sh` (Mac/Linux fallback)": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113526835
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113781066
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113886311
+      }
+    ],
+    "4.1 Create `verify_install.py`": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113527119
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113890431
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789114031421
+      }
+    ],
+    "5.1 Create `utils/__init__.py` (empty) and `utils/camera.py` — `LoopingVideoCapture` class": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113527305
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789114040092
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789114336210
+      }
+    ],
+    "5.2 Add `open_camera` function to `utils/camera.py`": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113527486
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789114346582
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789115856510
+      }
+    ],
+    "6.1 Create `utils/gym_utils.py` — `_is_render_error` helper and `make_env` function": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113527672
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789114347200
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789115860233
+      }
+    ],
+    "6.2 Add `LivePlotCallback` class to `utils/gym_utils.py`": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113527889
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789115887617
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789116233995
+      }
+    ],
+    "7.1 Download and commit pre-trained model weights": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113528022
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789114347886
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789115863785
+      }
+    ],
+    "7.2 Create `assets/fallback_hand_demo.mp4`": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113528192
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789114348317
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789115867270
+      }
+    ],
+    "7.3 Create `modules/05_foundation_models/cached_responses.json`": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113528315
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789114040583
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789114336874
+      }
+    ],
+    "7.4 Download and commit `assets/hand_landmarker.task`": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113528472
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789114348873
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789115870695
+      }
+    ],
+    "8.1 Create `modules/00_kickoff/overview.ipynb`": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113528611
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789115891237
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789116238473
+      }
+    ],
+    "8.2 Create `modules/00_kickoff/exercise.py`": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113528829
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789115894849
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789116242304
+      }
+    ],
+    "9.1 Create `modules/01_perception/01_webcam_basics.py`": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113528972
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789116251476
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789116428104
+      }
+    ],
+    "9.2 Create `modules/01_perception/02_hand_tracking.py`": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113529118
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789116255642
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789116431893
+      }
+    ],
+    "9.3 Create `modules/01_perception/03_joint_angles.py`": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113529243
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789116259839
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789116436071
+      }
+    ],
+    "9.4 Create `modules/01_perception/exercise.py`": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113529379
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789117083347
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789117320762
+      }
+    ],
+    "10.1 Create `modules/02_simulation/01_gym_intro.py`": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113529518
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789116263842
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789116439821
+      }
+    ],
+    "10.2 Create `modules/02_simulation/02_mujoco_reacher.py`": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113529869
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789116270130
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789116443887
+      }
+    ],
+    "10.3 Create `modules/02_simulation/03_pretrained_agent.py`": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113530088
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789116452012
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789117073920
+      }
+    ],
+    "10.4 Create `modules/02_simulation/exercise.py`": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113530274
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789117087566
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789117325800
+      }
+    ],
+    "11.1 Create `modules/03_rl/01_mdp_concepts.ipynb`": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113530425
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789116456376
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789117078331
+      }
+    ],
+    "11.2 Create `modules/03_rl/02_train_cartpole.py`": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113530555
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789117092148
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789117330853
+      }
+    ],
+    "11.3 Create `modules/03_rl/exercise.py`": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113530700
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789117361667
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789117782293
+      }
+    ],
+    "12.1 Create `modules/04_perception_to_action/01_hand_to_reacher.py`": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113530955
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789117096363
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789117335205
+      }
+    ],
+    "12.2 Create `modules/04_perception_to_action/exercise.py`": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113531128
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789117365948
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789117787674
+      }
+    ],
+    "13.1 Create `modules/05_foundation_models/01_gemini_vision.py`": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113531277
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789117100554
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789117339952
+      }
+    ],
+    "13.2 Create `modules/05_foundation_models/02_gemini_robot_brain.py`": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113531394
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789117356634
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789117777790
+      }
+    ],
+    "13.3 Create `modules/05_foundation_models/exercise.py`": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113531517
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789117808169
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789118430007
+      }
+    ],
+    "14.1 Create `modules/06_wrapup/concepts_map.ipynb`": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113531761
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789117370487
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789117792977
+      }
+    ],
+    "15.1 Create `tests/__init__.py` and `tests/test_camera.py`": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113531891
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789117375001
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789117798104
+      }
+    ],
+    "16.1 Create `tests/test_properties.py` with shared fixtures": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113532058
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789117812614
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789118435584
+      }
+    ],
+    "17. Checkpoint — all tests pass": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113532552
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789118461728
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789118608029
+      }
+    ],
+    "18.1 Create `instructor/FACILITATOR_GUIDE.md`": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113532950
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789117817509
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789118440323
+      }
+    ],
+    "18.2 Create `instructor/COMMON_ISSUES.md`": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113533388
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789117822137
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789118445142
+      }
+    ],
+    "19.1 Create `README.md`": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113533553
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789117826873
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789118450292
+      }
+    ],
+    "19.2 Create `PRE_WORKSHOP_SETUP.md`": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113533767
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789118467513
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789118613109
+      }
+    ],
+    "20. Final checkpoint — end-to-end verification": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113533941
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789118624046
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789118923913
+      }
+    ],
+    "21.1 Create `api/__init__.py` (empty) and `api/server.py` — FastAPI app skeleton": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113534100
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789118472171
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789118618939
+      }
+    ],
+    "21.2 Add simulation stream endpoint to `api/server.py`": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113534261
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789118628480
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789118929231
+      }
+    ],
+    "21.3 Add training start and progress endpoints to `api/server.py`": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113534428
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789118633258
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789118934449
+      }
+    ],
+    "21.4 Add Gemini endpoints to `api/server.py`": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113534546
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789118638490
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789118940482
+      }
+    ],
+    "22.1 Create `frontend/index.html` — page shell and navigation": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113534735
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789118642886
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789118946326
+      }
+    ],
+    "22.2 Implement Module 1 — Perception section with in-browser MediaPipe": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113534958
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789118952537
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789119247454
+      }
+    ],
+    "22.3 Implement Module 2 — Simulation section with SSE stream": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113535135
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789118957758
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789119252044
+      }
+    ],
+    "22.4 Implement Module 3 — RL section with live training chart": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113535362
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789118962577
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789119256763
+      }
+    ],
+    "22.5 Implement Module 4 — Perception to Action section": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113535607
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789118967508
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789119261766
+      }
+    ],
+    "22.6 Implement Module 5 — Foundation Models section": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113535738
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789118972786
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789119267589
+      }
+    ],
+    "22.7 Implement Wrap-up section and concept map": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113535857
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789119273576
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789119366044
+      }
+    ],
+    "23. Final end-to-end hub verification": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113535983
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789119278688
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789119371916
+      }
+    ],
+    "1. Repository scaffold and root configuration files": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113651084
+      }
+    ],
+    "2. Dependency manifest": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113772373
+      }
+    ],
+    "3. Setup scripts": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789113886515
+      }
+    ],
+    "4. Installation verification script": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789114031836
+      }
+    ],
+    "5. Shared utility — camera module": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789115856641
+      }
+    ],
+    "7. Pre-bundled assets": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789115871196
+      }
+    ],
+    "6. Shared utility — gym_utils module": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789116234322
+      }
+    ],
+    "8. Module 0 — Workshop kickoff notebook": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789116242630
+      }
+    ],
+    "9. Module 1 — Perception": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789117321290
+      }
+    ],
+    "10. Module 2 — Simulation": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789117326087
+      }
+    ],
+    "11. Module 3 — Reinforcement Learning": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789117782556
+      }
+    ],
+    "12. Module 4 — Perception to Action": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789117787919
+      }
+    ],
+    "14. Module 6 — Wrap-up concepts map": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789117793466
+      }
+    ],
+    "15. Test suite — unit tests": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789117798368
+      }
+    ],
+    "13. Module 5 — Foundation Models": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789118430227
+      }
+    ],
+    "16. Test suite — property-based tests": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789118435884
+      }
+    ],
+    "18. Instructor support materials": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789118445482
+      }
+    ],
+    "19. Root documentation": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789118613510
+      }
+    ],
+    "21. Backend API server (`api/server.py`)": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789118940700
+      }
+    ],
+    "22. Frontend experience hub (`frontend/index.html`)": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789119366609
+      }
+    ],
+    "16.2 Write Property 1 & 2 test — `test_looping_capture_never_exhausts`": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789119388609
+      }
+    ],
+    "16.3 Write Property 3 test — `test_open_camera_value_error_for_bad_path`": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789119393761
+      }
+    ],
+    "16.4 Write Property 4 test — `test_make_env_fallback_chain_succeeds`": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789119398507
+      }
+    ],
+    "16.5 Write Property 5 test — `test_non_render_exception_propagates_once`": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789119403262
+      }
+    ],
+    "16.6 Write Property 6 test — `test_scale_landmark_linear_map`": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789119408292
+      }
+    ],
+    "16.7 Write Property 7 test — `test_verify_summary_count_matches`": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789119413431
+      }
+    ],
+    "16.8 Write Property 8 test — `test_gemini_fallback_always_parseable`": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789119418889
+      }
+    ],
+    "15.2 Write unit tests for `utils/gym_utils.py` in `tests/test_gym_utils.py`": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789119425131
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789119549385
+      }
+    ],
+    "15.3 Write unit tests for `verify_install.py` in `tests/test_verify_install.py`": [
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789119430066
+      },
+      {
+        "executionId": "eccb4ec6-c64a-4488-8d02-771107f0057c",
+        "chatSessionId": "sess_462ccaaa-a71d-4257-bc82-694982cc2a76",
+        "timestamp": 1789119555248
+      }
+    ]
+  }
+}

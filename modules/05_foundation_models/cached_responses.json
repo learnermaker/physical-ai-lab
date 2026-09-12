@@ -1,0 +1,15 @@
+{
+  "describe the scene in one sentence": "A desk with a laptop, some books, and a coffee mug in natural lighting.",
+  "you are a robot controller...action suggestion": {"action": "WAIT", "reason": "Scene is clear, no objects detected"},
+  "you are a robot controller...left": {"action": "LEFT", "reason": "Object appears on the right side of the frame"},
+  "you are a robot controller...right": {"action": "RIGHT", "reason": "Object appears on the left side of the frame"},
+  "you are a robot controller...forward": {"action": "FORWARD", "reason": "Path ahead appears clear"},
+  "you are a robot controller...back": {"action": "BACK", "reason": "Obstacle detected in forward direction"},
+  "describe objects": "Several everyday objects are visible on a flat surface.",
+  "what gesture": "The hand appears to be making a pointing gesture with the index finger extended.",
+  "joint angles": "The hand shows extended fingers with moderate joint angles across all digits.",
+  "robot action from image": {"action": "WAIT", "reason": "Insufficient scene context to determine action"},
+  "describe the scene": "A well-lit indoor environment with a person's hand visible in the foreground.",
+  "what objects are present": "A keyboard, mouse, and monitor are visible on the desk.",
+  "what is the hand doing": "The hand is making a pinch gesture with the thumb and index finger close together."
+}

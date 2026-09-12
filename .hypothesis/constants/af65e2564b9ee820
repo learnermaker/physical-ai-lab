@@ -1,0 +1,4 @@
+# file: C:\Users\JIMSEELAN\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\gymnasium\vector\sync_vector_env.py
+# hypothesis_version: 6.151.9
+
+[0.0, 'SyncVectorEnv', 'autoreset_mode', 'different', 'envs', 'final_info', 'final_obs', 'np_random', 'np_random_seed', 'reset_mask', 'same']

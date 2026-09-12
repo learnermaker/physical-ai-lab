@@ -1,0 +1,4 @@
+# file: C:\Users\JIMSEELAN\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\langsmith\cache.py
+# hypothesis_version: 6.151.9
+
+[0.0, 5.0, 60.0, 3600.0, 100, '.tmp', 'PromptCache-refresh', '_cache', '_fetch_func', '_lock', '_max_size', '_metrics', '_refresh_interval', '_refresh_task', '_refresh_thread', '_shutdown_event', '_ttl_seconds', 'entries', 'json', 'langsmith.cache', 'model_dump', 'model_validate', 'w']

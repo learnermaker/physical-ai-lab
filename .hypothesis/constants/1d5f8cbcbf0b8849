@@ -1,0 +1,4 @@
+# file: C:\Users\JIMSEELAN\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\requests_toolbelt\utils\user_agent.py
+# hypothesis_version: 6.151.9
+
+['%s.%s.%s', '%s/%s', 'CPython', 'IronPython', 'Jython', 'PyPy', 'Unknown', 'final']

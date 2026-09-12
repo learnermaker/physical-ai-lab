@@ -1,0 +1,4 @@
+# file: C:\Users\JIMSEELAN\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\gymnasium\envs\registration.py
+# hypothesis_version: 6.151.9
+
+[', ', '-inf', '.', ':', ':\\w+', 'EnvSpec', 'VectorizeMode', 'WrapperSpec', '_list', 'additional_wrappers', 'async', 'autoreset_mode', 'current_namespace', 'human', 'id', 'make', 'make_vec', 'max_episode_steps', 'metadata', 'name', 'namespace', 'num_envs', 'pprint_registry', 'register', 'register_envs', 'registry', 'render_mode', 'render_modes', 'rgb_array', 'rgb_array_list', 'spec', 'sync', 'vector_entry_point', 'vector_kwargs', 'vectorization_mode', 'version', 'wrappers']

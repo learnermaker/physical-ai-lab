@@ -1,0 +1,696 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Physical AI Workshop — Setup Guide</title>
+<style>
+  /* ── Typefaces ────────────────────────────────────────────── */
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  /* ── Tokens ───────────────────────────────────────────────── */
+  :root {
+    --cream:   #faf9f6;
+    --paper:   #f3f1ec;
+    --ink:     #1c1917;
+    --ink2:    #44403c;
+    --muted:   #78716c;
+    --rule:    #e7e5e0;
+    --accent:  #c2410c;   /* warm orange-red, not electric */
+    --green:   #166534;
+    --amber:   #92400e;
+    --blue:    #1e40af;
+    --codebg:  #f6f4ef;
+    --radius:  5px;
+    --sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --mono: 'JetBrains Mono', 'Cascadia Code', 'Consolas', monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 15px; scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--cream);
+    color: var(--ink);
+    line-height: 1.7;
+  }
+
+  /* ── Layout ───────────────────────────────────────────────── */
+  .wrap   { max-width: 740px; margin: 0 auto; padding: 0 24px 80px; }
+  .cols   { display: flex; gap: 48px; }
+  .cols .main { flex: 1; min-width: 0; }
+
+  /* ── Header ───────────────────────────────────────────────── */
+  header {
+    border-bottom: 2px solid var(--ink);
+    padding: 36px 0 24px;
+    margin-bottom: 40px;
+  }
+  header .eyebrow {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  header h1 {
+    font-size: 1.75rem;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+  header .sub {
+    color: var(--muted);
+    font-size: 0.92rem;
+  }
+  header .by {
+    display: inline-block;
+    margin-top: 14px;
+    font-size: 0.8rem;
+    color: var(--muted);
+    border-top: 1px solid var(--rule);
+    padding-top: 10px;
+  }
+
+  /* ── Tabs ─────────────────────────────────────────────────── */
+  .tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: 36px;
+    overflow-x: auto;
+  }
+  .tab-btn {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    padding: 9px 18px;
+    font-family: var(--sans);
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color 0.12s, border-color 0.12s;
+  }
+  .tab-btn:hover  { color: var(--ink); }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+  .tab-panel      { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── Typography ───────────────────────────────────────────── */
+  h2 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--ink);
+    margin: 32px 0 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--rule);
+  }
+  h2:first-child { margin-top: 0; }
+  h3 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--ink);
+    margin: 20px 0 6px;
+  }
+  p  { color: var(--ink2); font-size: 0.9rem; margin-bottom: 10px; }
+  a  { color: var(--blue); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  a:hover { color: var(--accent); }
+  strong { color: var(--ink); font-weight: 600; }
+
+  /* ── Code ─────────────────────────────────────────────────── */
+  code {
+    font-family: var(--mono);
+    font-size: 0.82em;
+    background: var(--codebg);
+    border: 1px solid var(--rule);
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: var(--ink);
+  }
+  pre {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--ink2);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 14px 16px;
+    overflow-x: auto;
+    margin: 10px 0 14px;
+    line-height: 1.6;
+    color: var(--ink);
+  }
+  pre code { background: none; border: none; padding: 0; font-size: inherit; }
+  .c  { color: var(--muted); }         /* comment */
+  .kw { color: var(--accent); }        /* command keyword */
+  .fl { color: var(--amber); }         /* flag */
+  .ur { color: var(--blue); }          /* url */
+
+  /* ── Numbered steps ───────────────────────────────────────── */
+  .steps { list-style: none; counter-reset: s; }
+  .steps > li {
+    counter-increment: s;
+    display: grid;
+    grid-template-columns: 28px 1fr;
+    gap: 12px;
+    margin-bottom: 22px;
+    padding-bottom: 22px;
+    border-bottom: 1px dashed var(--rule);
+  }
+  .steps > li:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .steps > li::before {
+    content: counter(s);
+    width: 26px; height: 26px;
+    background: var(--ink);
+    color: var(--cream);
+    border-radius: 50%;
+    font-size: 0.72rem;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .step-title { font-weight: 600; font-size: 0.92rem; margin-bottom: 4px; color: var(--ink); }
+
+  /* ── Notice / callout ─────────────────────────────────────── */
+  .note {
+    font-size: 0.85rem;
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    margin: 12px 0;
+    border-left: 3px solid;
+  }
+  .note.warn  { background: #fef3c7; border-color: var(--amber); color: #78350f; }
+  .note.info  { background: #eff6ff; border-color: var(--blue);  color: #1e3a8a; }
+  .note.tip   { background: #f0fdf4; border-color: var(--green); color: #14532d; }
+  .note strong { display: block; font-size: 0.8rem; text-transform: uppercase;
+                 letter-spacing: 0.06em; margin-bottom: 3px; }
+
+  /* ── Table ────────────────────────────────────────────────── */
+  table { width: 100%; border-collapse: collapse; font-size: 0.84rem; margin: 10px 0 16px; }
+  th {
+    text-align: left;
+    padding: 6px 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 1px solid var(--ink);
+  }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--rule); vertical-align: top; color: var(--ink2); }
+  tr:last-child td { border-bottom: none; }
+  td:first-child { font-size: 0.8rem; font-family: var(--mono); color: var(--ink); white-space: nowrap; }
+
+  /* ── Tag / badge ──────────────────────────────────────────── */
+  .tag {
+    display: inline-block;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 3px;
+    vertical-align: middle;
+    margin-left: 4px;
+  }
+  .tag.opt  { background: #fef3c7; color: #92400e; }
+  .tag.tip  { background: #f0fdf4; color: #166534; }
+
+  /* ── Checklist ────────────────────────────────────────────── */
+  .check { list-style: none; }
+  .check li {
+    font-size: 0.88rem;
+    color: var(--ink2);
+    padding: 4px 0;
+    padding-left: 20px;
+    position: relative;
+  }
+  .check li::before {
+    content: '–';
+    position: absolute;
+    left: 0;
+    color: var(--muted);
+  }
+
+  /* ── OS toggle ────────────────────────────────────────────── */
+  .os-row   { display: flex; gap: 6px; margin: 12px 0; }
+  .os-btn   {
+    font-family: var(--sans); font-size: 0.78rem; font-weight: 500;
+    padding: 4px 14px; border: 1px solid var(--rule);
+    border-radius: 20px; background: none; cursor: pointer; color: var(--muted);
+    transition: all 0.1s;
+  }
+  .os-btn.active { border-color: var(--ink); background: var(--ink); color: var(--cream); }
+  .os-block { display: none; }
+  .os-block.active { display: block; }
+
+  /* ── Troubleshoot cards ───────────────────────────────────── */
+  .issue {
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    margin-bottom: 14px;
+    background: #fff;
+  }
+  .issue h3 { margin: 0 0 6px; font-size: 0.9rem; }
+
+  /* ── Footer ───────────────────────────────────────────────── */
+  footer {
+    margin-top: 60px;
+    padding-top: 20px;
+    border-top: 1px solid var(--rule);
+    font-size: 0.78rem;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  hr { border: none; border-top: 1px dashed var(--rule); margin: 24px 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ── HEADER ────────────────────────────────────────────────── -->
+<header>
+  <p class="eyebrow">Workshop Documentation</p>
+  <h1>Physical AI Workshop<br>Setup Guide</h1>
+  <p class="sub">Everything you need to go from a fresh machine to running the workshop hub — usually under 15 minutes.</p>
+  <span class="by">Written by Jim Seelan</span>
+</header>
+
+<!-- ── TABS ──────────────────────────────────────────────────── -->
+<div class="tabs">
+  <button class="tab-btn active" onclick="showTab('quick')">Quick Start</button>
+  <button class="tab-btn" onclick="showTab('manual')">Manual Setup</button>
+  <button class="tab-btn" onclick="showTab('day')">On the Day</button>
+  <button class="tab-btn" onclick="showTab('maclinux')">Mac &amp; Linux</button>
+  <button class="tab-btn" onclick="showTab('trouble')">Troubleshooting</button>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════
+     QUICK START
+════════════════════════════════════════════════════════════ -->
+<div id="tab-quick" class="tab-panel active">
+
+  <p>The short version: double-click <code>setup.bat</code> and wait. The script handles everything and opens the browser when it's done. The steps below are just there in case you want to know what's happening.</p>
+
+  <h2>Before you start</h2>
+  <ul class="check">
+    <li>Windows 10 or 11 (x86-64)</li>
+    <li>Internet connection — about 700 MB of downloads in total</li>
+    <li>Chrome or Edge browser — Firefox won't work for the hub (MediaPipe needs SharedArrayBuffer)</li>
+    <li>~2 GB free disk space</li>
+  </ul>
+
+  <h2>Steps</h2>
+  <ol class="steps">
+    <li>
+      <div>
+        <div class="step-title">Get the repository</div>
+        <p>Clone it with Git, or download the ZIP from GitHub and unzip it somewhere sensible.</p>
+        <pre><code><span class="kw">git clone</span> &lt;repo-url&gt;
+<span class="kw">cd</span> physical-ai-workshop</code></pre>
+      </div>
+    </li>
+    <li>
+      <div>
+        <div class="step-title">Double-click <code>setup.bat</code></div>
+        <p>No admin rights needed. A terminal window will open and work through the setup automatically. Total time is usually 10–15 minutes on a decent connection.</p>
+        <div class="note warn">
+          <strong>Windows SmartScreen</strong>
+          If you see a blue "Windows protected your PC" dialog, click <strong>More info</strong> then <strong>Run anyway</strong>. This shows up for any script downloaded from the internet.
+        </div>
+        <p>Here's what it does:</p>
+        <table>
+          <thead><tr><th>Stage</th><th>What happens</th></tr></thead>
+          <tbody>
+            <tr><td>[1/9]</td><td>Looks for Python 3.12 — downloads and installs it quietly if not found</td></tr>
+            <tr><td>[2/9]</td><td>Creates a <code>.venv</code> folder inside the repo (isolated Python environment)</td></tr>
+            <tr><td>[3/9]</td><td>Activates the environment</td></tr>
+            <tr><td>[4/9]</td><td>Installs PyTorch CPU-only (the big one — about 200 MB)</td></tr>
+            <tr><td>[5/9]</td><td>Installs everything else from <code>requirements.txt</code></td></tr>
+            <tr><td>[6/9]</td><td>Registers the kernel so VS Code notebooks can use this environment</td></tr>
+            <tr><td>[7/9]</td><td>Downloads the MediaPipe hand landmark model (about 8 MB)</td></tr>
+            <tr><td>[8/9]</td><td>Runs a quick check — prints pass/warn/fail for each package</td></tr>
+            <tr><td>[9/9]</td><td>Opens the hub server and launches the browser</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </li>
+    <li>
+      <div>
+        <div class="step-title">Read the verification output</div>
+        <p>Step 8 prints something like this:</p>
+        <pre><code>[PASS] numpy
+[PASS] mujoco
+[PASS] gymnasium
+...
+[WARN] Camera unavailable -- fallback video will be used
+...
+Setup complete: 13/14 checks passed</code></pre>
+        <p><code>[WARN]</code> is fine — the workshop has built-in fallbacks for webcam and OpenGL. <code>[FAIL]</code> means something needs fixing; the script prints the exact <code>pip install</code> command to run.</p>
+      </div>
+    </li>
+    <li>
+      <div>
+        <div class="step-title">Get a Gemini API key <span class="tag opt">optional</span></div>
+        <p>Module 5 can call Google Gemini live to analyse camera frames. You don't need a key — it falls back to pre-recorded responses — but live results are noticeably more interesting.</p>
+        <p>Get a free key at <a href="https://aistudio.google.com/" target="_blank">aistudio.google.com</a> (sign in → Get API key), then:</p>
+        <pre><code><span class="c"># In the repo folder — Windows</span>
+<span class="kw">copy</span> .env.example .env
+<span class="c"># Open .env in Notepad and add your key:
+# GEMINI_API_KEY=AIzaSy...your_key</span></code></pre>
+      </div>
+    </li>
+    <li>
+      <div>
+        <div class="step-title">Watch the HalfCheetah agent <span class="tag opt">optional</span></div>
+        <p>Before the workshop, run this to see what a trained RL agent actually looks like. It's a good warm-up for Module 3, and people tend to find it surprisingly impressive.</p>
+        <pre><code><span class="kw">python</span> modules/02_simulation/03_pretrained_agent.py</code></pre>
+        <p>A MuJoCo window opens with a cheetah robot running. No GPU required.</p>
+      </div>
+    </li>
+  </ol>
+
+  <div class="note tip">
+    <strong>Safe to re-run</strong>
+    If something fails partway through, just run <code>setup.bat</code> again. It detects what's already done and skips those steps.
+  </div>
+
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════
+     MANUAL SETUP
+════════════════════════════════════════════════════════════ -->
+<div id="tab-manual" class="tab-panel">
+
+  <p>If you'd rather do it yourself — or if <code>setup.bat</code> is giving you grief — here are the individual steps. You'll need Python 3.12 installed first.</p>
+
+  <h2>What you need</h2>
+  <ul class="check">
+    <li>Python 3.12 from <a href="https://www.python.org/downloads/release/python-31210/" target="_blank">python.org</a> — tick <strong>Add Python to PATH</strong> and <strong>Install launcher for all users</strong> during setup</li>
+    <li>Internet for package downloads (~700 MB total)</li>
+    <li>Chrome or Edge (Firefox won't work for the hub)</li>
+  </ul>
+
+  <h2>1. Clone the repo</h2>
+  <pre><code><span class="kw">git clone</span> &lt;repo-url&gt;
+<span class="kw">cd</span> physical-ai-workshop</code></pre>
+
+  <h2>2. Create and activate a virtual environment</h2>
+  <p>This keeps the workshop packages separate from everything else on your machine.</p>
+  <pre><code><span class="c"># Create</span>
+<span class="kw">py -3.12 -m venv</span> .venv
+
+<span class="c"># Activate (Windows)</span>
+<span class="kw">.venv\Scripts\activate</span>
+
+<span class="c"># Your prompt should now show (.venv)</span></code></pre>
+  <div class="note info">
+    <strong>Keep this terminal open</strong>
+    All the commands below need to run in the activated environment. If you close the terminal and come back, run <code>.venv\Scripts\activate</code> again before continuing.
+  </div>
+
+  <h2>3. Upgrade pip</h2>
+  <pre><code><span class="kw">python -m pip install</span> <span class="fl">--upgrade pip</span></code></pre>
+
+  <h2>4. Install PyTorch (CPU build)</h2>
+  <p>This needs to go in before the rest so that packages like Stable-Baselines3 link against the right version. It's about 200 MB so give it a minute.</p>
+  <pre><code><span class="kw">pip install</span> torch==2.14.0+cpu <span class="fl">--index-url</span> <span class="ur">https://download.pytorch.org/whl/cpu</span>
+
+<span class="c"># Quick check:</span>
+<span class="kw">python -c</span> "import torch; print(torch.__version__)"
+<span class="c"># Should print: 2.14.0+cpu</span></code></pre>
+
+  <h2>5. Install workshop packages</h2>
+  <pre><code><span class="kw">pip install -r</span> requirements.txt
+
+<span class="c"># Installs: numpy, mujoco, gymnasium, stable-baselines3,
+# opencv-python, mediapipe, google-genai, fastapi, and more.
+# Around 500 MB. Takes 3–10 minutes.</span></code></pre>
+
+  <h2>6. Register the Jupyter kernel</h2>
+  <pre><code><span class="kw">python -m ipykernel install</span> <span class="fl">--user --name</span> physical-ai <span class="fl">--display-name</span> "Physical AI Workshop"</code></pre>
+
+  <h2>7. Hand landmark model</h2>
+  <p>This should already be in <code>assets/</code> if you cloned the repo. If it's missing:</p>
+  <pre><code><span class="kw">python -c</span> "
+import urllib.request, pathlib
+pathlib.Path('assets').mkdir(exist_ok=True)
+urllib.request.urlretrieve(
+    'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/latest/hand_landmarker.task',
+    'assets/hand_landmarker.task'
+)
+print('done')
+"</code></pre>
+
+  <h2>8. Verify</h2>
+  <pre><code><span class="kw">python</span> verify_install.py</code></pre>
+  <p>All 14 checks should be <code>[PASS]</code> or <code>[WARN]</code>. A warning just means a fallback is active — the workshop still works.</p>
+
+  <h2>9. Add your Gemini key <span class="tag opt">optional</span></h2>
+  <pre><code><span class="kw">copy</span> .env.example .env
+<span class="c"># Edit .env and set:
+# GEMINI_API_KEY=AIzaSy...your_key
+# Get a free key at https://aistudio.google.com/</span></code></pre>
+
+  <h2>10. Start the hub</h2>
+  <pre><code><span class="kw">python</span> api/server.py</code></pre>
+  <p>Open <a href="http://localhost:8000" target="_blank">http://localhost:8000</a> in Chrome or Edge.</p>
+
+  <div class="note tip">
+    <strong>Next time you sit down</strong>
+    You only do the pip installs once. For any future session just:
+    <pre style="margin-top:8px"><code><span class="kw">.venv\Scripts\activate</span>
+<span class="kw">python</span> api/server.py</code></pre>
+  </div>
+
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════
+     ON THE DAY
+════════════════════════════════════════════════════════════ -->
+<div id="tab-day" class="tab-panel">
+
+  <p>If you've been through the setup already, you just need two lines to get going:</p>
+  <pre><code><span class="c"># Option A — terminal</span>
+<span class="kw">.venv\Scripts\activate</span>
+<span class="kw">python</span> api/server.py
+
+<span class="c"># Option B — double-click setup.bat again.
+# It'll see the .venv exists and skip straight to launching the server.</span></code></pre>
+  <p>Then open <strong>http://localhost:8000</strong> in Chrome or Edge and you're in.</p>
+
+  <h2>What's in the hub</h2>
+  <table>
+    <thead><tr><th>Module</th><th>What you actually do</th><th>Server?</th></tr></thead>
+    <tbody>
+      <tr><td>0 — Kickoff</td><td>Overview notebook, pipeline diagram</td><td>—</td></tr>
+      <tr><td>1 — Perception</td><td>Live hand tracking in the browser — no server needed</td><td>No</td></tr>
+      <tr><td>2 — Simulation</td><td>Reacher-v5 environment streaming live from the server</td><td>Yes</td></tr>
+      <tr><td>3 — RL</td><td>Train a PPO agent, watch the reward chart update in real time</td><td>Yes</td></tr>
+      <tr><td>4 — Perception → Action</td><td>Move your hand, watch the Reacher arm follow</td><td>Yes</td></tr>
+      <tr><td>5 — Foundation Models</td><td>Camera frame goes to Gemini, robot action comes back</td><td>Yes</td></tr>
+      <tr><td>6 — Wrap-up</td><td>Concept map, sim-to-real, what's next</td><td>—</td></tr>
+    </tbody>
+  </table>
+
+  <h2>The exercise files</h2>
+  <p>Every module has an <code>exercise.py</code>. Open it in VS Code next to the browser window. Each one has a <code># TODO START / END</code> block — usually 3–5 lines of code, completable in 10–15 minutes. The <code># SOLUTION</code> block at the bottom can be uncommented if you get stuck.</p>
+  <pre><code>modules/00_kickoff/exercise.py
+modules/01_perception/exercise.py
+modules/02_simulation/exercise.py
+modules/03_rl/exercise.py
+modules/04_perception_to_action/exercise.py
+modules/05_foundation_models/exercise.py</code></pre>
+
+  <h2>The notebooks</h2>
+  <p>In VS Code: File → Open Folder → select the repo. Then open a notebook and choose the <strong>Physical AI Workshop</strong> kernel from the picker in the top-right corner.</p>
+  <pre><code>modules/00_kickoff/overview.ipynb
+modules/03_rl/01_mdp_concepts.ipynb
+modules/06_wrapup/concepts_map.ipynb</code></pre>
+
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════
+     MAC & LINUX
+════════════════════════════════════════════════════════════ -->
+<div id="tab-maclinux" class="tab-panel">
+
+  <div class="note warn">
+    <strong>Heads up</strong>
+    The workshop was built and tested on Windows 11. Mac and Linux work for most of it, but if something breaks the Windows instructions are your better reference.
+  </div>
+
+  <h2>Automated setup</h2>
+  <p>There's a <code>setup.sh</code> that mirrors the Windows script. It needs Python 3.12 already installed:</p>
+  <pre><code><span class="kw">bash</span> setup.sh</code></pre>
+
+  <p>If Python 3.12 isn't on your machine yet:</p>
+  <div class="os-row">
+    <button class="os-btn active" onclick="showOS('mac')">macOS</button>
+    <button class="os-btn" onclick="showOS('linux')">Ubuntu / Debian</button>
+  </div>
+  <div id="os-mac" class="os-block active">
+    <pre><code><span class="c"># Homebrew first, if you don't have it</span>
+<span class="kw">/bin/bash -c</span> "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+<span class="kw">brew install</span> python@3.12
+<span class="kw">python3.12 --version</span>   <span class="c"># should print 3.12.x</span></code></pre>
+  </div>
+  <div id="os-linux" class="os-block">
+    <pre><code><span class="kw">sudo add-apt-repository</span> ppa:deadsnakes/ppa
+<span class="kw">sudo apt update</span>
+<span class="kw">sudo apt install</span> python3.12 python3.12-venv python3.12-dev
+<span class="kw">python3.12 --version</span></code></pre>
+  </div>
+
+  <h2>Manual steps</h2>
+  <p>Same as the Manual Setup tab, with two differences:</p>
+  <pre><code><span class="c"># Create and activate the venv</span>
+<span class="kw">python3.12 -m venv</span> .venv
+<span class="kw">source</span> .venv/bin/activate   <span class="c"># ← not .venv\Scripts\activate</span>
+
+<span class="c"># Everything else is identical</span>
+<span class="kw">pip install</span> torch==2.14.0+cpu <span class="fl">--index-url</span> <span class="ur">https://download.pytorch.org/whl/cpu</span>
+<span class="kw">pip install -r</span> requirements.txt
+<span class="kw">python</span> verify_install.py
+<span class="kw">python</span> api/server.py</code></pre>
+
+  <h2>A few things worth knowing</h2>
+  <table>
+    <thead><tr><th>Topic</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>MuJoCo</td><td>Pip wheels exist for macOS (arm64 + x86_64) and Linux x86-64. Installs without issues.</td></tr>
+      <tr><td>PyTorch on Apple Silicon</td><td>The CPU wheel works fine. For faster Module 3 training you can skip the <code>--index-url</code> flag and get the native MPS build instead — entirely optional.</td></tr>
+      <tr><td>OpenGL on Linux</td><td>If you're on a headless server, <code>make_env</code> automatically falls back from <code>human</code> rendering to <code>rgb_array</code> to <code>None</code>. Nothing to configure.</td></tr>
+      <tr><td>MediaPipe</td><td>Wheels exist for macOS arm64/x86_64 and Linux x86_64. Linux aarch64 is not covered.</td></tr>
+      <tr><td>Webcam on Linux</td><td>Add yourself to the video group if Chrome can't access the camera: <code>sudo usermod -aG video $USER</code>, then log out and back in.</td></tr>
+      <tr><td>Browser</td><td>Chrome or Edge required on all platforms. SharedArrayBuffer (needed by MediaPipe WASM) isn't available in Firefox.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Apple Silicon tip</h2>
+  <div class="note tip">
+    <strong>No Rosetta needed</strong>
+    PyTorch, MuJoCo, MediaPipe, and OpenCV all ship native arm64 wheels. Just run <code>pip install</code> as normal — pip picks the right one automatically.
+  </div>
+
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════
+     TROUBLESHOOTING
+════════════════════════════════════════════════════════════ -->
+<div id="tab-trouble" class="tab-panel">
+
+  <p>Most issues fall into one of these categories. If none of these help, check <code>instructor/COMMON_ISSUES.md</code> in the repo — it has 13 failures documented with exact fix commands.</p>
+
+  <h2>Setup</h2>
+
+  <div class="issue">
+    <h3>The setup.bat window opens and immediately disappears</h3>
+    <p>Right-click <code>setup.bat</code> → <strong>Open</strong> (instead of double-clicking) to keep the window visible. Or run it from a terminal:</p>
+    <pre><code><span class="kw">cd</span> C:\path\to\physical-ai-workshop
+<span class="kw">.\setup.bat</span></code></pre>
+  </div>
+
+  <div class="issue">
+    <h3>Stops at "Locating Python 3.12" without doing anything else</h3>
+    <p>Python 3.12 couldn't be found or downloaded. Check your connection, then install it manually from <a href="https://www.python.org/downloads/" target="_blank">python.org</a> — tick <strong>Add Python to PATH</strong> during setup — then re-run <code>setup.bat</code>.</p>
+  </div>
+
+  <div class="issue">
+    <h3>PyTorch takes forever or times out</h3>
+    <p>The CPU wheel is about 200 MB. If pip times out, run it manually in a terminal with the venv active:</p>
+    <pre><code><span class="kw">.venv\Scripts\activate</span>
+<span class="kw">pip install</span> torch==2.14.0+cpu <span class="fl">--index-url</span> <span class="ur">https://download.pytorch.org/whl/cpu</span></code></pre>
+  </div>
+
+  <div class="issue">
+    <h3><code>[FAIL] mujoco</code> in the verify output</h3>
+    <p><strong>ARM64 Windows</strong> (Surface Pro X, Snapdragon): MuJoCo doesn't have an ARM64 Windows wheel. Run everything inside WSL2:</p>
+    <pre><code><span class="c"># PowerShell, as Administrator</span>
+<span class="kw">wsl --install</span>
+<span class="c"># Restart, open Ubuntu, then run: bash setup.sh</span></code></pre>
+    <p><strong>Regular x86-64 Windows</strong>: Usually a missing C++ runtime. Install it:</p>
+    <pre><code><span class="kw">winget install</span> Microsoft.VCRedist.2015+.x64</code></pre>
+  </div>
+
+  <h2>Hub / browser</h2>
+
+  <div class="issue">
+    <h3>Hub page is blank or MediaPipe won't load</h3>
+    <p>You need Chrome or Edge. Firefox and Safari don't support <code>SharedArrayBuffer</code>, which MediaPipe's WASM inference requires. Switch browsers and try again.</p>
+  </div>
+
+  <div class="issue">
+    <h3>Port 8000 is already in use</h3>
+    <pre><code><span class="c"># Find who's using it</span>
+<span class="kw">netstat -ano</span> | findstr :8000
+
+<span class="c"># Kill it (replace 12345 with the PID in the last column)</span>
+<span class="kw">taskkill /PID</span> 12345 /F
+
+<span class="kw">python</span> api/server.py</code></pre>
+  </div>
+
+  <h2>VS Code / Jupyter</h2>
+
+  <div class="issue">
+    <h3>VS Code is using the wrong Python kernel</h3>
+    <p>Click the kernel name in the top-right of any notebook → <strong>Python Environments…</strong> → pick <strong>Physical AI Workshop</strong>. If it's not there, re-register it:</p>
+    <pre><code><span class="kw">.venv\Scripts\activate</span>
+<span class="kw">python -m ipykernel install</span> <span class="fl">--user --name</span> physical-ai <span class="fl">--display-name</span> "Physical AI Workshop"</code></pre>
+  </div>
+
+  <h2>Module 5 / Gemini</h2>
+
+  <div class="issue">
+    <h3>Gemini calls fail or return errors</h3>
+    <p>Check <code>.env</code> exists in the repo root and has a valid key. Module 5 falls back to cached responses automatically if the key is missing — the workshop works either way.</p>
+    <pre><code><span class="kw">type</span> .env   <span class="c"># should show GEMINI_API_KEY=AIzaSy...</span></code></pre>
+  </div>
+
+</div>
+
+
+<!-- ── FOOTER ─────────────────────────────────────────────────── -->
+<footer>
+  <span>Physical AI Workshop — Jim Seelan</span>
+  <span>Open <a href="http://localhost:8000" target="_blank">localhost:8000</a> in Chrome or Edge after starting the server</span>
+</footer>
+
+</div><!-- .wrap -->
+
+<script>
+function showTab(id) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  event.target.classList.add('active');
+  window.scrollTo({top: 0, behavior: 'instant'});
+}
+function showOS(id) {
+  document.querySelectorAll('.os-block').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.os-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('os-' + id).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>

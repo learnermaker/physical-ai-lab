@@ -1,0 +1,4 @@
+# file: C:\Users\JIMSEELAN\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\opentelemetry\sdk\trace\__init__.py
+# hypothesis_version: 6.151.9
+
+[1000.0, 128, 30000, 1000000, 'ReadableSpan', 'Span', 'attributes', 'builtins', 'context', 'description', 'end_time', 'events', 'exception', 'ignore', 'kind', 'links', 'name', 'parent_id', 'resource', 'span_id', 'start_time', 'status', 'status_code', 'timestamp', 'trace_api.Tracer', 'trace_id', 'trace_state', 'true']

@@ -1,0 +1,4 @@
+# file: C:\Users\JIMSEELAN\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\langsmith\env\_git.py
+# hypothesis_version: 6.151.9
+
+['--abbrev-ref', '--always', '--dirty', '--exact-match', '--format=%ae', '--format=%an', '--format=%ct', '--porcelain', '--show-toplevel', '--tags', '-1', '/', 'HEAD', 'T', 'author_email', 'author_name', 'branch', 'commit', 'commit_time', 'describe', 'dirty', 'get-url', 'git', 'log', 'origin', 'remote', 'remote_url', 'repo_name', 'rev-parse', 'status', 'tags', 'utf-8']

@@ -1,0 +1,4 @@
+# file: C:\Users\JIMSEELAN\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\_pytest\mark\expression.py
+# hypothesis_version: 6.151.9
+
+[' OR ', '"', '$', "'", '(', ')', ',', '-', '=', 'Expression', 'ExpressionMatcher', 'False', 'None', 'True', '\\', '__builtins__', '_code', 'and', 'current', 'end of input', 'eval', 'expected {}; got {}', 'identifier', 'input', 'left parenthesis', 'not', 'or', 'pos', 'right parenthesis', 'string literal', 'tokens', 'type', 'value']

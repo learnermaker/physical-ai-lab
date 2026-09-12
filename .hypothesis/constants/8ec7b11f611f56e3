@@ -1,0 +1,4 @@
+# file: C:\Users\JIMSEELAN\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\pydantic\_internal\_core_utils.py
+# hypothesis_version: 6.151.9
+
+['<No __module__>', '<No __qualname__>', 'CoreSchemaT', 'T', 'Walk', '__module__', '__qualname__', 'args', 'arguments_schema', 'choices', 'computed-field', 'computed_fields', 'config', 'custom_init', 'dataclass-field', 'definition-ref', 'definitions', 'extras_schema', 'fields', 'frozenset', 'function-after', 'function-before', 'function-wrap', 'invalid', 'items_schema', 'json_schema', 'keys_schema', 'lax_schema', 'list', 'metadata', 'model', 'model-field', 'model-fields', 'origin', 'python_schema', 'ref', 'return_schema', 'root_model', 'schema', 'schema_ref', 'serialization', 'set', 'steps', 'strict_schema', 'title', 'type', 'typed-dict-field', 'values_schema', 'var_args_schema', 'var_kwargs_schema']

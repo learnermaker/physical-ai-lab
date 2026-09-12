@@ -1,0 +1,4 @@
+# file: C:\Users\JIMSEELAN\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\numpy\__config__.py
+# hypothesis_version: 6.151.9
+
+['0.3.27', '19.29.30156', '3.0.11', '3.13', 'Build Dependencies', 'Compilers', 'False', 'Machine Information', 'Python Information', 'SIMD Extensions', 'True', 'args', 'baseline', 'blas', 'build', 'c', 'c++', 'cl', 'commands', 'cpu', 'cross-compiled', 'cython', 'detection method', 'dicts', 'endian', 'false', 'family', 'found', 'host', 'include directory', 'lapack', 'lib directory', 'link', 'linker', 'linker args', 'little', 'msvc', 'name', 'not found', 'path', 'pc file directory', 'pkgconfig', 'scipy-openblas', 'show', 'stdout', 'system', 'version', 'windows', 'x86_64']
