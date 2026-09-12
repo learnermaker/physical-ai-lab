@@ -1,4 +1,0 @@
-# file: C:\Users\JIMSEELAN\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\numpy\_core\_ufunc_config.py
-# hypothesis_version: 6.151.9
-
-['_all', '_call', '_divide', '_invalid', '_no_nep50_warning', '_over', '_token', '_under', 'bufsize', 'call', 'errstate', 'getbufsize', 'geterr', 'geterrcall', 'numpy', 'setbufsize', 'seterr', 'seterrcall']

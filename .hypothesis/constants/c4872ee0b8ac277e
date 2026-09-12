@@ -1,4 +1,0 @@
-# file: C:\Users\JIMSEELAN\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\click\parser.py
-# hypothesis_version: 6.151.9
-
-['-', '--', '=', 'Argument', 'Option', 'OptionParser', 'ParsingState', 'V', 'append', 'append_const', 'count', 'normalize_opt', 'split_arg_string', 'split_opt', 'store', 'store_const']

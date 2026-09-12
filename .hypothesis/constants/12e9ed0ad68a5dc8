@@ -1,4 +1,0 @@
-# file: C:\Users\JIMSEELAN\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\pydantic\plugin\_schema_validator.py
-# hypothesis_version: 6.151.9
-
-['P', 'R', '_schema_validator', 'on_enter', 'on_error', 'on_exception', 'on_success', 'on_validate_json', 'on_validate_python', 'on_validate_strings', 'pydantic.plugin', 'validate_json', 'validate_python', 'validate_strings']

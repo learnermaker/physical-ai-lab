@@ -1,4 +1,0 @@
-# file: C:\Users\JIMSEELAN\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\pydantic\config.py
-# hypothesis_version: 6.151.9
-
-['ConfigDict', 'JsonDict', 'JsonValue', '_TypeT', 'all', 'allow', 'always', 'base64', 'constants', 'float', 'forbid', 'hex', 'ignore', 'iso8601', 'keys', 'never', 'none', 'null', 'python-re', 'rust-regex', 'serialization', 'strings', 'subclass-instances', 'utf8', 'validation', 'with-config-on-model', 'with_config']

@@ -1,4 +1,0 @@
-# file: C:\Users\JIMSEELAN\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\numpy\lib\__init__.py
-# hypothesis_version: 6.151.9
-
-['Arrayterator', 'NumpyVersion', 'add_docstring', 'add_newdoc', 'array_utils', 'arraypad', 'arraysetops', 'arrayterator', 'emath', 'function_base', 'histograms', 'index_tricks', 'introspect', 'math', 'mixins', 'nanfunctions', 'npyio', 'polynomial', 'scimath', 'shape_base', 'stride_tricks', 'tracemalloc_domain', 'twodim_base', 'type_check', 'ufunclike', 'utils']

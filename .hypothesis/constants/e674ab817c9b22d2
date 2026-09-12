@@ -1,4 +1,0 @@
-# file: C:\Users\JIMSEELAN\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\uuid_utils\__init__.py
-# hypothesis_version: 6.151.9
-
-['MAX', 'NAMESPACE_DNS', 'NAMESPACE_OID', 'NAMESPACE_URL', 'NAMESPACE_X500', 'NIL', 'RESERVED_FUTURE', 'RESERVED_MICROSOFT', 'RESERVED_NCS', 'RFC_4122', 'SafeUUID', 'UUID', '__version__', 'fork', 'getnode', 'reseed_rng', 'uuid1', 'uuid3', 'uuid4', 'uuid5', 'uuid6', 'uuid7', 'uuid8']

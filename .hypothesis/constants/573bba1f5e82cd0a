@@ -1,4 +1,0 @@
-# file: C:\Users\JIMSEELAN\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\dotenv\parser.py
-# hypothesis_version: 6.151.9
-
-['"', '"((?:\\\\"|[^"])*)"', '#', "'", "'((?:\\\\'|[^'])*)'", "'([^']+)'", '(=[^\\S\\r\\n]*)', '([^=\\#\\s]+)', '([^\\r\\n]*)', '(\\r\\n|\\n|\\r)', '=', 'Position', '[^\\S\\r\\n]*', '\\\\[\\\\\'\\"abfnrtv]', "\\\\[\\\\']", '\\s*', '\\s+#.*', 'read: End of string', 'unicode-escape']

@@ -1,4 +1,0 @@
-# file: C:\Users\JIMSEELAN\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\importlib_metadata\__init__.py
-# hypothesis_version: 6.151.9
-
-[' and ', '"{}"', '#', '%s(%r)', '-', '.', '.dist-info', '.egg', '.egg-info', ':', '; ', '=', '@', 'Distribution', 'DistributionFinder', 'METADATA', 'Name', 'PKG-INFO', 'PackageMetadata', 'PackageNotFoundError', 'RECORD', 'Requires-Dist', 'SOURCES.txt', 'SimplePath', 'Version', '[', '[-_.]+', '[]', '\\w+', ']', '_', '_path', 'direct_url.json', 'dist', 'distribution', 'distributions', 'egg-info', 'entry_points', 'entry_points.txt', 'files', 'find_distributions', 'installed-files.txt', 'metadata', 'path', 'register_at_fork', 'requires', 'requires.txt', 'top_level.txt', 'utf-8', 'version']

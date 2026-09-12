@@ -1,4 +1,0 @@
-# file: C:\Users\JIMSEELAN\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.13_qbz5n2kfra8p0\LocalCache\local-packages\Python313\site-packages\cv2\typing\__init__.py
-# hypothesis_version: 6.151.9
-
-['DescriptorExtractor', 'FeatureDetector', 'FeatureExtractor', 'IndexParams', 'IntPointer', 'LayerId', 'LayerParams', 'MatLike', 'MatShape', 'Matx33d', 'Matx33f', 'Matx44d', 'Matx44f', 'Moments', 'Point', 'Point2d', 'Point2f', 'Point2i', 'Point3d', 'Point3f', 'Point3i', 'Range', 'Rect', 'Rect2d', 'Rect2f', 'Rect2i', 'RotatedRect', 'Scalar', 'SearchParams', 'Size', 'Size2f', 'TermCriteria', 'Vec2d', 'Vec2f', 'Vec2i', 'Vec3d', 'Vec3f', 'Vec3i', 'Vec4d', 'Vec4f', 'Vec4i', 'Vec6f', 'map_int_and_double', 'map_string_and_int']
