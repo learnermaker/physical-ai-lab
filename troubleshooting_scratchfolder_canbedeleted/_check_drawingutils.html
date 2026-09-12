@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>DrawingUtils API check</title></head>
+<body>
+<canvas id="c" width="320" height="240" style="border:1px solid #ccc;background:#111;"></canvas>
+<pre id="out" style="font-family:monospace;font-size:12px;"></pre>
+<script type="module">
+const CDN = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.0.1/';
+const out = document.getElementById('out');
+
+try {
+  const { DrawingUtils, HandLandmarker, FilesetResolver } = await import(CDN + 'vision_bundle.mjs');
+  out.textContent += 'DrawingUtils: ' + typeof DrawingUtils + '\n';
+  out.textContent += 'HandLandmarker.HAND_CONNECTIONS: ' + (HandLandmarker.HAND_CONNECTIONS ? 'present' : 'MISSING') + '\n';
+
+  // Check DrawingUtils constructor signature
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d');
+  const du = new DrawingUtils(ctx);
+  out.textContent += 'DrawingUtils instance: OK\n';
+  out.textContent += 'drawConnectors: ' + typeof du.drawConnectors + '\n';
+  out.textContent += 'drawLandmarks:  ' + typeof du.drawLandmarks + '\n';
+
+  // Test with fake landmarks (21 points in [0,1])
+  const fakeLM = Array.from({length: 21}, (_, i) => ({x: i/20, y: i/20, z: 0}));
+  du.drawConnectors(fakeLM, HandLandmarker.HAND_CONNECTIONS, {color:'#38bdf8', lineWidth:2});
+  du.drawLandmarks(fakeLM, {color:'#5b6af0', radius:3});
+  out.textContent += 'drawConnectors + drawLandmarks: OK (no throw)\n';
+} catch(e) {
+  out.textContent += 'ERROR: ' + e.message + '\n' + e.stack;
+}
+</script>
+</body>
+</html>

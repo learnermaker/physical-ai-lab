@@ -1,4 +1,4 @@
-﻿"""
+"""
 Experience Hub — FastAPI backend for the Physical AI Workshop.
 
 Start with:
@@ -107,7 +107,7 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next) -> StarletteResponse:
         response: StarletteResponse = await call_next(request)
         response.headers["Cross-Origin-Opener-Policy"] = "same-origin"
-        response.headers["Cross-Origin-Embedder-Policy"] = "require-corp"
+        response.headers["Cross-Origin-Embedder-Policy"] = "credentialless"
         return response
 
 
@@ -137,59 +137,222 @@ async def get_config() -> JSONResponse:
 
 
 def _make_status_frame(obs: np.ndarray, action: np.ndarray, step: int) -> str:
-    """Generate a synthetic 400x300 JPEG status frame using PIL.
-    Used when OpenGL rendering is unavailable (no GPU driver).
+    """Render a 480x360 JPEG frame showing the Reacher-v5 arm geometry.
+
+    Draws the two-link arm, target, fingertip, and torque indicators using
+    PIL — no GPU or OpenGL required.
+
+    Reacher-v5 observation layout (10 values):
+        obs[0] = cos(θ₁)   obs[2] = sin(θ₁)   — joint 1 (shoulder)
+        obs[1] = cos(θ₂)   obs[3] = sin(θ₂)   — joint 2 (elbow)
+        obs[4] = target_x  obs[5] = target_y
+        obs[6] = vel_θ₁    obs[7] = vel_θ₂
+        obs[8] = fingertip_x  obs[9] = fingertip_y
+    All positions are in MuJoCo world units; each arm link is 0.1 m.
     """
     import io  # noqa: PLC0415
+    import math  # noqa: PLC0415
 
     from PIL import Image, ImageDraw  # noqa: PLC0415
 
-    W, H = 400, 300
-    img = Image.new("RGB", (W, H), color=(18, 18, 28))
+    # ── canvas ─────────────────────────────────────────────────────────────
+    W, H = 640, 480
+    BG    = (15, 18, 28)
+    img  = Image.new("RGB", (W, H), color=BG)
     draw = ImageDraw.Draw(img)
 
-    # Title
-    draw.text((16, 14), "Reacher-v5  (no-GPU mode)", fill=(180, 160, 120))
-    draw.text((16, 32), f"Step {step}", fill=(100, 100, 120))
+    # ── colour palette ──────────────────────────────────────────────────────
+    C_GRID    = (30, 35, 50)
+    C_AXIS    = (45, 50, 70)
+    C_LINK1   = (80, 160, 230)    # upper arm — blue
+    C_LINK2   = (60, 210, 140)    # forearm — teal
+    C_JOINT   = (255, 255, 255)
+    C_FINGER  = (255, 210, 60)    # fingertip — gold
+    C_TARGET  = (230, 80, 80)     # target — red
+    C_TORQ1   = (80, 160, 230)
+    C_TORQ2   = (60, 210, 140)
+    C_TEXT    = (180, 185, 200)
+    C_DIM     = (80, 85, 100)
+    C_TITLE   = (200, 180, 120)
 
-    # Obs labels
-    labels = [
-        "cos θ₀", "sin θ₀", "cos θ₁", "sin θ₁",
-        "target x", "target y", "ω₀", "ω₁",
-        "finger x", "finger y", "dist",
-    ]
-    draw.text((16, 60), "Observation:", fill=(140, 200, 140))
-    for i, (lbl, val) in enumerate(zip(labels, obs)):
-        x = 16 + (i % 2) * 196
-        y = 78 + (i // 2) * 18
-        draw.text((x, y), f"{lbl}: {val:+.3f}", fill=(200, 220, 200))
+    # ── world→pixel mapping ─────────────────────────────────────────────────
+    # Viewport: left 400 px for the arm diagram; right 240 px for data panel.
+    VW, VH = 400, 480          # viewport dimensions
+    MARGIN = 60                # pixels of padding inside the viewport
+    SCALE  = (VW - 2 * MARGIN) / 0.5   # world range ≈ [-0.25, 0.25] → pixels
+    OX, OY = VW // 2, VH // 2  # pixel origin = centre of viewport
 
-    # Action
-    draw.text((16, 196), "Action:", fill=(200, 160, 100))
-    draw.text((16, 214), f"torque 0: {action[0]:+.3f}", fill=(230, 190, 130))
-    draw.text((16, 232), f"torque 1: {action[1]:+.3f}", fill=(230, 190, 130))
+    def w2p(wx: float, wy: float):
+        """World coords → pixel coords (y flipped: +y is up in MuJoCo)."""
+        px = int(OX + wx * SCALE)
+        py = int(OY - wy * SCALE)
+        return (px, py)
 
-    # Render bars for action magnitude
-    cx, cy = 200, 260
-    for i, (val, colour) in enumerate(zip(action, [(100, 200, 100), (100, 160, 220)])):
-        bar_w = int(abs(val) * 80)
-        bar_x = cx if val >= 0 else cx - bar_w
-        bar_y = cy + i * 18
-        draw.rectangle([cx, bar_y, cx + 1, bar_y + 14], fill=(80, 80, 80))
-        if bar_w > 0:
-            draw.rectangle([bar_x, bar_y, bar_x + bar_w, bar_y + 14], fill=colour)
+    # ── background grid ─────────────────────────────────────────────────────
+    for gv in [-0.2, -0.1, 0.0, 0.1, 0.2]:
+        x0, y0 = w2p(gv, -0.3)
+        x1, y1 = w2p(gv,  0.3)
+        draw.line([(x0, y0), (x1, y1)], fill=C_GRID, width=1)
+        x0, y0 = w2p(-0.3, gv)
+        x1, y1 = w2p( 0.3, gv)
+        draw.line([(x0, y0), (x1, y1)], fill=C_GRID, width=1)
 
-    draw.text((16, 280), "OpenGL unavailable — state display mode", fill=(80, 80, 100))
+    # Axis lines
+    sx, sy = w2p(-0.26, 0); ex, ey = w2p(0.26, 0)
+    draw.line([(sx, sy), (ex, ey)], fill=C_AXIS, width=1)
+    sx, sy = w2p(0, -0.26); ex, ey = w2p(0, 0.26)
+    draw.line([(sx, sy), (ex, ey)], fill=C_AXIS, width=1)
+
+    # ── extract geometry ────────────────────────────────────────────────────
+    cos1, cos2 = float(obs[0]), float(obs[1])
+    sin1, sin2 = float(obs[2]), float(obs[3])
+    target_x, target_y  = float(obs[4]), float(obs[5])
+    finger_x, finger_y  = float(obs[8]), float(obs[9])
+
+    theta1 = math.atan2(sin1, cos1)
+    theta2 = math.atan2(sin2, cos2)
+    L = 0.1
+
+    shoulder = (0.0, 0.0)
+    elbow    = (L * math.cos(theta1),
+                L * math.sin(theta1))
+    fingertip = (finger_x, finger_y)  # use observed position (includes physics)
+
+    ps  = w2p(*shoulder)
+    pe  = w2p(*elbow)
+    pf  = w2p(*fingertip)
+    pt  = w2p(target_x, target_y)
+
+    # ── reach radius hint ───────────────────────────────────────────────────
+    r_reach = int(2 * L * SCALE)
+    draw.ellipse(
+        [OX - r_reach, OY - r_reach, OX + r_reach, OY + r_reach],
+        outline=(35, 40, 60), width=1
+    )
+
+    # ── target circle ───────────────────────────────────────────────────────
+    TR = 10
+    draw.ellipse([pt[0]-TR, pt[1]-TR, pt[0]+TR, pt[1]+TR],
+                 fill=(80, 25, 25), outline=C_TARGET, width=2)
+    draw.text((pt[0] + TR + 3, pt[1] - 7), "target", fill=C_TARGET)
+
+    # ── distance line ───────────────────────────────────────────────────────
+    dist = math.hypot(finger_x - target_x, finger_y - target_y)
+    draw.line([pf, pt], fill=(120, 60, 60), width=1)
+    mx, my = (pf[0] + pt[0]) // 2, (pf[1] + pt[1]) // 2
+    draw.text((mx + 3, my - 9), f"d={dist:.3f}", fill=(160, 90, 90))
+
+    # ── arm links ───────────────────────────────────────────────────────────
+    draw.line([ps, pe], fill=C_LINK1, width=6)   # upper arm
+    draw.line([pe, pf], fill=C_LINK2, width=5)   # forearm
+
+    # ── joints ──────────────────────────────────────────────────────────────
+    # Shoulder (fixed base)
+    draw.ellipse([ps[0]-7, ps[1]-7, ps[0]+7, ps[1]+7],
+                 fill=(40, 45, 65), outline=C_JOINT, width=2)
+    draw.text((ps[0]-3, ps[1]-4), "S", fill=C_JOINT)
+    # Elbow
+    draw.ellipse([pe[0]-5, pe[1]-5, pe[0]+5, pe[1]+5],
+                 fill=(40, 45, 65), outline=C_LINK1, width=2)
+    # Fingertip
+    draw.ellipse([pf[0]-5, pf[1]-5, pf[0]+5, pf[1]+5],
+                 fill=C_FINGER, outline=(180, 140, 30), width=2)
+
+    # ── torque arc indicators ────────────────────────────────────────────────
+    def _torque_arc(centre, radius, torque, colour):
+        """Draw a small arc indicating torque magnitude and direction."""
+        if abs(torque) < 0.01:
+            return
+        cx, cy = centre
+        span = int(abs(torque) * 120)   # max ~120° at torque=1
+        span = max(span, 8)
+        start = -90
+        end   = start + span if torque > 0 else start - span
+        draw.arc([cx-radius, cy-radius, cx+radius, cy+radius],
+                 start=min(start, end), end=max(start, end),
+                 fill=colour, width=3)
+
+    _torque_arc(ps, 18, float(action[0]), C_TORQ1)
+    _torque_arc(pe, 14, float(action[1]), C_TORQ2)
+
+    # ── divider ─────────────────────────────────────────────────────────────
+    draw.line([(VW, 0), (VW, H)], fill=(40, 45, 60), width=1)
+
+    # ── data panel (right 240 px) ────────────────────────────────────────────
+    PX = VW + 16   # panel left edge
+
+    draw.text((PX, 18), "Reacher-v5", fill=C_TITLE)
+    draw.text((PX, 36), f"Step {step:,}", fill=C_DIM)
+
+    # Angles
+    draw.text((PX, 66), "Joint angles", fill=C_TEXT)
+    draw.text((PX, 84), f"  \u03b81 = {math.degrees(theta1):+.1f}\u00b0", fill=C_LINK1)
+    draw.text((PX, 102), f"  \u03b82 = {math.degrees(theta2):+.1f}\u00b0", fill=C_LINK2)
+
+    # Velocities
+    draw.text((PX, 130), "Velocities", fill=C_TEXT)
+    draw.text((PX, 148), f"  \u03c9\u2081 = {float(obs[6]):+.3f}", fill=C_DIM)
+    draw.text((PX, 166), f"  \u03c9\u2082 = {float(obs[7]):+.3f}", fill=C_DIM)
+
+    # Target
+    draw.text((PX, 194), "Target", fill=C_TEXT)
+    draw.text((PX, 212), f"  x = {target_x:+.3f}", fill=C_TARGET)
+    draw.text((PX, 230), f"  y = {target_y:+.3f}", fill=C_TARGET)
+
+    # Fingertip
+    draw.text((PX, 258), "Fingertip", fill=C_TEXT)
+    draw.text((PX, 276), f"  x = {finger_x:+.3f}", fill=C_FINGER)
+    draw.text((PX, 294), f"  y = {finger_y:+.3f}", fill=C_FINGER)
+
+    # Distance
+    draw.text((PX, 322), "Distance to target", fill=C_TEXT)
+    dist_pct = max(0.0, 1.0 - dist / 0.3)
+    dist_colour = (
+        int(80 + 150 * dist_pct),
+        int(80 + 130 * dist_pct),
+        80
+    )
+    draw.text((PX, 340), f"  {dist:.4f} m", fill=dist_colour)
+
+    # Distance bar
+    bar_w = 200
+    bar_h = 10
+    bx, by = PX, 358
+    draw.rectangle([bx, by, bx + bar_w, by + bar_h], fill=(35, 40, 55))
+    fill_w = int(bar_w * dist_pct)
+    if fill_w > 0:
+        draw.rectangle([bx, by, bx + fill_w, by + bar_h], fill=dist_colour)
+
+    # Actions
+    draw.text((PX, 386), "Applied torques", fill=C_TEXT)
+    for i, (val, col) in enumerate(zip(action, [C_TORQ1, C_TORQ2])):
+        by2 = 404 + i * 26
+        label = f"  \u03c4{i+1} = {float(val):+.3f}"
+        draw.text((PX, by2), label, fill=col)
+        bx2, bar_w2 = PX + 110, 94
+        cx2 = bx2 + bar_w2 // 2
+        draw.rectangle([bx2, by2 + 2, bx2 + bar_w2, by2 + 14], fill=(35, 40, 55))
+        fill2 = int(abs(float(val)) * (bar_w2 // 2))
+        if fill2 > 0 and float(val) >= 0:
+            draw.rectangle([cx2, by2 + 2, cx2 + fill2, by2 + 14], fill=col)
+        elif fill2 > 0:
+            draw.rectangle([cx2 - fill2, by2 + 2, cx2, by2 + 14], fill=col)
+        draw.line([(cx2, by2 + 1), (cx2, by2 + 15)], fill=(80, 85, 100), width=1)
+
+    draw.text((PX, 460), "software render (no GPU)", fill=(50, 55, 70))
 
     buf = io.BytesIO()
-    img.save(buf, format="JPEG", quality=70)
+    img.save(buf, format="JPEG", quality=80)
     return base64.b64encode(buf.getvalue()).decode("ascii")
 
 
 @app.get("/api/simulation/stream")
 async def simulation_stream(action: str = Query("0.0,0.0")):
     """SSE: stream Reacher-v5 frames as base64 JPEG at ~20 fps.
-    Falls back to a text-based status frame if OpenGL is unavailable.
+
+    The entire MuJoCo env lifecycle runs in a single dedicated daemon thread
+    to avoid NULL-pointer crashes from sharing MuJoCo state across thread-pool
+    workers (MuJoCo is not safe to use concurrently from multiple threads).
 
     Requirements: 19.4
     """
@@ -199,101 +362,123 @@ async def simulation_stream(action: str = Query("0.0,0.0")):
             parts = [0.0, 0.0]
     except (ValueError, AttributeError):
         parts = [0.0, 0.0]
-    action_array = np.array(parts, dtype=np.float32)
+    # Clamp to action space [-1, 1]
+    action_array = np.clip(np.array(parts, dtype=np.float32), -1.0, 1.0)
 
-    async def event_generator():
-        loop = asyncio.get_running_loop()
+    # Sentinel objects for inter-thread signalling
+    _STOP  = object()
+    _ERROR = object()
+
+    frame_queue: queue.Queue = queue.Queue(maxsize=4)
+
+    def _env_worker() -> None:
+        """Runs entirely in one dedicated thread — no shared thread-pool."""
         env = None
-        step_count = 0
-        # Send a heartbeat SSE comment immediately so the browser does not
-        # time out while MuJoCo initialises (can take 2–5 s on first load).
-        yield ": heartbeat\n\n"
         try:
             from utils.gym_utils import make_env  # noqa: PLC0415
 
-            # Create env in thread pool — gym.make() is synchronous and
-            # performs MuJoCo initialisation (file I/O, memory allocation).
-            # make_env's fallback chain handles the no-OpenGL case by falling
-            # through human → rgb_array → None.  The reset() probe is now
-            # inside make_env so we get back a ready-to-use environment.
-            env = await loop.run_in_executor(None, make_env, "Reacher-v5", "rgb_array")
+            env = make_env("Reacher-v5", "rgb_array")
 
-            # Detect actual render mode after make_env's fallback chain.
             actual_render_mode = getattr(env.unwrapped, "render_mode", None)
-            _use_status_frame = actual_render_mode not in ("rgb_array", "human")
+            use_status_frame = actual_render_mode not in ("rgb_array", "human")
 
-            # env.reset() was already called inside make_env (probe).
-            # Call it again to get the initial observation for the first frame.
-            obs, _ = await loop.run_in_executor(None, env.reset)
+            obs, _ = env.reset()
 
             while True:
-                obs, reward, terminated, truncated, info = await loop.run_in_executor(
-                    None, env.step, action_array
-                )
-                step_count += 1
-                if terminated or truncated:
-                    obs, _ = await loop.run_in_executor(None, env.reset)
-
-                if not _use_status_frame:
-                    # Try OpenGL rendering; fall back to status frame if it
-                    # raises (e.g. gladLoadGL on machines without GPU drivers).
+                # Check if the consumer has gone away
+                if frame_queue.full():
+                    # Drop oldest frame rather than block — keeps latency low
                     try:
-                        rgb_frame = await loop.run_in_executor(None, env.render)
+                        frame_queue.get_nowait()
+                    except queue.Empty:
+                        pass
+
+                obs, _reward, terminated, truncated, _info = env.step(action_array)
+                if terminated or truncated:
+                    obs, _ = env.reset()
+
+                if not use_status_frame:
+                    try:
+                        rgb_frame = env.render()
                         if rgb_frame is not None:
-                            bgr_frame = cv2.cvtColor(rgb_frame, cv2.COLOR_RGB2BGR)
-                            success, jpg_buf = cv2.imencode(
-                                ".jpg", bgr_frame, [cv2.IMWRITE_JPEG_QUALITY, 60]
+                            bgr = cv2.cvtColor(rgb_frame, cv2.COLOR_RGB2BGR)
+                            ok, buf = cv2.imencode(
+                                ".jpg", bgr, [cv2.IMWRITE_JPEG_QUALITY, 60]
                             )
-                            if success:
-                                b64 = base64.b64encode(jpg_buf.tobytes()).decode("ascii")
-                                yield f"data: {b64}\n\n"
-                                await asyncio.sleep(0.05)
+                            if ok:
+                                frame_queue.put(
+                                    base64.b64encode(buf.tobytes()).decode("ascii")
+                                )
+                                import time as _time  # noqa: PLC0415
+                                _time.sleep(0.05)
                                 continue
-                        # render() returned None — switch to status frames.
-                        _use_status_frame = True
+                        use_status_frame = True
                     except Exception as render_exc:
                         print(
-                            f"[simulation_stream] render() failed: {render_exc} — "
-                            "switching to status frame mode",
+                            f"[sim_worker] render() failed: {render_exc} — "
+                            "switching to status frames",
                             file=sys.stderr,
                         )
-                        _use_status_frame = True
+                        use_status_frame = True
 
-                # Status-frame path: PIL-generated JPEG with obs/action text.
-                b64 = _make_status_frame(obs, action_array, step_count)
-                yield f"data: {b64}\n\n"
+                # PIL status-frame path (no GPU)
+                step_n = getattr(_env_worker, "_step", 0)
+                _env_worker._step = step_n + 1
+                frame_queue.put(_make_status_frame(obs, action_array, step_n))
 
-                # Target ~20 fps.
-                await asyncio.sleep(0.05)
+                import time as _time  # noqa: PLC0415
+                _time.sleep(0.05)
 
-        except asyncio.CancelledError:
-            # Client disconnected — exit generator cleanly.
-            pass
         except Exception as exc:
-            # Catch-all: send one final error frame instead of silently closing
-            # the SSE stream (which would cause the browser to see OPEN→ERROR).
-            print(f"[simulation_stream] fatal error: {exc}", file=sys.stderr)
+            print(f"[sim_worker] fatal: {exc}", file=sys.stderr)
+            # Send an error frame so the browser shows something useful
             try:
-                import io  # noqa: PLC0415
-                from PIL import Image, ImageDraw  # noqa: PLC0415
-                W, H = 400, 300
-                img = Image.new("RGB", (W, H), color=(80, 20, 20))
-                draw = ImageDraw.Draw(img)
-                draw.text((16, 14), "Simulation error", fill=(255, 200, 200))
-                draw.text((16, 40), str(exc)[:60], fill=(220, 180, 180))
-                draw.text((16, 60), "Restart simulation to retry.", fill=(180, 140, 140))
-                buf = io.BytesIO()
+                import io as _io  # noqa: PLC0415
+                from PIL import Image, ImageDraw as _ID  # noqa: PLC0415
+                img = Image.new("RGB", (400, 120), color=(80, 20, 20))
+                d = _ID.Draw(img)
+                d.text((16, 14), "Simulation error", fill=(255, 200, 200))
+                d.text((16, 38), str(exc)[:70], fill=(220, 180, 180))
+                d.text((16, 60), "Stop and restart simulation to retry.", fill=(180, 140, 140))
+                buf = _io.BytesIO()
                 img.save(buf, format="JPEG", quality=70)
-                b64 = base64.b64encode(buf.getvalue()).decode("ascii")
-                yield f"data: {b64}\n\n"
+                frame_queue.put(base64.b64encode(buf.getvalue()).decode("ascii"))
             except Exception:
-                pass  # If even the error frame fails, close silently.
+                frame_queue.put(_ERROR)
         finally:
             if env is not None:
                 try:
                     env.close()
                 except Exception:
                     pass
+            frame_queue.put(_STOP)
+
+    # Start the dedicated worker thread
+    t = threading.Thread(target=_env_worker, daemon=True)
+    t.start()
+
+    async def event_generator():
+        # Heartbeat so the browser doesn't time out while MuJoCo initialises
+        yield ": heartbeat\n\n"
+        loop = asyncio.get_running_loop()
+        try:
+            while True:
+                # Pull frames off the queue without blocking the event loop
+                frame = await loop.run_in_executor(
+                    None, lambda: frame_queue.get(timeout=30)
+                )
+                if frame is _STOP or frame is _ERROR:
+                    break
+                yield f"data: {frame}\n\n"
+        except asyncio.CancelledError:
+            # Client disconnected — signal the worker to stop on next iteration
+            # by draining and poisoning the queue
+            try:
+                while True:
+                    frame_queue.get_nowait()
+            except queue.Empty:
+                pass
+            frame_queue.put(_STOP)
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
 
@@ -394,7 +579,7 @@ async def gemini_describe(req: GeminiDescribeRequest) -> JSONResponse:
         client = genai.Client(api_key=key)
         image_part = types.Part.from_bytes(data=jpg_bytes, mime_type="image/jpeg")
         response = client.models.generate_content(
-            model="gemini-2.0-flash-lite",
+            model="gemini-2.5-flash-lite",
             contents=["Describe this scene in one sentence.", image_part],
         )
         return JSONResponse({"text": response.text})
@@ -432,7 +617,7 @@ async def gemini_action(req: GeminiActionRequest) -> JSONResponse:
         client = genai.Client(api_key=key)
         image_part = types.Part.from_bytes(data=jpg_bytes, mime_type="image/jpeg")
         response = client.models.generate_content(
-            model="gemini-2.0-flash-lite",
+            model="gemini-2.5-flash-lite",
             contents=[system_prompt, image_part],
         )
 

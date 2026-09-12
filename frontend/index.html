@@ -9,448 +9,14 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" crossorigin="anonymous">
 
-  <!-- Chart.js — served with Cross-Origin-Resource-Policy: cross-origin by jsdelivr -->
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/modules.css">
+
+  <!-- Chart.js — UMD global, must load before hub-config.js which uses Chart -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"
           crossorigin="anonymous"></script>
-
-  <style>
-    /* -----------------------------------------------------------------------
-       Reset & base
-    ----------------------------------------------------------------------- */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --sidebar-w: 220px;
-      --banner-h: 0px;          /* set to 48px by JS when server is down */
-
-      /* Warm editorial palette */
-      --color-bg:       #faf9f6;
-      --color-surface:  #ffffff;
-      --color-sidebar:  #f3f0ea;
-      --color-border:   #e5e2dc;
-      --color-border-strong: #c8c4bb;
-      --color-accent:   #b45309;   /* warm amber-brown — primary interactive colour */
-      --color-accent2:  #b45309;   /* unified: was electric blue, now same warm amber */
-      --color-text:     #1c1917;
-      --color-muted:    #78716c;
-      --color-code-bg:  #f5f3ee;
-      --color-code-border: #d6d0c4;
-
-      /* Status colours — muted, print-like */
-      --color-ok:       #166534;
-      --color-ok-bg:    #f0fdf4;
-      --color-warn:     #92400e;
-      --color-warn-bg:  #fffbeb;
-      --color-error:    #991b1b;
-      --color-error-bg: #fef2f2;
-
-      --radius: 5px;
-      --font: 'Inter', system-ui, -apple-system, sans-serif;
-      --font-mono: 'Consolas', 'JetBrains Mono', monospace;
-    }
-
-    html { font-size: 15px; scroll-behavior: smooth; }
-
-    body {
-      font-family: var(--font);
-      background: var(--color-bg);
-      color: var(--color-text);
-      display: grid;
-      grid-template-columns: var(--sidebar-w) 1fr;
-      grid-template-rows: auto 1fr;
-      min-height: 100vh;
-    }
-
-    /* -----------------------------------------------------------------------
-       Server-not-running banner (full-width, row 1)
-    ----------------------------------------------------------------------- */
-    #server-banner {
-      display: none;             /* JS shows/hides */
-      grid-column: 1 / -1;
-      background: #7c2d12;
-      color: #fde68a;
-      padding: 10px 20px;
-      font-size: 0.9rem;
-      text-align: center;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-    #server-banner code {
-      background: rgba(0,0,0,0.2);
-      padding: 2px 6px;
-      border-radius: 3px;
-      font-family: var(--font-mono);
-    }
-    body.server-down #server-banner { display: block; }
-
-    /* -----------------------------------------------------------------------
-       Sidebar
-    ----------------------------------------------------------------------- */
-    #sidebar {
-      grid-column: 1;
-      grid-row: 2;
-      background: var(--color-sidebar);
-      border-right: 1px solid var(--color-border);
-      position: sticky;
-      top: 0;
-      height: 100vh;
-      overflow-y: auto;
-      padding: 24px 0;
-    }
-
-    #sidebar h2 {
-      font-size: 0.7rem;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--color-muted);
-      padding: 0 18px 10px;
-    }
-
-    #sidebar nav a {
-      display: block;
-      padding: 8px 18px;
-      color: var(--color-text);
-      text-decoration: none;
-      font-size: 0.88rem;
-      border-left: 3px solid transparent;
-      transition: background 0.15s, border-color 0.15s;
-    }
-    #sidebar nav a:hover {
-      background: rgba(180, 83, 9, 0.07);
-      color: var(--color-accent);
-    }
-    #sidebar nav a.active {
-      border-left-color: var(--color-accent);
-      color: var(--color-accent);
-      background: rgba(180, 83, 9, 0.07);
-    }
-
-    #sidebar .sidebar-section {
-      margin-top: 18px;
-      border-top: 1px solid var(--color-border);
-      padding-top: 14px;
-    }
-
-    /* -----------------------------------------------------------------------
-       Main content area
-    ----------------------------------------------------------------------- */
-    #content {
-      grid-column: 2;
-      grid-row: 2;
-      padding: 32px 40px;
-      overflow-y: auto;
-      max-width: 960px;
-    }
-
-    section {
-      margin-bottom: 56px;
-      scroll-margin-top: 20px;
-    }
-
-    section h1 {
-      font-size: 1.5rem;
-      font-weight: 700;
-      margin-bottom: 6px;
-      color: var(--color-text);
-      font-family: Georgia, 'Lora', serif;
-    }
-
-    section > .section-subtitle {
-      color: var(--color-muted);
-      font-size: 0.88rem;
-      margin-bottom: 20px;
-    }
-
-    /* -----------------------------------------------------------------------
-       Cards / panels
-    ----------------------------------------------------------------------- */
-    .card {
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius);
-      padding: 20px 24px;
-      margin-bottom: 16px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-    }
-
-    .card h3 {
-      font-size: 0.95rem;
-      font-weight: 600;
-      margin-bottom: 10px;
-      color: var(--color-accent);
-    }
-
-    .card p, .card li {
-      font-size: 0.88rem;
-      line-height: 1.6;
-      color: var(--color-text);
-    }
-
-    .card ul { margin-left: 18px; }
-
-    /* -----------------------------------------------------------------------
-       Schedule table
-    ----------------------------------------------------------------------- */
-    .schedule-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.88rem;
-    }
-
-    .schedule-table th {
-      text-align: left;
-      padding: 8px 14px;
-      background: var(--color-bg);
-      color: var(--color-muted);
-      font-weight: 600;
-      border-bottom: 1px solid var(--color-border);
-    }
-
-    .schedule-table td {
-      padding: 9px 14px;
-      border-bottom: 1px solid var(--color-border);
-      vertical-align: top;
-    }
-
-    .schedule-table tr:last-child td { border-bottom: none; }
-
-    .schedule-table td:first-child {
-      font-weight: 600;
-      color: var(--color-accent);
-      white-space: nowrap;
-    }
-
-    .schedule-table td:nth-child(2) {
-      color: var(--color-muted);
-      white-space: nowrap;
-    }
-
-    .schedule-table tr.buffer td { color: var(--color-muted); font-style: italic; }
-
-    /* -----------------------------------------------------------------------
-       Setup section — status badges
-    ----------------------------------------------------------------------- */
-    .status-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 8px 0;
-      font-size: 0.88rem;
-      border-bottom: 1px solid var(--color-border);
-    }
-    .status-row:last-of-type { border-bottom: none; }
-
-    .badge {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-size: 0.78rem;
-      font-weight: 600;
-    }
-    .badge.ok      { background: var(--color-ok-bg);   color: var(--color-ok); }
-    .badge.warn    { background: var(--color-warn-bg);  color: var(--color-warn); }
-    .badge.error   { background: var(--color-error-bg); color: var(--color-error); }
-    .badge.checking { background: var(--color-border);  color: var(--color-muted); }
-
-    /* -----------------------------------------------------------------------
-       Form elements
-    ----------------------------------------------------------------------- */
-    label {
-      display: block;
-      font-size: 0.82rem;
-      color: var(--color-muted);
-      margin-bottom: 5px;
-    }
-
-    input[type="text"], input[type="password"] {
-      width: 100%;
-      background: var(--color-bg);
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius);
-      color: var(--color-text);
-      padding: 8px 12px;
-      font-size: 0.88rem;
-      font-family: var(--font-mono);
-      transition: border-color 0.15s;
-    }
-
-    input[type="text"]:focus, input[type="password"]:focus {
-      outline: none;
-      border-color: var(--color-accent);
-    }
-
-    button {
-      padding: 8px 18px;
-      border: none;
-      border-radius: var(--radius);
-      cursor: pointer;
-      font-size: 0.88rem;
-      font-weight: 600;
-      font-family: var(--font);
-      transition: opacity 0.15s, background 0.15s;
-    }
-
-    button:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
-
-    .btn-primary {
-      background: var(--color-accent);
-      color: #fff;
-    }
-    .btn-primary:hover:not(:disabled) { opacity: 0.9; }
-
-    .btn-secondary {
-      background: var(--color-surface);
-      color: var(--color-text);
-      border: 1px solid var(--color-border-strong);
-    }
-    .btn-secondary:hover:not(:disabled) { background: var(--color-bg); }
-
-    /* -----------------------------------------------------------------------
-       Pipeline diagram (Module 0)
-    ----------------------------------------------------------------------- */
-    .pipeline-diagram {
-      background: var(--color-code-bg);
-      border: 1px solid var(--color-border);
-      border-left: 3px solid var(--color-border-strong);
-      border-radius: var(--radius);
-      padding: 16px 20px;
-      font-family: var(--font-mono);
-      font-size: 0.82rem;
-      color: var(--color-accent);
-      white-space: pre;
-      overflow-x: auto;
-      margin: 14px 0;
-    }
-
-    /* -----------------------------------------------------------------------
-       State vector table (Module 0)
-    ----------------------------------------------------------------------- */
-    .state-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.85rem;
-      margin-top: 12px;
-    }
-
-    .state-table th {
-      text-align: left;
-      padding: 7px 12px;
-      background: var(--color-bg);
-      color: var(--color-muted);
-      font-weight: 600;
-      border-bottom: 1px solid var(--color-border);
-    }
-
-    .state-table td {
-      padding: 7px 12px;
-      border-bottom: 1px solid var(--color-border);
-      font-family: var(--font-mono);
-      font-size: 0.82rem;
-    }
-
-    .state-table tr:last-child td { border-bottom: none; }
-
-    /* -----------------------------------------------------------------------
-       Coming-soon placeholder for Modules 1–5
-    ----------------------------------------------------------------------- */
-    .coming-soon {
-      background: var(--color-bg);
-      border: 1px dashed var(--color-border-strong);
-      border-radius: var(--radius);
-      padding: 28px 24px;
-      color: var(--color-muted);
-      font-size: 0.88rem;
-      text-align: center;
-    }
-
-    /* -----------------------------------------------------------------------
-       Concept map table (Wrap-up)
-    ----------------------------------------------------------------------- */
-    .concept-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.88rem;
-    }
-
-    .concept-table th {
-      text-align: left;
-      padding: 8px 14px;
-      background: var(--color-bg);
-      color: var(--color-muted);
-      font-weight: 600;
-      border-bottom: 1px solid var(--color-border);
-    }
-
-    .concept-table td {
-      padding: 9px 14px;
-      border-bottom: 1px solid var(--color-border);
-    }
-
-    .concept-table tr:last-child td { border-bottom: none; }
-
-    /* -----------------------------------------------------------------------
-       Two-column layout (Module 1, Module 4)
-    ----------------------------------------------------------------------- */
-    .two-col {
-      display: flex;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-
-    .panel {
-      flex: 1;
-      min-width: 280px;
-    }
-
-    /* -----------------------------------------------------------------------
-       Next steps links
-    ----------------------------------------------------------------------- */
-    .next-steps a {
-      color: var(--color-accent);
-      text-decoration: none;
-      font-weight: 600;
-    }
-    .next-steps a:hover { text-decoration: underline; }
-
-    /* -----------------------------------------------------------------------
-       Utility
-    ----------------------------------------------------------------------- */
-    .mt-12 { margin-top: 12px; }
-    .mt-16 { margin-top: 16px; }
-    .mt-20 { margin-top: 20px; }
-
-    code {
-      font-family: var(--font-mono);
-      background: var(--color-code-bg);
-      border: 1px solid var(--color-code-border);
-      padding: 1px 5px;
-      border-radius: 3px;
-      font-size: 0.85em;
-      color: #44403c;
-    }
-
-    pre {
-      background: var(--color-code-bg);
-      border-left: 3px solid var(--color-border-strong);
-      padding: 12px 16px;
-      border-radius: var(--radius);
-      overflow-x: auto;
-    }
-
-    /* pre > code inherits pre's background — remove double border */
-    pre code {
-      background: none;
-      border: none;
-      padding: 0;
-      font-size: inherit;
-      color: inherit;
-    }
-  </style>
 </head>
 
 <body>
@@ -529,12 +95,18 @@
       <p id="api-key-hint" style="font-size:0.78rem; color:var(--color-muted); margin-top:5px;">
         Your key is stored in <code>sessionStorage</code> and cleared when you close this tab.
       </p>
-      <div style="margin-top: 10px; display:flex; gap:8px; align-items:center;">
+      <div style="margin-top: 10px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
         <button class="btn-primary" id="save-key-btn">Save key</button>
         <button class="btn-secondary" id="clear-key-btn">Clear key</button>
+        <button class="btn-secondary" id="test-key-btn">Test key</button>
         <span id="key-saved-notice" style="font-size:0.82rem; color:var(--color-ok); display:none;">
           Key saved for this session.
         </span>
+      </div>
+      <div id="gemini-test-result" style="display:none; margin-top:12px; padding:10px 14px;
+           background:var(--color-code-bg); border:1px solid var(--color-code-border);
+           border-radius:var(--radius); font-size:0.82rem; font-family:var(--font-mono);
+           color:var(--color-text); white-space:pre-wrap; word-break:break-word;">
       </div>
     </div>
   </section>
@@ -607,7 +179,7 @@
   </section>
 
   <!-- -----------------------------------------------------------------------
-       Module 0 — Kickoff (full content)
+       Module 0 — Kickoff
   ----------------------------------------------------------------------- -->
   <section id="module-0">
     <h1>Module 0 — Kickoff</h1>
@@ -692,7 +264,7 @@
   </section>
 
   <!-- -----------------------------------------------------------------------
-       Module 1 — Perception (placeholder)
+       Module 1 — Perception
   ----------------------------------------------------------------------- -->
   <section id="module-1">
     <h1>Module 1 — Perception</h1>
@@ -714,7 +286,6 @@
 
     <div id="module-1-content">
       <div class="two-col mt-16">
-        <!-- Webcam + canvas overlay -->
         <div class="panel">
           <div style="position:relative; width:320px; height:240px;">
             <video id="m1-video" autoplay playsinline muted
@@ -732,7 +303,6 @@
           </div>
         </div>
 
-        <!-- State vector readout -->
         <div class="panel">
           <div class="card" style="height:100%;">
             <h3>State vector</h3>
@@ -758,11 +328,10 @@
         </p>
       </div>
     </div>
-
   </section>
 
   <!-- -----------------------------------------------------------------------
-       Module 2 — Simulation (placeholder)
+       Module 2 — Simulation
   ----------------------------------------------------------------------- -->
   <section id="module-2">
     <h1>Module 2 — Simulation</h1>
@@ -770,14 +339,63 @@
     <div id="module-2-content">
       <div class="card">
         <h3>Reacher-v5 simulation stream</h3>
-        <p>The server runs a MuJoCo Reacher-v5 environment and streams rendered frames as base64 JPEG via Server-Sent Events.</p>
-        <div style="margin: 12px 0; display:flex; gap:8px;">
+        <p>The server runs a MuJoCo Reacher-v5 environment and streams rendered frames via SSE.
+           Use the torque sliders to apply joint forces and watch the arm respond in real time.</p>
+
+        <div style="margin:12px 0; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
           <button class="btn-primary" id="m2-start-btn" data-requires-server>Start Simulation</button>
           <button class="btn-secondary" id="m2-stop-btn" disabled>Stop</button>
+          <button class="btn-secondary" id="m2-expand-btn" disabled title="View full size">Expand</button>
         </div>
-        <img id="m2-frame" alt="Reacher simulation" style="width:320px; height:auto; border:1px solid var(--color-border); border-radius:var(--radius); display:block;" />
-        <p id="m2-status" style="font-size:0.82rem; color:var(--color-muted); margin-top:6px;">Click Start Simulation to begin.</p>
+
+        <div id="m2-sliders" style="display:none; margin-bottom:14px; padding:12px 14px;
+             background:var(--color-bg); border:1px solid var(--color-border); border-radius:var(--radius);">
+          <p style="font-size:0.8rem; color:var(--color-muted); margin-bottom:8px;">
+            Drag the sliders to apply joint torques — watch the arm respond instantly.
+          </p>
+          <div style="display:flex; flex-direction:column; gap:10px;">
+            <label style="font-size:0.82rem; color:var(--color-text); display:flex; align-items:center; gap:10px;">
+              <span style="color:#50a0e6; min-width:120px;">Joint 1 torque (τ₁)</span>
+              <input type="range" id="m2-torque0" min="-1" max="1" step="0.05" value="0"
+                     style="flex:1; accent-color:#50a0e6;">
+              <span id="m2-torque0-val" style="min-width:42px; text-align:right; font-family:var(--font-mono); font-size:0.82rem;">0.00</span>
+            </label>
+            <label style="font-size:0.82rem; color:var(--color-text); display:flex; align-items:center; gap:10px;">
+              <span style="color:#3cd2a0; min-width:120px;">Joint 2 torque (τ₂)</span>
+              <input type="range" id="m2-torque1" min="-1" max="1" step="0.05" value="0"
+                     style="flex:1; accent-color:#3cd2a0;">
+              <span id="m2-torque1-val" style="min-width:42px; text-align:right; font-family:var(--font-mono); font-size:0.82rem;">0.00</span>
+            </label>
+          </div>
+        </div>
+
+        <img id="m2-frame" alt="Reacher simulation"
+             style="width:100%; height:auto; border:1px solid var(--color-border);
+                    border-radius:var(--radius); display:block; cursor:zoom-in;" />
+
+        <p id="m2-status" style="font-size:0.82rem; color:var(--color-muted); margin-top:6px;">
+          Click Start Simulation to begin.
+        </p>
+        <div id="m2-legend" style="display:none; margin-top:10px; font-size:0.78rem;
+             color:var(--color-muted); display:flex; gap:16px; flex-wrap:wrap;">
+          <span><span style="display:inline-block;width:18px;height:4px;background:#50a0e6;border-radius:2px;vertical-align:middle;margin-right:4px;"></span>Upper arm (link 1)</span>
+          <span><span style="display:inline-block;width:18px;height:4px;background:#3cd2a0;border-radius:2px;vertical-align:middle;margin-right:4px;"></span>Forearm (link 2)</span>
+          <span><span style="display:inline-block;width:10px;height:10px;background:#e05050;border-radius:50%;vertical-align:middle;margin-right:4px;"></span>Target</span>
+          <span><span style="display:inline-block;width:10px;height:10px;background:#ffd23c;border-radius:50%;vertical-align:middle;margin-right:4px;"></span>Fingertip</span>
+          <span>S = shoulder (fixed pivot)</span>
+          <span>Reach radius = 0.2 m</span>
+        </div>
       </div>
+
+      <div id="m2-overlay" style="display:none; position:fixed; inset:0; z-index:1000;
+           background:rgba(0,0,0,0.92); align-items:center; justify-content:center; flex-direction:column;">
+        <img id="m2-overlay-img" alt="Reacher simulation expanded"
+             style="max-width:95vw; max-height:90vh; border-radius:6px; border:1px solid #333;" />
+        <button id="m2-overlay-close" style="margin-top:14px; padding:8px 20px;
+                background:#333; color:#fff; border:1px solid #555; border-radius:4px;
+                cursor:pointer; font-size:0.9rem;">Close (Esc)</button>
+      </div>
+
       <div class="card mt-16">
         <h3>Exercise — exercise.py</h3>
         <p>Open <code>modules/02_simulation/exercise.py</code>. Print the lower and upper bounds of the Reacher observation space.</p>
@@ -786,7 +404,7 @@
   </section>
 
   <!-- -----------------------------------------------------------------------
-       Module 3 — RL (placeholder)
+       Module 3 — Reinforcement Learning
   ----------------------------------------------------------------------- -->
   <section id="module-3">
     <h1>Module 3 — Reinforcement Learning</h1>
@@ -827,7 +445,7 @@
         </div>
         <div class="panel">
           <p style="font-size:0.82rem; color:var(--color-muted); margin-bottom:8px;">Reacher simulation</p>
-          <img id="m4-sim" alt="Reacher sim" style="width:320px;height:240px;border:1px solid var(--color-border);border-radius:var(--radius);object-fit:contain;" />
+          <img id="m4-sim" alt="Reacher sim" style="width:100%;max-width:480px;height:auto;border:1px solid var(--color-border);border-radius:var(--radius);display:block;" />
         </div>
       </div>
       <div style="margin: 12px 0; display:flex; gap:8px; align-items:center;">
@@ -879,7 +497,7 @@
   </section>
 
   <!-- -----------------------------------------------------------------------
-       Wrap-up section (placeholder — full content in task 22.7)
+       Wrap-up
   ----------------------------------------------------------------------- -->
   <section id="wrapup">
     <h1>Wrap-up</h1>
@@ -981,741 +599,20 @@
 </main>
 
 <!-- =========================================================================
-     JavaScript — inline ES6 modules
+     JavaScript modules — loaded in dependency order:
+       hub-config.js  : hubConfig (window.hubConfig), serverCheck, API key UI,
+                        sidebar nav, Module 3 training chart
+       module-2.js    : Reacher sim stream, torque sliders, expand overlay
+       module-5.js    : Gemini describe/action (reads window.hubConfig)
+       module-4.js    : MediaPipe hand tracking → sim SSE
+       module-1.js    : webcamManager (window.webcamManager),
+                        mediapipeHandler (window.mediapipeHandler)
 ========================================================================== -->
-<script type="module">
-'use strict';
-
-// ---------------------------------------------------------------------------
-// hubConfig — fetch /api/config, manage sessionStorage API key
-// ---------------------------------------------------------------------------
-const hubConfig = (() => {
-  const KEY_NAME = 'gemini_api_key';
-
-  /** Retrieve the user-supplied API key from sessionStorage, or null. */
-  function getApiKey() {
-    return sessionStorage.getItem(KEY_NAME) || null;
-  }
-
-  /** Persist the API key to sessionStorage. */
-  function setApiKey(key) {
-    const trimmed = (key || '').trim();
-    if (trimmed) {
-      sessionStorage.setItem(KEY_NAME, trimmed);
-    } else {
-      sessionStorage.removeItem(KEY_NAME);
-    }
-  }
-
-  /** Remove the API key from sessionStorage. */
-  function clearApiKey() {
-    sessionStorage.removeItem(KEY_NAME);
-  }
-
-  /**
-   * Fetch /api/config and return the parsed JSON, or null on network failure.
-   * @returns {Promise<{gemini_key_configured: boolean}|null>}
-   */
-  async function fetchConfig() {
-    try {
-      const res = await fetch('/api/config', { signal: AbortSignal.timeout(4000) });
-      if (!res.ok) return null;
-      return await res.json();
-    } catch {
-      return null;
-    }
-  }
-
-  return { getApiKey, setApiKey, clearApiKey, fetchConfig };
-})();
-
-// Expose on window so future modules loaded in tasks 22.2–22.7 can access it.
-window.hubConfig = hubConfig;
-
-
-// ---------------------------------------------------------------------------
-// serverCheck — poll /api/config on load, update banner + status badges
-// ---------------------------------------------------------------------------
-const serverCheck = (() => {
-  const banner        = document.getElementById('server-banner');
-  const serverBadge   = document.getElementById('server-badge');
-  const geminiSvrBadge = document.getElementById('gemini-server-badge');
-
-  function setBadge(el, state, text) {
-    el.className = `badge ${state}`;
-    el.textContent = text;
-  }
-
-  /** Disable all controls that require a running server. */
-  function disableServerControls() {
-    document.querySelectorAll('[data-requires-server]').forEach(el => {
-      el.disabled = true;
-    });
-  }
-
-  /** Re-enable server-dependent controls. */
-  function enableServerControls() {
-    document.querySelectorAll('[data-requires-server]').forEach(el => {
-      el.disabled = false;
-    });
-  }
-
-  async function check() {
-    const config = await hubConfig.fetchConfig();
-
-    if (!config) {
-      // Server unreachable
-      document.body.classList.add('server-down');
-      setBadge(serverBadge, 'error', 'Unreachable');
-      setBadge(geminiSvrBadge, 'warn', 'Unknown');
-      disableServerControls();
-    } else {
-      // Server is up
-      document.body.classList.remove('server-down');
-      setBadge(serverBadge, 'ok', 'Connected');
-
-      if (config.gemini_key_configured) {
-        setBadge(geminiSvrBadge, 'ok', 'Configured');
-      } else {
-        setBadge(geminiSvrBadge, 'warn', 'Not configured');
-      }
-      enableServerControls();
-    }
-  }
-
-  // Run once on load, then every 10 seconds.
-  check();
-  setInterval(check, 10_000);
-
-  return { check };
-})();
-
-
-// ---------------------------------------------------------------------------
-// API key input — save / clear
-// ---------------------------------------------------------------------------
-(() => {
-  const input    = document.getElementById('api-key-input');
-  const saveBtn  = document.getElementById('save-key-btn');
-  const clearBtn = document.getElementById('clear-key-btn');
-  const notice   = document.getElementById('key-saved-notice');
-
-  // Pre-fill from sessionStorage if a key already exists.
-  const existing = hubConfig.getApiKey();
-  if (existing) {
-    input.value = existing;
-    notice.style.display = 'inline';
-  }
-
-  saveBtn.addEventListener('click', () => {
-    hubConfig.setApiKey(input.value);
-    notice.style.display = 'inline';
-    setTimeout(() => { notice.style.display = 'none'; }, 3000);
-  });
-
-  clearBtn.addEventListener('click', () => {
-    hubConfig.clearApiKey();
-    input.value = '';
-    notice.style.display = 'none';
-  });
-})();
-
-
-// ---------------------------------------------------------------------------
-// Sidebar active-link tracking (IntersectionObserver)
-// ---------------------------------------------------------------------------
-(() => {
-  const links = document.querySelectorAll('#sidebar-nav a[data-target]');
-
-  // Map section id → link element for fast lookup.
-  const linkMap = new Map();
-  links.forEach(a => linkMap.set(a.dataset.target, a));
-
-  let currentActive = null;
-
-  function setActive(id) {
-    if (currentActive === id) return;
-    if (currentActive) linkMap.get(currentActive)?.classList.remove('active');
-    linkMap.get(id)?.classList.add('active');
-    currentActive = id;
-  }
-
-  const observer = new IntersectionObserver(
-    (entries) => {
-      // Use the topmost visible section.
-      const visible = entries
-        .filter(e => e.isIntersecting)
-        .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
-      if (visible.length > 0) {
-        setActive(visible[0].target.id);
-      }
-    },
-    { threshold: 0.15 }
-  );
-
-  document.querySelectorAll('section[id]').forEach(sec => observer.observe(sec));
-
-  // Smooth-scroll on link click (handles the anchor href as fallback).
-  links.forEach(a => {
-    a.addEventListener('click', e => {
-      e.preventDefault();
-      const target = document.getElementById(a.dataset.target);
-      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
-  });
-})();
-
-
-// ---------------------------------------------------------------------------
-// Module 3 — RL training chart
-// ---------------------------------------------------------------------------
-(() => {
-  const trainBtn = document.getElementById('m3-train-btn');
-  const statusEl = document.getElementById('m3-status');
-
-  // Initialise Chart.js chart
-  const chartCtx = document.getElementById('m3-chart').getContext('2d');
-  const chart = new Chart(chartCtx, {
-    type: 'line',
-    data: {
-      labels: [],
-      datasets: [{
-        label: 'Mean episode reward',
-        data: [],
-        borderColor: '#5b6af0',
-        backgroundColor: 'rgba(91,106,240,0.1)',
-        fill: true,
-        tension: 0.3,
-        pointRadius: 0,
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      animation: { duration: 0 },
-      scales: {
-        x: { title: { display: true, text: 'Timestep' }, ticks: { maxTicksLimit: 8 } },
-        y: { title: { display: true, text: 'Mean Reward' }, min: 0 }
-      },
-      plugins: { legend: { display: false } }
-    }
-  });
-
-  trainBtn.addEventListener('click', async () => {
-    trainBtn.disabled = true;
-    statusEl.textContent = 'Starting training...';
-    chart.data.labels = [];
-    chart.data.datasets[0].data = [];
-    chart.update();
-
-    try {
-      const res = await fetch('/api/training/start', { method: 'POST' });
-      const { job_id } = await res.json();
-      if (!job_id) throw new Error('No job_id returned');
-
-      statusEl.textContent = `Training job ${job_id.substring(0, 8)}... (50k steps)`;
-
-      const es = new EventSource(`/api/training/progress/${job_id}`);
-
-      es.onmessage = (e) => {
-        const data = JSON.parse(e.data);
-        if (data.done) {
-          statusEl.textContent = 'Training complete!';
-          es.close();
-          trainBtn.disabled = false;
-          return;
-        }
-        if (data.timestep != null && data.mean_reward != null) {
-          chart.data.labels.push(data.timestep.toString());
-          chart.data.datasets[0].data.push(data.mean_reward);
-          chart.update();
-          statusEl.textContent = `Step ${data.timestep.toLocaleString()} — Mean reward: ${data.mean_reward.toFixed(1)}`;
-        }
-      };
-
-      es.onerror = () => {
-        statusEl.textContent = 'Stream error.';
-        es.close();
-        trainBtn.disabled = false;
-      };
-    } catch (err) {
-      statusEl.textContent = 'Error: ' + err.message;
-      trainBtn.disabled = false;
-    }
-  });
-})();
-</script>
-
-
-<script type="module">
-'use strict';
-
-// ---- Module 2 — Simulation stream ------------------------------------
-(() => {
-  const startBtn = document.getElementById('m2-start-btn');
-  const stopBtn  = document.getElementById('m2-stop-btn');
-  const frameImg = document.getElementById('m2-frame');
-  const status   = document.getElementById('m2-status');
-  let es = null;
-
-  startBtn.addEventListener('click', () => {
-    if (es) es.close();
-    status.textContent = 'Connecting...';
-    es = new EventSource('/api/simulation/stream?action=0,0');
-    startBtn.disabled = true;
-    stopBtn.disabled  = false;
-
-    es.onmessage = (e) => {
-      frameImg.src     = 'data:image/jpeg;base64,' + e.data;
-      status.textContent = 'Streaming at ~20 fps';
-    };
-
-    es.onerror = () => {
-      status.textContent = 'Stream error — is the server running?';
-      startBtn.disabled  = false;
-      stopBtn.disabled   = true;
-      if (es) { es.close(); es = null; }
-    };
-  });
-
-  stopBtn.addEventListener('click', () => {
-    if (es) { es.close(); es = null; }
-    frameImg.src       = '';
-    status.textContent = 'Simulation stopped.';
-    startBtn.disabled  = false;
-    stopBtn.disabled   = true;
-  });
-})();
-</script>
-
-
-<script type="module">
-'use strict';
-
-// ---- Module 5 — Foundation Models ------------------------------------
-(() => {
-  const camBtn      = document.getElementById('m5-cam-btn');
-  const describeBtn = document.getElementById('m5-describe-btn');
-  const actionBtn   = document.getElementById('m5-action-btn');
-  const video       = document.getElementById('m5-video');
-  const canvas      = document.getElementById('m5-canvas');
-  const ctx         = canvas.getContext('2d');
-  const resultEl    = document.getElementById('m5-result');
-  const spinner     = document.getElementById('m5-spinner');
-  const cacheNotice = document.getElementById('m5-cache-notice');
-  let stream = null;
-
-  function getFrame() {
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    return canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
-  }
-
-  function showResult(data, isText) {
-    spinner.style.display = 'none';
-    if (isText) {
-      resultEl.textContent = data.text || JSON.stringify(data);
-    } else {
-      resultEl.textContent = JSON.stringify(data, null, 2);
-    }
-    // No key set → server always uses cache fallback
-    cacheNotice.style.display = window.hubConfig?.getApiKey() ? 'none' : 'block';
-  }
-
-  async function callApi(endpoint) {
-    const frame_b64 = stream ? getFrame() : '';
-    const api_key   = window.hubConfig?.getApiKey() || null;
-    spinner.style.display = 'block';
-    resultEl.textContent  = '';
-    cacheNotice.style.display = 'none';
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ frame_b64, api_key }),
-    });
-    return await res.json();
-  }
-
-  camBtn.addEventListener('click', async () => {
-    if (stream) {
-      stream.getTracks().forEach(t => t.stop());
-      stream = null;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      camBtn.textContent    = 'Start Camera';
-      describeBtn.disabled  = true;
-      actionBtn.disabled    = true;
-      return;
-    }
-    try {
-      stream = await navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240 } });
-      video.srcObject = stream;
-      await video.play();
-      camBtn.textContent   = 'Stop Camera';
-      describeBtn.disabled = false;
-      actionBtn.disabled   = false;
-      // Mirror video to canvas continuously for both preview and capture
-      const tick = () => {
-        if (stream) {
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          requestAnimationFrame(tick);
-        }
-      };
-      tick();
-    } catch (err) {
-      resultEl.textContent = 'Camera error: ' + err.message;
-    }
-  });
-
-  describeBtn.addEventListener('click', async () => {
-    try {
-      const data = await callApi('/api/gemini/describe');
-      showResult(data, true);
-    } catch (err) {
-      spinner.style.display = 'none';
-      resultEl.textContent = 'Error: ' + err.message;
-    }
-  });
-
-  actionBtn.addEventListener('click', async () => {
-    try {
-      const data = await callApi('/api/gemini/action');
-      showResult(data, false);
-    } catch (err) {
-      spinner.style.display = 'none';
-      resultEl.textContent = 'Error: ' + err.message;
-    }
-  });
-})();
-</script>
-
-<script type="module">
-'use strict';
-
-// ---- Module 4 — Perception to Action ---------------------------------
-// Uses MediaPipe HandLandmarker (Tasks API) from CDN to track the index
-// finger tip and map its normalised position to Reacher joint torques
-// streamed via SSE from the server.
-(() => {
-  const MEDIAPIPE_CDN = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/';
-  const MODEL_URL = 'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/latest/hand_landmarker.task';
-  // Reconnect the SSE stream only when landmark 8 has moved more than this
-  // amount (normalised [0,1] units) AND enough time has elapsed.
-  const RECONNECT_DELTA = 0.03;
-  const RECONNECT_INTERVAL_MS = 150;
-
-  let landmarker = null;
-  let stream = null;
-  let simEs = null;
-  let running = false;
-  let lastLm8 = { x: 0, y: 0 };
-  let lastReconnect = 0;
-
-  const video    = document.getElementById('m4-video');
-  const canvas   = document.getElementById('m4-canvas');
-  const simImg   = document.getElementById('m4-sim');
-  const ctx      = canvas.getContext('2d');
-  const startBtn = document.getElementById('m4-start-btn');
-  const stopBtn  = document.getElementById('m4-stop-btn');
-  const status   = document.getElementById('m4-status');
-
-  /** Open (or reopen) the simulation SSE stream with the given action coords. */
-  function openSimStream(actionX, actionY) {
-    if (simEs) simEs.close();
-    simEs = new EventSource(
-      `/api/simulation/stream?action=${actionX.toFixed(3)},${actionY.toFixed(3)}`
-    );
-    simEs.onmessage = (e) => {
-      simImg.src = 'data:image/jpeg;base64,' + e.data;
-    };
-    simEs.onerror = () => {
-      status.textContent = 'Sim stream error — is the server running?';
-    };
-  }
-
-  /** Lazy-load the MediaPipe HandLandmarker (only called once). */
-  async function initLandmarker() {
-    const { HandLandmarker, FilesetResolver } =
-      await import(MEDIAPIPE_CDN + 'vision_bundle.mjs');
-    const fs = await FilesetResolver.forVisionTasks(MEDIAPIPE_CDN + 'wasm');
-    landmarker = await HandLandmarker.createFromOptions(fs, {
-      baseOptions:    { modelAssetPath: MODEL_URL },
-      runningMode:    'LIVE_STREAM',
-      numHands:       1,
-      resultCallback: (result) => {
-        // Tasks API exposes results under hand_landmarks (list of hands,
-        // each hand is a list of 21 NormalizedLandmark with .x/.y in [0,1]).
-        const hands = result.hand_landmarks ?? result.landmarks;
-        if (!hands || hands.length === 0) return;
-
-        const lm8 = hands[0][8];  // index finger tip
-        // Map [0,1] → [-1,1] for the Reacher torque action.
-        const ax = lm8.x * 2 - 1;
-        const ay = lm8.y * 2 - 1;
-
-        const now = performance.now();
-        const dx  = Math.abs(lm8.x - lastLm8.x);
-        const dy  = Math.abs(lm8.y - lastLm8.y);
-
-        if (
-          (dx > RECONNECT_DELTA || dy > RECONNECT_DELTA) &&
-          (now - lastReconnect) > RECONNECT_INTERVAL_MS
-        ) {
-          lastLm8 = { x: lm8.x, y: lm8.y };
-          lastReconnect = now;
-          openSimStream(ax, ay);
-        }
-
-        status.textContent = `Action: [${ax.toFixed(2)}, ${ay.toFixed(2)}]`;
-      }
-    });
-  }
-
-  /** Per-frame: draw the video onto the canvas and submit it to the landmarker. */
-  function detect() {
-    if (!running || !landmarker) return;
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    landmarker.detectForVideo(video, performance.now());
-    requestAnimationFrame(detect);
-  }
-
-  startBtn.addEventListener('click', async () => {
-    try {
-      stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: 320, height: 240 }
-      });
-      video.srcObject = stream;
-      await video.play();
-
-      if (!landmarker) {
-        status.textContent = 'Loading hand-tracking model…';
-        await initLandmarker();
-      }
-
-      running = true;
-      startBtn.disabled = true;
-      stopBtn.disabled  = false;
-
-      // Open the sim stream immediately at zero action before any hand is detected.
-      openSimStream(0, 0);
-      detect();
-      status.textContent = 'Move your index finger to control the simulation.';
-    } catch (err) {
-      status.textContent = 'Error: ' + err.message;
-    }
-  });
-
-  stopBtn.addEventListener('click', () => {
-    running = false;
-    if (stream)  { stream.getTracks().forEach(t => t.stop()); stream = null; }
-    if (simEs)   { simEs.close(); simEs = null; }
-    simImg.src = '';
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    status.textContent = 'Stopped.';
-    startBtn.disabled = false;
-    stopBtn.disabled  = true;
-  });
-})();
-</script>
-
-<!-- =========================================================================
-     Module 1 — Perception: webcamManager + mediapipeHandler
-     Runs entirely in-browser; no server required.
-========================================================================== -->
-<script type="module">
-'use strict';
-
-// ---------------------------------------------------------------------------
-// MediaPipe CDN constants (tasks-vision 0.10.22 is stable and well-tested)
-// ---------------------------------------------------------------------------
-const MEDIAPIPE_CDN  = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/';
-const MODEL_URL      = 'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/latest/hand_landmarker.task';
-
-// ---------------------------------------------------------------------------
-// webcamManager — getUserMedia lifecycle
-// Exposed on window so Module 4 (task 22.5) can call start/stop/getCanvas.
-// ---------------------------------------------------------------------------
-const webcamManager = (() => {
-  const video  = document.getElementById('m1-video');
-  const canvas = document.getElementById('m1-canvas');
-  const ctx    = canvas.getContext('2d');
-
-  let stream  = null;
-  let rafId   = null;
-  let _onFrame = null;   // callback(ctx, video, timestamp)
-
-  /** Start camera and feed frames into the provided callback each rAF. */
-  async function start(onFrame) {
-    if (stream) return;   // already running
-    _onFrame = onFrame;
-    stream = await navigator.mediaDevices.getUserMedia({
-      video: { width: 320, height: 240, facingMode: 'user' }
-    });
-    video.srcObject = stream;
-    await video.play();
-    _loop();
-  }
-
-  function _loop() {
-    rafId = requestAnimationFrame((ts) => {
-      if (!stream) return;
-      if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        if (_onFrame) _onFrame(ctx, video, ts);
-      }
-      _loop();
-    });
-  }
-
-  function stop() {
-    if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
-    if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
-    if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
-  }
-
-  /** Returns the overlay canvas so callers can draw on it. */
-  function getCanvas() { return canvas; }
-
-  return { start, stop, getCanvas };
-})();
-
-window.webcamManager = webcamManager;
-
-
-// ---------------------------------------------------------------------------
-// mediapipeHandler — HandLandmarker init, joint angle computation, overlay
-// Exposed on window so Module 4 can pull latest landmarks.
-// ---------------------------------------------------------------------------
-const mediapipeHandler = (() => {
-  let handLandmarker = null;
-  let latestResult   = null;
-  let lastTs         = -1;
-  let drawingUtils   = null;
-  let HandLandmarkerClass = null;   // hoisted so _processResult can use HAND_CONNECTIONS
-
-  // DOM refs
-  const stateVec  = document.getElementById('m1-state-vector');
-  const startBtn  = document.getElementById('m1-start-btn');
-  const stopBtn   = document.getElementById('m1-stop-btn');
-  const statusEl  = document.getElementById('m1-status');
-
-  // ---- Angle formula (dot-product, using Math.atan2 per design spec) ----
-  // Computes the angle at vertex V between rays V→A and V→B.
-  // Using atan2(|u×v|, u·v) matches the Python Math.atan2 spec exactly
-  // and handles the full [0°, 180°] range without acos domain issues.
-  function computeAngle(ax, ay, vx, vy, bx, by) {
-    const ux = ax - vx, uy = ay - vy;
-    const wx = bx - vx, wy = by - vy;
-    const cross = ux * wy - uy * wx;   // |u × w| (2D pseudo-cross product)
-    const dot   = ux * wx + uy * wy;
-    return (Math.atan2(Math.abs(cross), dot) * 180) / Math.PI;
-  }
-
-  // ---- Lazy initialisation ----
-  async function _init() {
-    statusEl.textContent = 'Loading model…';
-    const { HandLandmarker, FilesetResolver, DrawingUtils } = await import(
-      MEDIAPIPE_CDN + 'vision_bundle.mjs'
-    );
-    HandLandmarkerClass = HandLandmarker;   // hoist for use in _processResult
-    const filesetResolver = await FilesetResolver.forVisionTasks(
-      MEDIAPIPE_CDN + 'wasm'
-    );
-    handLandmarker = await HandLandmarker.createFromOptions(filesetResolver, {
-      baseOptions:    { modelAssetPath: MODEL_URL },   // let MediaPipe pick delegate
-      runningMode:    'LIVE_STREAM',
-      numHands:       2,
-      resultCallback: (result, _image, ts) => {
-        latestResult = result;
-        _processResult(result);
-      }
-    });
-    // DrawingUtils requires a canvas rendering context; we keep a reference
-    // for use in the per-frame callback below.
-    const canvas = webcamManager.getCanvas();
-    drawingUtils = new DrawingUtils(canvas.getContext('2d'));
-    statusEl.textContent = '';
-  }
-
-  // ---- Process a landmark result (runs in result callback) ----
-  function _processResult(result) {
-    const canvas = webcamManager.getCanvas();
-    const ctx    = canvas.getContext('2d');
-
-    if (!result.landmarks || result.landmarks.length === 0) {
-      stateVec.textContent = '— no hand detected —';
-      return;
-    }
-
-    for (const landmarks of result.landmarks) {
-      // Draw connections and landmark dots using DrawingUtils
-      drawingUtils.drawConnectors(
-        landmarks,
-        HandLandmarkerClass.HAND_CONNECTIONS,
-        { color: '#38bdf8', lineWidth: 2 }
-      );
-      drawingUtils.drawLandmarks(landmarks, { color: '#5b6af0', radius: 3 });
-    }
-
-    // Compute angles for the first detected hand
-    const lm = result.landmarks[0];
-    // MCP joint angles: wrist (0) → MCP (base) → PIP (next)
-    const tThumb  = computeAngle(lm[0].x, lm[0].y, lm[1].x, lm[1].y, lm[2].x, lm[2].y);
-    const tIndex  = computeAngle(lm[0].x, lm[0].y, lm[5].x, lm[5].y, lm[6].x, lm[6].y);
-    const tMiddle = computeAngle(lm[0].x, lm[0].y, lm[9].x, lm[9].y, lm[10].x, lm[10].y);
-    stateVec.textContent =
-      `[${tThumb.toFixed(1)}, ${tIndex.toFixed(1)}, ${tMiddle.toFixed(1)}]`;
-  }
-
-  // ---- Per-frame callback passed to webcamManager ----
-  function onFrame(_ctx, video, ts) {
-    if (!handLandmarker) return;
-    if (ts <= lastTs) return;   // guard: timestamps must be strictly increasing
-    lastTs = ts;
-    handLandmarker.detectForVideo(video, ts);
-  }
-
-  // ---- Public API ----
-  async function start() {
-    startBtn.disabled = true;
-    try {
-      await _init();
-      await webcamManager.start(onFrame);
-      stopBtn.disabled  = false;
-    } catch (err) {
-      stateVec.textContent = 'Error: ' + err.message;
-      statusEl.textContent = '';
-      startBtn.disabled = false;
-    }
-  }
-
-  function stop() {
-    webcamManager.stop();
-    stateVec.textContent = '—';
-    startBtn.disabled    = false;
-    stopBtn.disabled     = true;
-    lastTs = -1;
-  }
-
-  /** Returns the latest HandLandmarkerResult (for Module 4 reuse). */
-  function getLatestResult() { return latestResult; }
-
-  return { start, stop, getLatestResult };
-})();
-
-window.mediapipeHandler = mediapipeHandler;
-
-
-// ---------------------------------------------------------------------------
-// Wire up buttons for Module 1
-// ---------------------------------------------------------------------------
-document.getElementById('m1-start-btn').addEventListener('click', () => {
-  mediapipeHandler.start();
-});
-
-document.getElementById('m1-stop-btn').addEventListener('click', () => {
-  mediapipeHandler.stop();
-});
-
-</script>
+<script type="module" src="js/hub-config.js"></script>
+<script type="module" src="js/module-2.js"></script>
+<script type="module" src="js/module-5.js"></script>
+<script type="module" src="js/module-4.js"></script>
+<script type="module" src="js/module-1.js"></script>
 
 </body>
 </html>

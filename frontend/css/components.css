@@ -1,0 +1,214 @@
+/* ==========================================================================
+   components.css — Reusable UI components
+   Sidebar, cards, schedule table, status badges, form elements, buttons
+   Physical AI Workshop Hub
+   ========================================================================== */
+
+/* -----------------------------------------------------------------------
+   Sidebar
+----------------------------------------------------------------------- */
+#sidebar {
+  grid-column: 1;
+  grid-row: 2;
+  background: var(--color-sidebar);
+  border-right: 1px solid var(--color-border);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  padding: 24px 0;
+}
+
+#sidebar h2 {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  padding: 0 18px 10px;
+}
+
+#sidebar nav a {
+  display: block;
+  padding: 8px 18px;
+  color: var(--color-text);
+  text-decoration: none;
+  font-size: 0.88rem;
+  border-left: 3px solid transparent;
+  transition: background 0.15s, border-color 0.15s;
+}
+#sidebar nav a:hover {
+  background: rgba(180, 83, 9, 0.07);
+  color: var(--color-accent);
+}
+#sidebar nav a.active {
+  border-left-color: var(--color-accent);
+  color: var(--color-accent);
+  background: rgba(180, 83, 9, 0.07);
+}
+
+#sidebar .sidebar-section {
+  margin-top: 18px;
+  border-top: 1px solid var(--color-border);
+  padding-top: 14px;
+}
+
+/* -----------------------------------------------------------------------
+   Cards / panels
+----------------------------------------------------------------------- */
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.card h3 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: var(--color-accent);
+}
+
+.card p, .card li {
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: var(--color-text);
+}
+
+.card ul { margin-left: 18px; }
+
+/* -----------------------------------------------------------------------
+   Schedule table
+----------------------------------------------------------------------- */
+.schedule-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.schedule-table th {
+  text-align: left;
+  padding: 8px 14px;
+  background: var(--color-bg);
+  color: var(--color-muted);
+  font-weight: 600;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.schedule-table td {
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: top;
+}
+
+.schedule-table tr:last-child td { border-bottom: none; }
+
+.schedule-table td:first-child {
+  font-weight: 600;
+  color: var(--color-accent);
+  white-space: nowrap;
+}
+
+.schedule-table td:nth-child(2) {
+  color: var(--color-muted);
+  white-space: nowrap;
+}
+
+.schedule-table tr.buffer td { color: var(--color-muted); font-style: italic; }
+
+/* -----------------------------------------------------------------------
+   Setup section — status badges
+----------------------------------------------------------------------- */
+.status-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  font-size: 0.88rem;
+  border-bottom: 1px solid var(--color-border);
+}
+.status-row:last-of-type { border-bottom: none; }
+
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.badge.ok      { background: var(--color-ok-bg);   color: var(--color-ok); }
+.badge.warn    { background: var(--color-warn-bg);  color: var(--color-warn); }
+.badge.error   { background: var(--color-error-bg); color: var(--color-error); }
+.badge.checking { background: var(--color-border);  color: var(--color-muted); }
+
+/* -----------------------------------------------------------------------
+   Form elements
+----------------------------------------------------------------------- */
+label {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--color-muted);
+  margin-bottom: 5px;
+}
+
+input[type="text"], input[type="password"] {
+  width: 100%;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  color: var(--color-text);
+  padding: 8px 12px;
+  font-size: 0.88rem;
+  font-family: var(--font-mono);
+  transition: border-color 0.15s;
+}
+
+input[type="text"]:focus, input[type="password"]:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+button {
+  padding: 8px 18px;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-weight: 600;
+  font-family: var(--font);
+  transition: opacity 0.15s, background 0.15s;
+}
+
+button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--color-accent);
+  color: #fff;
+}
+.btn-primary:hover:not(:disabled) { opacity: 0.9; }
+
+.btn-secondary {
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border-strong);
+}
+.btn-secondary:hover:not(:disabled) { background: var(--color-bg); }
+
+/* -----------------------------------------------------------------------
+   Coming-soon placeholder
+----------------------------------------------------------------------- */
+.coming-soon {
+  background: var(--color-bg);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius);
+  padding: 28px 24px;
+  color: var(--color-muted);
+  font-size: 0.88rem;
+  text-align: center;
+}

@@ -57,17 +57,19 @@ def free_port(port: int) -> None:
 
 
 def launch_server() -> None:
-    """Open a new cmd window running the API server with the venv Python."""
-    title = "Physical AI Workshop Hub"
-    # Use sys.executable so we always use the venv Python, not whatever is on
-    # PATH.  /k keeps the window open after the server exits so errors are
-    # visible; /d sets the working directory so relative imports in server.py
-    # resolve correctly.
-    cmd = (
-        f'start "{title}" cmd /k '
-        f'"{sys.executable}" "{SERVER}"'
+    """Open a new console window running the API server with the venv Python.
+
+    Uses ``subprocess.Popen`` with ``CREATE_NEW_CONSOLE`` (Windows flag
+    ``0x10``) so the server gets its own visible terminal without requiring
+    the ``start`` shell built-in, which can block in some environments
+    (e.g. VS Code integrated terminal, Kiro terminal).
+    """
+    CREATE_NEW_CONSOLE = 0x00000010
+    subprocess.Popen(
+        [sys.executable, str(SERVER)],
+        cwd=Path(__file__).parent,
+        creationflags=CREATE_NEW_CONSOLE,
     )
-    subprocess.Popen(cmd, shell=True, cwd=Path(__file__).parent)
 
 
 def wait_for_server(timeout: float = HEALTH_TIMEOUT_S) -> bool:

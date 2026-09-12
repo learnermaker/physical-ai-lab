@@ -1,0 +1,162 @@
+/* ==========================================================================
+   base.css — Reset, CSS custom properties, typography, layout grid, utilities
+   Physical AI Workshop Hub
+   ========================================================================== */
+
+/* -----------------------------------------------------------------------
+   Reset & base
+----------------------------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --sidebar-w: 220px;
+  --banner-h: 0px;          /* set to 48px by JS when server is down */
+
+  /* Warm editorial palette */
+  --color-bg:       #faf9f6;
+  --color-surface:  #ffffff;
+  --color-sidebar:  #f3f0ea;
+  --color-border:   #e5e2dc;
+  --color-border-strong: #c8c4bb;
+  --color-accent:   #b45309;   /* warm amber-brown — primary interactive colour */
+  --color-accent2:  #b45309;   /* unified: was electric blue, now same warm amber */
+  --color-text:     #1c1917;
+  --color-muted:    #78716c;
+  --color-code-bg:  #f5f3ee;
+  --color-code-border: #d6d0c4;
+
+  /* Status colours — muted, print-like */
+  --color-ok:       #166534;
+  --color-ok-bg:    #f0fdf4;
+  --color-warn:     #92400e;
+  --color-warn-bg:  #fffbeb;
+  --color-error:    #991b1b;
+  --color-error-bg: #fef2f2;
+
+  --radius: 5px;
+  --font: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Consolas', 'JetBrains Mono', monospace;
+}
+
+html { font-size: 15px; scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font);
+  background: var(--color-bg);
+  color: var(--color-text);
+  display: grid;
+  grid-template-columns: var(--sidebar-w) 1fr;
+  grid-template-rows: auto 1fr;
+  min-height: 100vh;
+}
+
+/* -----------------------------------------------------------------------
+   Server-not-running banner (full-width, row 1)
+----------------------------------------------------------------------- */
+#server-banner {
+  display: none;             /* JS shows/hides */
+  grid-column: 1 / -1;
+  background: #7c2d12;
+  color: #fde68a;
+  padding: 10px 20px;
+  font-size: 0.9rem;
+  text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+#server-banner code {
+  background: rgba(0,0,0,0.2);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: var(--font-mono);
+}
+body.server-down #server-banner { display: block; }
+
+/* -----------------------------------------------------------------------
+   Main content area
+----------------------------------------------------------------------- */
+#content {
+  grid-column: 2;
+  grid-row: 2;
+  padding: 32px 40px;
+  overflow-y: auto;
+  max-width: 960px;
+}
+
+section {
+  margin-bottom: 56px;
+  scroll-margin-top: 20px;
+}
+
+section h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: var(--color-text);
+  font-family: Georgia, 'Lora', serif;
+}
+
+section > .section-subtitle {
+  color: var(--color-muted);
+  font-size: 0.88rem;
+  margin-bottom: 20px;
+}
+
+/* -----------------------------------------------------------------------
+   Two-column layout (Module 1, Module 4)
+----------------------------------------------------------------------- */
+.two-col {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.panel {
+  flex: 1;
+  min-width: 280px;
+}
+
+/* -----------------------------------------------------------------------
+   Next steps links
+----------------------------------------------------------------------- */
+.next-steps a {
+  color: var(--color-accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+.next-steps a:hover { text-decoration: underline; }
+
+/* -----------------------------------------------------------------------
+   Utility
+----------------------------------------------------------------------- */
+.mt-12 { margin-top: 12px; }
+.mt-16 { margin-top: 16px; }
+.mt-20 { margin-top: 20px; }
+
+code {
+  font-family: var(--font-mono);
+  background: var(--color-code-bg);
+  border: 1px solid var(--color-code-border);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 0.85em;
+  color: #44403c;
+}
+
+pre {
+  background: var(--color-code-bg);
+  border-left: 3px solid var(--color-border-strong);
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  overflow-x: auto;
+}
+
+/* pre > code inherits pre's background — remove double border */
+pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: inherit;
+  color: inherit;
+}
