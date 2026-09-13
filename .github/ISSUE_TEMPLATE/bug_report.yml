@@ -1,0 +1,82 @@
+name: Bug report
+description: Something broken — script error, setup failure, wrong output.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report this. Fill in what you can — the more detail, the faster it gets fixed.
+
+  - type: dropdown
+    id: module
+    attributes:
+      label: Which module or file?
+      options:
+        - setup.bat / setup.sh
+        - verify_install.py
+        - start_hub.bat / start_hub.py
+        - Module 0 — Kickoff
+        - Module 1 — Perception
+        - Module 2 — Simulation
+        - Module 3 — Reinforcement Learning
+        - Module 4 — Perception to Action
+        - Module 5 — Foundation Models
+        - Module 6 — Wrap-up
+        - Hub frontend (browser)
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Paste the full error message or describe the wrong behaviour.
+      placeholder: "e.g. setup.bat exits at step 4 with: ERROR: Could not find a version that satisfies the requirement mujoco>=3.1"
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+      placeholder: "e.g. All packages install and verify_install.py shows 14/14 PASS"
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Double-click setup.bat
+        2. Wait until step 4
+        3. Error appears
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: "e.g. Windows 11 Home 23H2, or macOS 14.5"
+    validations:
+      required: true
+
+  - type: input
+    id: python
+    attributes:
+      label: Python version
+      description: Run `python --version` in the repo folder.
+      placeholder: "e.g. Python 3.12.3"
+    validations:
+      required: false
+
+  - type: textarea
+    id: verify-output
+    attributes:
+      label: verify_install.py output (if applicable)
+      description: Paste the full output of `python verify_install.py`.
+      render: text
+    validations:
+      required: false

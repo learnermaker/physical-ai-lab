@@ -1,0 +1,57 @@
+name: Improvement or content suggestion
+description: A better explanation, a new exercise idea, a platform fix, or a new module suggestion.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Suggestions that fit the 3-hour, no-GPU, Windows-first scope of this workshop are most likely to be acted on.
+        Unsure if something fits? Open the issue anyway and we can discuss.
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Type of suggestion
+      options:
+        - Clearer explanation or documentation
+        - New exercise or challenge
+        - Platform / compatibility fix (Mac, Linux, ARM64)
+        - New module idea
+        - Dependency update
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: module
+    attributes:
+      label: Which module does this relate to?
+      options:
+        - General / setup
+        - Module 0 — Kickoff
+        - Module 1 — Perception
+        - Module 2 — Simulation
+        - Module 3 — Reinforcement Learning
+        - Module 4 — Perception to Action
+        - Module 5 — Foundation Models
+        - Module 6 — Wrap-up
+        - Hub frontend
+        - Not module-specific
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe your suggestion
+      description: What would you change or add, and why?
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you considered
+      description: Any other approaches you thought of?
+    validations:
+      required: false
