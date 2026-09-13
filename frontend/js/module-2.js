@@ -37,11 +37,39 @@
     es = new EventSource(`/api/simulation/stream?action=${currentAction()}`);
 
     es.onmessage = (e) => {
-      const src = 'data:image/jpeg;base64,' + e.data;
+      // Frames are tagged "gpu|<b64>" or "software|<b64>" by the server.
+      const pipeIdx = e.data.indexOf('|');
+      const renderMode = pipeIdx > -1 ? e.data.substring(0, pipeIdx) : 'gpu';
+      const b64 = pipeIdx > -1 ? e.data.substring(pipeIdx + 1) : e.data;
+
+      const src = 'data:image/jpeg;base64,' + b64;
       frameImg.src = src;
       if (overlay.style.display === 'flex') overlayImg.src = src;
+
+      // Detect the "Simulation busy" sentinel frame — stop auto-retrying,
+      // show a plain stop state so the user clicks Start themselves after
+      // stopping any other active stream.
+      // The busy frame is small (~4k b64); real status frames are 15k+.
+      // We check frame size before updating status so there's no race.
+      if (b64.length < 8000) {
+        // Small frame = busy sentinel — stop the retry loop immediately
+        isRunning = false;
+        startBtn.disabled  = false;
+        stopBtn.disabled   = true;
+        expandBtn.disabled = true;
+        sliders.style.display = 'none';
+        legend.style.display  = 'none';
+        frameImg.src = src;
+        status.textContent = 'Simulation busy \u2014 another stream is running. Stop any active simulation, then click Start again.';
+        if (es) { es.close(); es = null; }
+        return;
+      }
+
+      const renderBadge = renderMode === 'software'
+        ? '  \u00b7  \u26a0\ufe0f software render (no GPU)'
+        : '';
       status.textContent =
-        `Streaming at ~20 fps  |  \u03c4\u2081=${t0Input.value}  \u03c4\u2082=${t1Input.value}`;
+        `Streaming at ~20 fps  |  \u03c4\u2081=${t0Input.value}  \u03c4\u2082=${t1Input.value}${renderBadge}`;
     };
 
     es.onerror = () => {

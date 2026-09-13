@@ -1,6 +1,5 @@
 /* ==========================================================================
    modules.css — Module-specific and content-area styles
-   Pipeline diagram, state-table, concept-table
    Physical AI Workshop Hub
    ========================================================================== */
 
@@ -73,3 +72,273 @@
 }
 
 .concept-table tr:last-child td { border-bottom: none; }
+
+/* -----------------------------------------------------------------------
+   Concept card — lightweight inline explainer within a module
+   Use inside .card; gives a left-accent stripe + tinted background
+----------------------------------------------------------------------- */
+.concept-card {
+  background: #f0f4ff;
+  border: 1px solid #c5cff5;
+  border-left: 4px solid #5b6af0;
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  margin: 14px 0;
+}
+
+.concept-card h4 {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #3b4ace;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.concept-card p,
+.concept-card li {
+  font-size: 0.85rem;
+  line-height: 1.65;
+  color: var(--color-text);
+}
+
+.concept-card ul {
+  margin: 6px 0 0 18px;
+}
+
+.concept-card code {
+  background: rgba(91, 106, 240, 0.1);
+  border: none;
+  color: #3b4ace;
+  padding: 1px 5px;
+}
+
+/* -----------------------------------------------------------------------
+   Callout box — a highlighted fact or "key insight" pull-quote
+----------------------------------------------------------------------- */
+.callout-box {
+  background: #fffbeb;
+  border: 1px solid #f0c14b;
+  border-left: 4px solid #b45309;
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  margin: 12px 0;
+  font-size: 0.85rem;
+  color: var(--color-text);
+  line-height: 1.6;
+}
+
+.callout-box strong {
+  color: var(--color-accent);
+}
+
+/* -----------------------------------------------------------------------
+   Challenge card — "For the nerdy" and "Super nerdy" exercise prompts
+----------------------------------------------------------------------- */
+.challenge-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  margin-top: 12px;
+  overflow: hidden;
+}
+
+.challenge-card .challenge-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  user-select: none;
+}
+
+.challenge-card.nerdy .challenge-header {
+  background: #f0f9ff;
+  color: #0369a1;
+  border-bottom: 1px solid #bae6fd;
+}
+
+.challenge-card.super-nerdy .challenge-header {
+  background: #fdf4ff;
+  color: #7e22ce;
+  border-bottom: 1px solid #e9d5ff;
+}
+
+.challenge-card .challenge-header .chevron {
+  margin-left: auto;
+  transition: transform 0.2s;
+  font-size: 0.75rem;
+  opacity: 0.6;
+}
+
+.challenge-card.open .challenge-header .chevron {
+  transform: rotate(180deg);
+}
+
+.challenge-card .challenge-body {
+  display: none;
+  padding: 14px 18px;
+  font-size: 0.85rem;
+  line-height: 1.65;
+  color: var(--color-text);
+  background: var(--color-surface);
+}
+
+.challenge-card.open .challenge-body {
+  display: block;
+}
+
+.challenge-card .challenge-body ol {
+  margin: 6px 0 0 20px;
+}
+
+.challenge-card .challenge-body li {
+  margin-bottom: 4px;
+}
+
+.challenge-card .challenge-body code {
+  font-size: 0.82rem;
+}
+
+/* -----------------------------------------------------------------------
+   Landmark diagram — SVG-based hand diagram in Module 1
+----------------------------------------------------------------------- */
+.landmark-diagram {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin: 12px 0;
+}
+
+.landmark-diagram svg {
+  flex-shrink: 0;
+  background: var(--color-code-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+.landmark-diagram .landmark-legend {
+  flex: 1;
+  min-width: 200px;
+}
+
+.landmark-diagram .landmark-legend table {
+  font-size: 0.82rem;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.landmark-diagram .landmark-legend td {
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: middle;
+}
+
+.landmark-diagram .landmark-legend tr:last-child td {
+  border-bottom: none;
+}
+
+.landmark-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+
+/* -----------------------------------------------------------------------
+   Server control panel (Setup section)
+----------------------------------------------------------------------- */
+.server-panel {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 20px 24px;
+  margin-bottom: 16px;
+}
+
+.server-panel h3 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-accent);
+  margin-bottom: 14px;
+}
+
+.service-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.service-tile {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.service-tile .svc-name {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.service-tile .svc-status {
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.svc-ok    { color: var(--color-ok); }
+.svc-warn  { color: var(--color-warn); }
+.svc-error { color: var(--color-error); }
+.svc-idle  { color: var(--color-muted); }
+
+.server-controls {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.server-log {
+  margin-top: 12px;
+  background: var(--color-code-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--color-muted);
+  max-height: 80px;
+  overflow-y: auto;
+  display: none;
+}
+
+.server-log.visible { display: block; }
+
+/* -----------------------------------------------------------------------
+   Equation / formula display
+----------------------------------------------------------------------- */
+.formula-block {
+  background: var(--color-code-bg);
+  border: 1px solid var(--color-code-border);
+  border-radius: var(--radius);
+  padding: 10px 16px;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--color-text);
+  margin: 8px 0;
+  text-align: center;
+  letter-spacing: 0.02em;
+}

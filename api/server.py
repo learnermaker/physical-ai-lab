@@ -122,15 +122,46 @@ app.add_middleware(SecurityHeadersMiddleware)
 # The training thread puts progress dicts; the SSE endpoint consumes them.
 _jobs: dict[str, queue.Queue] = {}
 
+# Concurrency guard for simulation stream — one active MuJoCo env at a time.
+# MuJoCo's GLFW/EGL context is not safe to use from multiple concurrent threads.
+_sim_lock = threading.Semaphore(1)
+
 
 @app.get("/api/config")
 async def get_config() -> JSONResponse:
-    """Return whether a Gemini API key is configured server-side.
-
-    The key value itself is never returned — only a boolean presence flag.
-    Requirements: 19.3
-    """
+    """Return whether a Gemini API key is configured server-side."""
     return JSONResponse({"gemini_key_configured": _GEMINI_API_KEY is not None})
+
+
+@app.get("/api/status")
+async def get_status() -> JSONResponse:
+    """Return a detailed health snapshot of all services.
+
+    Used by the hub's server-control panel to show per-service status without
+    requiring a full page reload.  Never raises — always returns 200 so the
+    client can always read the response.
+    """
+    import importlib  # noqa: PLC0415
+
+    # Check each optional dependency can be imported
+    dep_ok: dict[str, bool] = {}
+    for pkg in ("gymnasium", "mujoco", "stable_baselines3", "google.genai", "mediapipe"):
+        try:
+            importlib.import_module(pkg)
+            dep_ok[pkg] = True
+        except ImportError:
+            dep_ok[pkg] = False
+
+    active_jobs = {jid: not q.empty() for jid, q in list(_jobs.items())}
+    return JSONResponse({
+        "server": "ok",
+        "uptime_s": None,          # placeholder — could add a startup timestamp later
+        "gemini_key_configured": _GEMINI_API_KEY is not None,
+        "gemini_cache_loaded": bool(_CACHE),
+        "active_training_jobs": len([v for v in active_jobs.values() if v]),
+        "total_training_jobs": len(active_jobs),
+        "deps": dep_ok,
+    })
 
 
 # --- Stubs for tasks 21.2 – 21.4 (return 501 until implemented) -----------
@@ -372,7 +403,34 @@ async def simulation_stream(action: str = Query("0.0,0.0")):
     frame_queue: queue.Queue = queue.Queue(maxsize=4)
 
     def _env_worker() -> None:
-        """Runs entirely in one dedicated thread — no shared thread-pool."""
+        """Runs entirely in one dedicated thread — no shared thread-pool.
+        Acquires _sim_lock to prevent concurrent MuJoCo instances.
+        """
+        # If another stream is already running, send an error frame immediately
+        # and exit — don't crash with NULL pointer access.
+        acquired = _sim_lock.acquire(blocking=False)
+        if not acquired:
+            try:
+                import io as _io  # noqa: PLC0415
+                from PIL import Image, ImageDraw as _ID  # noqa: PLC0415
+                img = Image.new("RGB", (400, 80), color=(60, 40, 10))
+                d = _ID.Draw(img)
+                d.text((16, 12), "Simulation busy", fill=(255, 220, 100))
+                d.text((16, 32), "Another stream is already running.", fill=(220, 190, 80))
+                d.text((16, 52), "Stop the current simulation, then start again.", fill=(180, 150, 60))
+                buf = _io.BytesIO()
+                img.save(buf, format="JPEG", quality=70)
+                # Send the error frame and hold the connection open briefly so the
+                # browser shows it.  Do NOT put _STOP immediately — that would
+                # trigger the JS auto-retry loop.
+                frame_queue.put("software|" + base64.b64encode(buf.getvalue()).decode("ascii"))
+                import time as _t  # noqa: PLC0415
+                _t.sleep(1)  # keep connection alive briefly so user sees the message
+            except Exception:
+                pass
+            frame_queue.put(_STOP)
+            return
+
         env = None
         try:
             from utils.gym_utils import make_env  # noqa: PLC0415
@@ -385,6 +443,15 @@ async def simulation_stream(action: str = Query("0.0,0.0")):
             obs, _ = env.reset()
 
             while True:
+                # Check if consumer has gone away (stop sentinel poisoned the queue)
+                if not frame_queue.empty():
+                    try:
+                        peeked = frame_queue.queue[0]
+                        if peeked is _STOP:
+                            return   # consumer cancelled — exit worker cleanly
+                    except IndexError:
+                        pass
+
                 # Check if the consumer has gone away
                 if frame_queue.full():
                     # Drop oldest frame rather than block — keeps latency low
@@ -407,7 +474,7 @@ async def simulation_stream(action: str = Query("0.0,0.0")):
                             )
                             if ok:
                                 frame_queue.put(
-                                    base64.b64encode(buf.tobytes()).decode("ascii")
+                                    "gpu|" + base64.b64encode(buf.tobytes()).decode("ascii")
                                 )
                                 import time as _time  # noqa: PLC0415
                                 _time.sleep(0.05)
@@ -424,7 +491,8 @@ async def simulation_stream(action: str = Query("0.0,0.0")):
                 # PIL status-frame path (no GPU)
                 step_n = getattr(_env_worker, "_step", 0)
                 _env_worker._step = step_n + 1
-                frame_queue.put(_make_status_frame(obs, action_array, step_n))
+                # Tag the frame so the browser knows it's software-rendered
+                frame_queue.put("software|" + _make_status_frame(obs, action_array, step_n))
 
                 import time as _time  # noqa: PLC0415
                 _time.sleep(0.05)
@@ -451,6 +519,7 @@ async def simulation_stream(action: str = Query("0.0,0.0")):
                     env.close()
                 except Exception:
                     pass
+            _sim_lock.release()
             frame_queue.put(_STOP)
 
     # Start the dedicated worker thread
@@ -494,6 +563,10 @@ async def training_start() -> JSONResponse:
     """
     job_id = str(uuid.uuid4())
     job_queue: queue.Queue = queue.Queue()
+    # Cap job registry to prevent unbounded memory growth across a workshop session
+    if len(_jobs) >= 20:
+        oldest = next(iter(_jobs))
+        _jobs.pop(oldest, None)
     _jobs[job_id] = job_queue
 
     def _run_training(jq: queue.Queue) -> None:
@@ -536,7 +609,7 @@ async def training_progress(job_id: str):
     job_queue = _jobs[job_id]
 
     async def event_stream():
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()   # was get_event_loop() — deprecated Python 3.10+
         while True:
             try:
                 item = await loop.run_in_executor(
@@ -544,9 +617,13 @@ async def training_progress(job_id: str):
                 )
                 yield f"data: {json.dumps(item)}\n\n"
                 if item.get("done"):
+                    # Surface training error explicitly so the browser can distinguish
+                    # "Training complete!" from "Training failed: <reason>"
                     break
             except queue.Empty:
                 yield "event: heartbeat\ndata: {}\n\n"
+        # Remove completed job from registry to prevent unbounded growth
+        _jobs.pop(job_id, None)
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")
 
@@ -568,7 +645,11 @@ async def gemini_describe(req: GeminiDescribeRequest) -> JSONResponse:
         _describe_fallbacks = ["A scene captured from the workshop camera."]
 
     if not key:
-        return JSONResponse({"text": random.choice(_describe_fallbacks)})
+        return JSONResponse({
+            "text": random.choice(_describe_fallbacks),
+            "_source": "cache",
+            "_reason": "no_api_key",
+        })
 
     try:
         jpg_bytes = base64.b64decode(req.frame_b64)
@@ -582,10 +663,14 @@ async def gemini_describe(req: GeminiDescribeRequest) -> JSONResponse:
             model="gemini-2.5-flash-lite",
             contents=["Describe this scene in one sentence.", image_part],
         )
-        return JSONResponse({"text": response.text})
+        return JSONResponse({"text": response.text, "_source": "gemini"})
     except Exception as exc:
         print(f"[Gemini describe error] {exc}", file=sys.stderr)
-        return JSONResponse({"text": random.choice(_describe_fallbacks)})
+        return JSONResponse({
+            "text": random.choice(_describe_fallbacks),
+            "_source": "cache",
+            "_reason": str(exc)[:120],
+        })
 
 
 @app.post("/api/gemini/action")
@@ -606,7 +691,11 @@ async def gemini_action(req: GeminiActionRequest) -> JSONResponse:
         action_entries = [{"action": "WAIT", "reason": "No action entries in cache."}]
 
     if not key:
-        return JSONResponse(random.choice(action_entries))
+        return JSONResponse({
+            **random.choice(action_entries),
+            "_source": "cache",
+            "_reason": "no_api_key",
+        })
 
     try:
         jpg_bytes = base64.b64decode(req.frame_b64)
@@ -633,10 +722,14 @@ async def gemini_action(req: GeminiActionRequest) -> JSONResponse:
         if "action" not in result:
             raise ValueError(f"Response missing 'action' key: {result}")
 
-        return JSONResponse(result)
+        return JSONResponse({**result, "_source": "gemini"})
     except Exception as exc:
         print(f"[Gemini action error] {exc}", file=sys.stderr)
-        return JSONResponse(random.choice(action_entries))
+        return JSONResponse({
+            **random.choice(action_entries),
+            "_source": "cache",
+            "_reason": str(exc)[:120],
+        })
 
 
 # ---------------------------------------------------------------------------

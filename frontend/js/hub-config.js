@@ -5,7 +5,8 @@
  *   window.hubConfig   — API key management + /api/config fetch
  *
  * Also initialises (no export needed):
- *   serverCheck        — polls /api/config, updates badges + banner
+ *   serverCheck        — polls /api/status, updates all service badges
+ *   serverControl      — restart/stop button handlers in the Setup panel
  *   API key UI         — save / clear / test key handlers
  *   sidebar nav        — IntersectionObserver active-link tracking
  *   Module 3 chart     — PPO CartPole training chart + SSE progress
@@ -18,85 +19,170 @@
 const hubConfig = (() => {
   const KEY_NAME = 'gemini_api_key';
 
-  function getApiKey() {
-    return sessionStorage.getItem(KEY_NAME) || null;
-  }
+  function getApiKey() { return sessionStorage.getItem(KEY_NAME) || null; }
 
   function setApiKey(key) {
     const trimmed = (key || '').trim();
-    if (trimmed) {
-      sessionStorage.setItem(KEY_NAME, trimmed);
-    } else {
-      sessionStorage.removeItem(KEY_NAME);
-    }
+    trimmed ? sessionStorage.setItem(KEY_NAME, trimmed) : sessionStorage.removeItem(KEY_NAME);
   }
 
-  function clearApiKey() {
-    sessionStorage.removeItem(KEY_NAME);
-  }
+  function clearApiKey() { sessionStorage.removeItem(KEY_NAME); }
 
   async function fetchConfig() {
     try {
       const res = await fetch('/api/config', { signal: AbortSignal.timeout(4000) });
       if (!res.ok) return null;
       return await res.json();
-    } catch {
-      return null;
-    }
+    } catch { return null; }
   }
 
-  return { getApiKey, setApiKey, clearApiKey, fetchConfig };
+  async function fetchStatus() {
+    try {
+      const res = await fetch('/api/status', { signal: AbortSignal.timeout(5000) });
+      if (!res.ok) return null;
+      return await res.json();
+    } catch { return null; }
+  }
+
+  return { getApiKey, setApiKey, clearApiKey, fetchConfig, fetchStatus };
 })();
 
 window.hubConfig = hubConfig;
 
 
 // ---------------------------------------------------------------------------
-// serverCheck — poll /api/config on load, update banner + status badges
+// serverCheck — poll /api/status every 10 s, update all service tiles + banner
 // ---------------------------------------------------------------------------
 const serverCheck = (() => {
-  const banner         = document.getElementById('server-banner');
   const serverBadge    = document.getElementById('server-badge');
   const geminiSvrBadge = document.getElementById('gemini-server-badge');
 
-  function setBadge(el, state, text) {
-    el.className = `badge ${state}`;
+  // Service tile elements (Setup panel)
+  const tiles = {
+    server:      document.getElementById('svc-server'),
+    mujoco:      document.getElementById('svc-mujoco'),
+    gymnasium:   document.getElementById('svc-gymnasium'),
+    sb3:         document.getElementById('svc-sb3'),
+    gemini:      document.getElementById('svc-gemini'),
+    mediapipe:   document.getElementById('svc-mediapipe'),
+    training:    document.getElementById('svc-training'),
+  };
+
+  function setTile(id, cls, text) {
+    const el = tiles[id];
+    if (!el) return;
+    const s = el.querySelector('.svc-status');
+    if (s) {
+      s.className = 'svc-status ' + cls;
+      s.textContent = text;
+      // Add contextual tooltip for the Gemini tile
+      if (id === 'gemini' && cls === 'svc-warn') {
+        s.title = 'Cache only — pre-written responses are returned. The model is NOT analysing your camera frame. Set a valid API key (below) to enable live inference.';
+      } else if (id === 'gemini' && cls === 'svc-ok') {
+        s.title = 'Live key configured — Gemini will analyse real camera frames when called from Module 5.';
+      } else if (id === 'gemini' && cls === 'svc-error') {
+        s.title = 'No key and no cache — Module 5 Gemini calls will return an error.';
+      }
+    }
+  }
+
+  function setBadge(el, cls, text) {
+    if (!el) return;
+    el.className = 'badge ' + cls;
     el.textContent = text;
   }
 
   function disableServerControls() {
-    document.querySelectorAll('[data-requires-server]').forEach(el => {
-      el.disabled = true;
-    });
+    document.querySelectorAll('[data-requires-server]').forEach(el => { el.disabled = true; });
   }
 
   function enableServerControls() {
-    document.querySelectorAll('[data-requires-server]').forEach(el => {
-      el.disabled = false;
-    });
+    document.querySelectorAll('[data-requires-server]').forEach(el => { el.disabled = false; });
   }
 
   async function check() {
-    const config = await hubConfig.fetchConfig();
-    if (!config) {
+    const status = await hubConfig.fetchStatus();
+
+    if (!status) {
       document.body.classList.add('server-down');
       setBadge(serverBadge, 'error', 'Unreachable');
       setBadge(geminiSvrBadge, 'warn', 'Unknown');
+      setTile('server',    'svc-error', 'Offline');
+      setTile('mujoco',    'svc-idle',  '—');
+      setTile('gymnasium', 'svc-idle',  '—');
+      setTile('sb3',       'svc-idle',  '—');
+      setTile('gemini',    'svc-idle',  '—');
+      setTile('mediapipe', 'svc-idle',  '—');
+      setTile('training',  'svc-idle',  '—');
       disableServerControls();
-    } else {
-      document.body.classList.remove('server-down');
-      setBadge(serverBadge, 'ok', 'Connected');
-      setBadge(geminiSvrBadge,
-        config.gemini_key_configured ? 'ok' : 'warn',
-        config.gemini_key_configured ? 'Configured' : 'Not configured');
-      enableServerControls();
+      return;
     }
+
+    document.body.classList.remove('server-down');
+    enableServerControls();
+    setBadge(serverBadge, 'ok', 'Connected');
+
+    const dep = status.deps || {};
+    setTile('server',    'svc-ok',   'Running');
+    setTile('mujoco',    dep['mujoco']            ? 'svc-ok'   : 'svc-error',
+                         dep['mujoco']            ? 'OK'       : 'Missing');
+    setTile('gymnasium', dep['gymnasium']          ? 'svc-ok'   : 'svc-error',
+                         dep['gymnasium']          ? 'OK'       : 'Missing');
+    setTile('sb3',       dep['stable_baselines3'] ? 'svc-ok'   : 'svc-error',
+                         dep['stable_baselines3'] ? 'OK'       : 'Missing');
+    setTile('mediapipe', dep['mediapipe']          ? 'svc-ok'   : 'svc-warn',
+                         dep['mediapipe']          ? 'OK'       : 'Not found');
+
+    const geminiOk = status.gemini_key_configured;
+    const cacheOk  = status.gemini_cache_loaded;
+    setBadge(geminiSvrBadge, geminiOk ? 'ok' : 'warn', geminiOk ? 'Configured' : 'Not configured');
+    setTile('gemini',
+      geminiOk  ? 'svc-ok'   : cacheOk ? 'svc-warn' : 'svc-error',
+      geminiOk  ? 'Live key' : cacheOk ? 'Cache only' : 'No key/cache'
+    );
+
+    const active = status.active_training_jobs || 0;
+    setTile('training',
+      active > 0 ? 'svc-ok'  : 'svc-idle',
+      active > 0 ? `${active} running` : 'Idle'
+    );
   }
 
   check();
   setInterval(check, 10_000);
-
   return { check };
+})();
+
+
+// ---------------------------------------------------------------------------
+// serverControl — restart/stop buttons in the Setup server-panel
+// ---------------------------------------------------------------------------
+(() => {
+  const restartBtn = document.getElementById('server-restart-btn');
+  const logEl      = document.getElementById('server-log');
+
+  function log(msg) {
+    if (!logEl) return;
+    logEl.classList.add('visible');
+    logEl.textContent = new Date().toLocaleTimeString() + '  ' + msg;
+  }
+
+  if (restartBtn) {
+    restartBtn.addEventListener('click', async () => {
+      restartBtn.disabled = true;
+      log('Requesting server status check…');
+      // We can't restart the Python process from the browser, but we can
+      // immediately re-poll to confirm the server is alive and refresh all tiles.
+      const status = await hubConfig.fetchStatus();
+      if (status) {
+        log('Server is running — all status tiles refreshed.');
+        serverCheck.check();
+      } else {
+        log('Server unreachable. Start it with: python start_hub.py');
+      }
+      restartBtn.disabled = false;
+    });
+  }
 })();
 
 
@@ -112,10 +198,7 @@ const serverCheck = (() => {
   const testOut  = document.getElementById('gemini-test-result');
 
   const existing = hubConfig.getApiKey();
-  if (existing) {
-    input.value = existing;
-    notice.style.display = 'inline';
-  }
+  if (existing) { input.value = existing; notice.style.display = 'inline'; }
 
   saveBtn.addEventListener('click', () => {
     hubConfig.setApiKey(input.value);
@@ -151,18 +234,22 @@ const serverCheck = (() => {
         signal: AbortSignal.timeout(35000),
       });
       const data = await res.json();
-      const isCached = !data.text || data.text.length < 5;
-      if (isCached) {
+      // Use server's _source field — reliable, unlike a fragile length heuristic.
+      // "cache" means the API call failed (bad key, empty frame rejected, rate limit, etc.)
+      const isCache = data._source === 'cache';
+      if (isCache) {
         testOut.style.color = 'var(--color-warn)';
         testOut.textContent =
-          'Received a cache fallback \u2014 key may be invalid or network unavailable.\n\n' +
-          JSON.stringify(data, null, 2);
+          'Cache fallback returned \u2014 the empty test frame was rejected or the key is invalid.\n\n'
+          + 'Tip: For a definitive test, start the camera in Module 5, point it at a scene, and press "Describe scene".\n\n'
+          + JSON.stringify(data, null, 2);
       } else {
+        // _source === "gemini" — API was reached and responded to the call
         hubConfig.setApiKey(key);
         notice.style.display = 'inline';
         setTimeout(() => { notice.style.display = 'none'; }, 3000);
         testOut.style.color = 'var(--color-ok)';
-        testOut.textContent = 'Gemini responded:\n\n' + JSON.stringify(data, null, 2);
+        testOut.textContent = 'Gemini API responded (key accepted):\n\n' + JSON.stringify(data, null, 2);
       }
     } catch (err) {
       testOut.style.color = 'var(--color-error)';
@@ -201,7 +288,6 @@ const serverCheck = (() => {
   );
 
   document.querySelectorAll('section[id]').forEach(sec => observer.observe(sec));
-
   links.forEach(a => {
     a.addEventListener('click', e => {
       e.preventDefault();
@@ -213,14 +299,25 @@ const serverCheck = (() => {
 
 
 // ---------------------------------------------------------------------------
+// Challenge card accordion — open/close on header click
+// ---------------------------------------------------------------------------
+document.querySelectorAll('.challenge-card .challenge-header').forEach(header => {
+  header.addEventListener('click', () => {
+    header.closest('.challenge-card').classList.toggle('open');
+  });
+});
+
+
+// ---------------------------------------------------------------------------
 // Module 3 — RL training chart (Chart.js + SSE progress stream)
 // ---------------------------------------------------------------------------
 (() => {
   const trainBtn = document.getElementById('m3-train-btn');
   const statusEl = document.getElementById('m3-status');
+  if (!trainBtn) return;
 
   const chartCtx = document.getElementById('m3-chart').getContext('2d');
-  const chart = new Chart(chartCtx, {     // Chart is a UMD global from index.html <head>
+  const chart = new Chart(chartCtx, {
     type: 'line',
     data: {
       labels: [],
@@ -248,7 +345,8 @@ const serverCheck = (() => {
 
   trainBtn.addEventListener('click', async () => {
     trainBtn.disabled = true;
-    statusEl.textContent = 'Starting training...';
+    statusEl.textContent = 'Starting training\u2026';
+    statusEl.style.color = 'var(--color-muted)';
     chart.data.labels = [];
     chart.data.datasets[0].data = [];
     chart.update();
@@ -258,33 +356,44 @@ const serverCheck = (() => {
       const { job_id } = await res.json();
       if (!job_id) throw new Error('No job_id returned');
 
-      statusEl.textContent = `Training job ${job_id.substring(0, 8)}... (50k steps)`;
+      statusEl.textContent = `Job ${job_id.substring(0, 8)}\u2026 (50k steps)`;
       const es = new EventSource(`/api/training/progress/${job_id}`);
 
       es.onmessage = (e) => {
         const data = JSON.parse(e.data);
         if (data.done) {
-          statusEl.textContent = 'Training complete!';
+          if (data.error) {
+            // Training failed — surface the error clearly
+            statusEl.textContent = 'Training failed: ' + data.error;
+            statusEl.style.color = 'var(--color-error)';
+          } else {
+            statusEl.textContent = 'Training complete!';
+            statusEl.style.color = 'var(--color-ok)';
+          }
           es.close();
           trainBtn.disabled = false;
+          serverCheck.check();   // refresh training tile
           return;
         }
         if (data.timestep != null && data.mean_reward != null) {
           chart.data.labels.push(data.timestep.toString());
           chart.data.datasets[0].data.push(data.mean_reward);
           chart.update();
+          statusEl.style.color = 'var(--color-muted)';
           statusEl.textContent =
             `Step ${data.timestep.toLocaleString()} \u2014 Mean reward: ${data.mean_reward.toFixed(1)}`;
         }
       };
 
       es.onerror = () => {
-        statusEl.textContent = 'Stream error.';
+        statusEl.textContent = 'Stream error \u2014 training may still be running in background.';
+        statusEl.style.color = 'var(--color-warn)';
         es.close();
         trainBtn.disabled = false;
       };
     } catch (err) {
       statusEl.textContent = 'Error: ' + err.message;
+      statusEl.style.color = 'var(--color-error)';
       trainBtn.disabled = false;
     }
   });

@@ -202,7 +202,11 @@ def main() -> None:
             if now - last_print_time >= 1.0:
                 # Use the first detected hand
                 angles = compute_state_vector(last_result.hand_landmarks[0])
-                print(f"[{angles[0]:.1f}, {angles[1]:.1f}, {angles[2]:.1f}, {angles[3]:.1f}]")
+                try:
+                    print(f"[{angles[0]:.1f}, {angles[1]:.1f}, {angles[2]:.1f}, {angles[3]:.1f}]")
+                except IndexError:
+                    # TODO not yet complete — ring finger missing from state vector
+                    print(f"[{angles[0]:.1f}, {angles[1]:.1f}, {angles[2]:.1f}, <ring finger TODO>]")
                 last_print_time = now
 
         cv2.imshow("Joint Angles — press q to quit", frame)

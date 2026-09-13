@@ -65,20 +65,48 @@
   ----------------------------------------------------------------------- -->
   <section id="setup">
     <h1>Workshop Setup</h1>
-    <p class="section-subtitle">Server connection status and API key configuration.</p>
+    <p class="section-subtitle">Server health, service status, and API key configuration.</p>
 
-    <div class="card">
-      <h3>Server status</h3>
-
-      <div class="status-row">
-        <span>Hub server</span>
-        <span id="server-badge" class="badge checking">Checking...</span>
+    <!-- Server control panel -->
+    <div class="server-panel">
+      <h3>Service status</h3>
+      <div class="service-grid">
+        <div class="service-tile" id="svc-server">
+          <span class="svc-name">Hub server</span>
+          <span class="svc-status svc-idle" id="server-badge">Checking…</span>
+        </div>
+        <div class="service-tile" id="svc-gymnasium">
+          <span class="svc-name">Gymnasium</span>
+          <span class="svc-status svc-idle">—</span>
+        </div>
+        <div class="service-tile" id="svc-mujoco">
+          <span class="svc-name">MuJoCo</span>
+          <span class="svc-status svc-idle">—</span>
+        </div>
+        <div class="service-tile" id="svc-sb3">
+          <span class="svc-name">Stable-Baselines3</span>
+          <span class="svc-status svc-idle">—</span>
+        </div>
+        <div class="service-tile" id="svc-mediapipe">
+          <span class="svc-name">MediaPipe</span>
+          <span class="svc-status svc-idle">—</span>
+        </div>
+        <div class="service-tile" id="svc-gemini">
+          <span class="svc-name">Gemini API</span>
+          <span class="svc-status svc-idle" id="gemini-server-badge" title="Cache only = pre-written responses are returned. No live image analysis. Set a valid API key in the Gemini key section below to enable real inference.">—</span>
+        </div>
+        <div class="service-tile" id="svc-training">
+          <span class="svc-name">RL Training</span>
+          <span class="svc-status svc-idle">—</span>
+        </div>
       </div>
-
-      <div class="status-row">
-        <span>Gemini API key (server-side)</span>
-        <span id="gemini-server-badge" class="badge checking">—</span>
+      <div class="server-controls">
+        <button class="btn-secondary" id="server-restart-btn">Refresh status</button>
+        <span style="font-size:0.8rem; color:var(--color-muted);">
+          To start the server: <code>python start_hub.py</code>
+        </span>
       </div>
+      <div id="server-log" class="server-log"></div>
     </div>
 
     <div class="card mt-16">
@@ -89,6 +117,10 @@
         It is saved to <code>sessionStorage</code> and used only for your Module 5 API calls
         — it is never sent to the server without your action.
       </p>
+      <div class="callout-box">
+        <strong>Which modules need a key?</strong> Only Module 5 calls Gemini. Modules 1–4 work fully offline.
+        Without a key, Module 5 still runs using pre-cached responses so the exercise completes either way.
+      </div>
       <label for="api-key-input">Gemini API key</label>
       <input type="password" id="api-key-input" placeholder="AIzaSy…" autocomplete="off"
              aria-describedby="api-key-hint">
@@ -250,7 +282,7 @@
     </div>
 
     <div class="card">
-      <h3>Exercise — overview.ipynb</h3>
+      <h3>Exercise — <code>modules/00_kickoff/overview.ipynb</code></h3>
       <p>
         Open <code>modules/00_kickoff/overview.ipynb</code> in VS Code with the
         <strong>Physical AI Workshop</strong> kernel selected. Run all cells. The notebook imports
@@ -260,6 +292,21 @@
         No TODOs in this module — it is a read-and-run exercise. Focus on the pipeline diagram
         and the state vector printout.
       </p>
+    </div>
+
+    <div class="challenge-card nerdy">
+      <div class="challenge-header">
+        For the nerdy — trace one full loop in code
+        <span class="chevron">▼</span>
+      </div>
+      <div class="challenge-body">
+        <p>Before the workshop begins, sketch how data flows from camera to action in the complete pipeline:</p>
+        <ol>
+          <li>Open <code>modules/04_perception_to_action/01_hand_to_reacher.py</code> and find the 3 lines that transform a landmark coordinate into a torque</li>
+          <li>Open <code>utils/gym_utils.py</code> and find <code>make_env</code> — what does the fallback chain do?</li>
+          <li>Write a 5-sentence description of one complete frame-to-action cycle in your own words</li>
+        </ol>
+      </div>
     </div>
   </section>
 
@@ -272,16 +319,102 @@
 
     <div class="card">
       <h3>How perception works</h3>
-      <p>
-        A camera frame is processed by MediaPipe's Hand Landmarker model, which returns 21 normalised
-        landmark coordinates per hand — each in the [0, 1] range. From three pairs of landmarks we
-        compute a <strong style="color:var(--color-text);">joint angle</strong> using a dot-product
-        formula, producing a compact state vector the rest of the pipeline can act on.
-      </p>
+      <p>A camera frame is processed by MediaPipe's Hand Landmarker model, which returns 21 normalised landmark coordinates per hand. From three pairs of landmarks we compute a <strong>joint angle</strong> using a dot-product formula, producing a compact state vector the rest of the pipeline can act on.</p>
       <p style="margin-top:8px; font-size:0.85rem; color:var(--color-muted);">
         Everything in this module runs <strong style="color:var(--color-text);">entirely in the browser</strong>
         — no server needed. The MediaPipe WASM bundle and model are loaded from CDN on first use.
       </p>
+
+      <!-- Landmark diagram -->
+      <div class="landmark-diagram" style="margin-top:14px;">
+        <svg width="160" height="220" viewBox="0 0 160 220" aria-label="Hand landmark indices diagram">
+          <!-- Palm -->
+          <ellipse cx="80" cy="160" rx="42" ry="35" fill="#2a2a3e" stroke="#444" stroke-width="1"/>
+          <!-- Wrist -->
+          <circle cx="80" cy="198" r="6" fill="#888"/>
+          <text x="88" y="202" font-size="9" fill="#aaa">0 wrist</text>
+          <!-- Thumb -->
+          <line x1="45" y1="145" x2="28" y2="118" stroke="#555" stroke-width="2"/>
+          <line x1="28" y1="118" x2="18" y2="95" stroke="#555" stroke-width="2"/>
+          <line x1="18" y1="95" x2="12" y2="72" stroke="#555" stroke-width="2"/>
+          <circle cx="45" cy="145" r="5" fill="#e09050"/> <text x="50" y="149" font-size="8" fill="#e09050">1</text>
+          <circle cx="28" cy="118" r="5" fill="#e09050"/> <text x="33" y="122" font-size="8" fill="#e09050">2</text>
+          <circle cx="18" cy="95"  r="5" fill="#e09050"/>
+          <circle cx="12" cy="72"  r="5" fill="#e09050"/>
+          <!-- Index -->
+          <line x1="62" y1="125" x2="55" y2="90" stroke="#555" stroke-width="2"/>
+          <line x1="55" y1="90" x2="52" y2="62" stroke="#555" stroke-width="2"/>
+          <line x1="52" y1="62" x2="50" y2="38" stroke="#555" stroke-width="2"/>
+          <circle cx="62" cy="125" r="6" fill="#5b6af0"/>
+          <text x="68" y="129" font-size="8" fill="#5b6af0">5 MCP</text>
+          <circle cx="55" cy="90"  r="5" fill="#5b6af0"/>
+          <text x="61" y="94"  font-size="8" fill="#5b6af0">6 PIP</text>
+          <circle cx="52" cy="62"  r="4" fill="#5b6af0"/>
+          <circle cx="50" cy="38"  r="5" fill="#38bdf8"/>
+          <text x="56" y="42"  font-size="8" fill="#38bdf8">8 tip</text>
+          <!-- Middle -->
+          <line x1="80" y1="120" x2="80" y2="84" stroke="#555" stroke-width="2"/>
+          <line x1="80" y1="84"  x2="80" y2="56" stroke="#555" stroke-width="2"/>
+          <line x1="80" y1="56"  x2="80" y2="30" stroke="#555" stroke-width="2"/>
+          <circle cx="80" cy="120" r="6" fill="#3cd2a0"/>
+          <text x="86" y="124" font-size="8" fill="#3cd2a0">9 MCP</text>
+          <circle cx="80" cy="84"  r="5" fill="#3cd2a0"/>
+          <text x="86" y="88"  font-size="8" fill="#3cd2a0">10</text>
+          <circle cx="80" cy="56"  r="4" fill="#3cd2a0"/>
+          <circle cx="80" cy="30"  r="5" fill="#3cd2a0"/>
+          <!-- Ring -->
+          <line x1="98" y1="124" x2="102" y2="88" stroke="#555" stroke-width="2"/>
+          <line x1="102" y1="88" x2="106" y2="60" stroke="#555" stroke-width="2"/>
+          <line x1="106" y1="60" x2="108" y2="36" stroke="#555" stroke-width="2"/>
+          <circle cx="98"  cy="124" r="6" fill="#ffd23c"/>
+          <text x="104" y="128" font-size="8" fill="#ffd23c">13 MCP</text>
+          <circle cx="102" cy="88"  r="5" fill="#ffd23c"/>
+          <text x="108" y="92"  font-size="8" fill="#ffd23c">14</text>
+          <circle cx="106" cy="60"  r="4" fill="#ffd23c"/>
+          <circle cx="108" cy="36"  r="5" fill="#ffd23c"/>
+          <!-- Little (greyed) -->
+          <line x1="115" y1="135" x2="124" y2="100" stroke="#444" stroke-width="2"/>
+          <circle cx="115" cy="135" r="4" fill="#555"/>
+          <circle cx="124" cy="100" r="4" fill="#555"/>
+          <circle cx="130" cy="76"  r="3" fill="#555"/>
+          <circle cx="134" cy="54"  r="4" fill="#555"/>
+        </svg>
+        <div class="landmark-legend">
+          <p style="font-size:0.82rem; margin-bottom:8px; color:var(--color-muted);">Landmarks used for joint angles:</p>
+          <table>
+            <tr>
+              <td><span class="landmark-dot" style="background:#5b6af0;"></span></td>
+              <td style="font-size:0.82rem;"><strong>θ_index</strong></td>
+              <td style="font-size:0.78rem; color:var(--color-muted);">lm0 → lm5 → lm6</td>
+            </tr>
+            <tr>
+              <td><span class="landmark-dot" style="background:#3cd2a0;"></span></td>
+              <td style="font-size:0.82rem;"><strong>θ_middle</strong></td>
+              <td style="font-size:0.78rem; color:var(--color-muted);">lm0 → lm9 → lm10</td>
+            </tr>
+            <tr>
+              <td><span class="landmark-dot" style="background:#ffd23c;"></span></td>
+              <td style="font-size:0.82rem;"><strong>θ_ring</strong> <em style="font-weight:400;">(exercise)</em></td>
+              <td style="font-size:0.78rem; color:var(--color-muted);">lm0 → lm13 → lm14</td>
+            </tr>
+            <tr>
+              <td><span class="landmark-dot" style="background:#e09050;"></span></td>
+              <td style="font-size:0.82rem;"><strong>θ_thumb</strong></td>
+              <td style="font-size:0.78rem; color:var(--color-muted);">lm0 → lm1 → lm2</td>
+            </tr>
+            <tr>
+              <td><span class="landmark-dot" style="background:#38bdf8;"></span></td>
+              <td style="font-size:0.82rem;"><strong>lm8</strong> tip</td>
+              <td style="font-size:0.78rem; color:var(--color-muted);">used in Module 4</td>
+            </tr>
+          </table>
+          <div class="concept-card" style="margin-top:10px;">
+            <h4>Angle formula</h4>
+            <div class="formula-block" style="text-align:left; font-size:0.78rem;">θ = atan2(|u × v|, u · v)</div>
+            <p style="font-size:0.78rem; margin-top:4px;">u = lm_base − lm_vertex, v = lm_tip − lm_vertex. Returns the opening angle at the MCP joint in degrees (0° = closed, ~180° = fully open).</p>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div id="module-1-content">
@@ -302,7 +435,6 @@
             <span id="m1-status" style="font-size:0.78rem; color:var(--color-muted);"></span>
           </div>
         </div>
-
         <div class="panel">
           <div class="card" style="height:100%;">
             <h3>State vector</h3>
@@ -310,22 +442,48 @@
                  style="font-size:1.1rem; color:var(--color-ok); min-height:2em; margin:8px 0;">—</pre>
             <p style="font-size:0.78rem; color:var(--color-muted);">[θ_thumb, θ_index, θ_middle] in degrees</p>
             <p style="font-size:0.78rem; color:var(--color-muted); margin-top:6px;">
-              Angles are the MCP joint opening angle for each finger — 0° = fully closed, ~180° = fully open.
+              Angles are the MCP joint opening angle — 0° = closed, ~180° = fully open.
             </p>
           </div>
         </div>
       </div>
 
       <div class="card mt-16">
-        <h3>Exercise — exercise.py</h3>
-        <p>
-          Open <code>modules/01_perception/exercise.py</code> in VS Code. A ring finger angle
-          computation is stubbed out with a <code>TODO</code> block — add it to produce a
-          4-element state vector <code>[θ_thumb, θ_index, θ_middle, θ_ring]</code>.
-        </p>
-        <p style="margin-top:6px; font-size:0.85rem; color:var(--color-muted);">
-          Landmark indices for the ring finger MCP joint: 0 (wrist), 13 (ring MCP), 14 (ring PIP).
-        </p>
+        <h3>Exercise — <code>modules/01_perception/exercise.py</code></h3>
+        <p>The ring finger angle (lm0 → lm13 → lm14) is stubbed out. Add it to produce a 4-element state vector [θ_thumb, θ_index, θ_middle, <strong>θ_ring</strong>].</p>
+      </div>
+
+      <div class="challenge-card nerdy">
+        <div class="challenge-header">
+          For the nerdy — gesture classifier
+          <span class="chevron">▼</span>
+        </div>
+        <div class="challenge-body">
+          <p>Four joint angles give enough information to distinguish common hand gestures. Build a rule-based classifier:</p>
+          <ol>
+            <li>Run the exercise script; print the state vector for a fist, open hand, and pointing gesture</li>
+            <li>Write a <code>classify_gesture(angles: list) → str</code> function with thresholds (e.g. all angles &lt; 60° = "fist")</li>
+            <li>Print the gesture label on screen every second alongside the angle values</li>
+            <li>What's the minimum number of angles needed to distinguish fist/open/point/peace?</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="challenge-card super-nerdy">
+        <div class="challenge-header">
+          Super nerdy — train a neural gesture classifier
+          <span class="chevron">▼</span>
+        </div>
+        <div class="challenge-body">
+          <p>Replace the rule-based classifier with a small neural network trained on your own data.</p>
+          <ol>
+            <li>Modify the script to log <code>(angle_vector, gesture_label)</code> pairs to a CSV — collect 100+ samples per gesture class</li>
+            <li>Train a <code>torch.nn.Sequential(Linear(4,16), ReLU(), Linear(16,5))</code> classifier with cross-entropy loss</li>
+            <li>Report train/validation accuracy and a confusion matrix</li>
+            <li>Integrate the trained model back into the live loop: print the predicted class on screen</li>
+            <li>Measure how accuracy changes with 20, 50, and 100 samples per class</li>
+          </ol>
+        </div>
       </div>
     </div>
   </section>
@@ -337,7 +495,35 @@
     <h1>Module 2 — Simulation</h1>
     <p class="section-subtitle">20 min &nbsp;|&nbsp; Gymnasium environments, observation and action spaces, Reacher-v5.</p>
     <div id="module-2-content">
+
       <div class="card">
+        <h3>What is a simulation environment?</h3>
+        <p>Gymnasium wraps physics simulations behind a standard interface. Every environment exposes two key objects:</p>
+
+        <div class="concept-card">
+          <h4>Observation space — what the agent sees</h4>
+          <p>A numpy array of floating-point numbers describing the world state at each timestep. For Reacher-v5 (10 values):</p>
+          <ul>
+            <li><code>obs[0,2]</code> — cos/sin of shoulder joint angle</li>
+            <li><code>obs[1,3]</code> — cos/sin of elbow joint angle</li>
+            <li><code>obs[4,5]</code> — target x, y position</li>
+            <li><code>obs[6,7]</code> — joint angular velocities ω₁, ω₂</li>
+            <li><code>obs[8,9]</code> — fingertip x, y position in world space</li>
+          </ul>
+          <p style="margin-top:6px;">This is exactly what you see in the data panel of the simulation stream above — live values from the running environment.</p>
+        </div>
+
+        <div class="concept-card" style="margin-top:10px;">
+          <h4>Action space — what the agent can do</h4>
+          <p>For Reacher-v5: a 2-element float array in [−1, 1]. Each value is a <strong>torque</strong> applied to one joint. Positive torque rotates clockwise; negative rotates anticlockwise. The sliders below let you apply these torques interactively.</p>
+        </div>
+
+        <div class="callout-box" style="margin-top:10px;">
+          <strong>Why use cos/sin instead of the angle directly?</strong> Angles wrap around — 359° and 1° are numerically far apart but physically adjacent. Representing angle θ as (cos θ, sin θ) removes the discontinuity and makes learning much easier.
+        </div>
+      </div>
+
+      <div class="card mt-16">
         <h3>Reacher-v5 simulation stream</h3>
         <p>The server runs a MuJoCo Reacher-v5 environment and streams rendered frames via SSE.
            Use the torque sliders to apply joint forces and watch the arm respond in real time.</p>
@@ -397,8 +583,40 @@
       </div>
 
       <div class="card mt-16">
-        <h3>Exercise — exercise.py</h3>
-        <p>Open <code>modules/02_simulation/exercise.py</code>. Print the lower and upper bounds of the Reacher observation space.</p>
+        <h3>Exercise — <code>modules/02_simulation/exercise.py</code></h3>
+        <p>Print the lower and upper bounds of the Reacher-v5 observation space. Why are all bounds <code>-inf</code> to <code>+inf</code>? What does that tell you about how the environment normalises its state?</p>
+      </div>
+
+      <div class="challenge-card nerdy">
+        <div class="challenge-header">
+          For the nerdy — implement a random policy and measure performance
+          <span class="chevron">▼</span>
+        </div>
+        <div class="challenge-body">
+          <p>Run 10 episodes of 200 steps each using a random policy and compute the mean episode distance to target.</p>
+          <ol>
+            <li>Open <code>modules/02_simulation/exercise.py</code> and add a second loop after the TODO block</li>
+            <li>For 10 episodes: reset, run 200 random steps, record the mean <code>obs[8:10]</code> distance to <code>obs[4:6]</code></li>
+            <li>Print the mean ± std distance across episodes — this is your random baseline for Module 3</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="challenge-card super-nerdy">
+        <div class="challenge-header">
+          Super nerdy — build a P controller for Reacher
+          <span class="chevron">▼</span>
+        </div>
+        <div class="challenge-body">
+          <p>A proportional controller uses the error signal directly as the action. Implement one and compare it to the random baseline and the PPO agent from Module 3.</p>
+          <ol>
+            <li>The error vector is <code>obs[4:6] - obs[8:10]</code> (target − fingertip)</li>
+            <li>Scale it: <code>action = K * error</code> where <code>K = 5.0</code> (tune this)</li>
+            <li>Clip to [−1, 1] and step the environment</li>
+            <li>Measure mean distance over 10 episodes — how does it compare to random? To PPO?</li>
+            <li>Why does a P controller fail to reach zero error in a physics simulation?</li>
+          </ol>
+        </div>
       </div>
     </div>
   </section>
@@ -410,9 +628,39 @@
     <h1>Module 3 — Reinforcement Learning</h1>
     <p class="section-subtitle">30 min &nbsp;|&nbsp; MDP concepts, PPO training, live reward chart.</p>
     <div id="module-3-content">
+
+      <!-- Core concept cards -->
       <div class="card">
-        <h3>PPO CartPole-v1 Training</h3>
-        <p>Trains a PPO agent for 50,000 timesteps. The chart updates live as the mean episode reward increases.</p>
+        <h3>What is reinforcement learning?</h3>
+        <p>RL is a trial-and-error loop. An <strong>agent</strong> observes the world, takes an <strong>action</strong>, and receives a <strong>reward</strong> signal. Over many episodes it learns which actions lead to more reward. No labelled data — just feedback from the environment.</p>
+
+        <div class="concept-card">
+          <h4>The MDP — Markov Decision Process</h4>
+          <p>Every RL problem can be written as a 4-tuple <strong>(S, A, R, γ)</strong>:</p>
+          <ul>
+            <li><strong>S — State space:</strong> everything the agent can observe (e.g. the 4 CartPole values)</li>
+            <li><strong>A — Action space:</strong> everything the agent can do (e.g. push left or push right)</li>
+            <li><strong>R — Reward function:</strong> +1 every timestep the pole stays upright; 0 on failure</li>
+            <li><strong>γ — Discount factor:</strong> how much the agent values future rewards vs. immediate ones (0 = greedy, 1 = patient)</li>
+          </ul>
+          <p style="margin-top:8px;">The "Markov" property means the current state contains all the information needed — no memory of previous states required.</p>
+        </div>
+
+        <div class="concept-card" style="margin-top:10px;">
+          <h4>Policy, value function, and PPO</h4>
+          <p>A <strong>policy π(a|s)</strong> is a mapping from state to action probabilities — it is what the agent learns.</p>
+          <p style="margin-top:6px;"><strong>PPO (Proximal Policy Optimisation)</strong> updates the policy in small, safe steps. It computes an advantage estimate (how much better an action was than expected) and clips the update to prevent catastrophically large policy changes. Same algorithm used in real robot controllers at scale.</p>
+        </div>
+
+        <div class="callout-box" style="margin-top:10px;">
+          <strong>What to watch for in the chart:</strong> The reward curve stays flat at first (random exploration), then rises sharply. That inflection point is when the agent discovers the balancing strategy. If you train for too few steps, it never finds it.
+        </div>
+      </div>
+
+      <!-- Live training widget -->
+      <div class="card mt-16">
+        <h3>PPO CartPole-v1 — live training</h3>
+        <p style="font-size:0.85rem; color:var(--color-muted); margin-bottom:10px;">Trains a PPO agent for 50,000 timesteps. The chart updates live. CartPole max reward is 500 — a well-trained agent sustains it.</p>
         <div style="margin: 12px 0; display:flex; gap:8px; align-items:center;">
           <button class="btn-primary" id="m3-train-btn" data-requires-server>Start Training</button>
           <span id="m3-status" style="font-size:0.82rem; color:var(--color-muted);">Ready.</span>
@@ -421,9 +669,45 @@
           <canvas id="m3-chart"></canvas>
         </div>
       </div>
+
+      <!-- Exercise -->
       <div class="card mt-16">
-        <h3>Exercise — exercise.py</h3>
-        <p>Open <code>modules/03_rl/exercise.py</code>. Change the timestep count and observe how it affects the reward curve.</p>
+        <h3>Exercise — <code>modules/03_rl/exercise.py</code></h3>
+        <p>Change <code>total_timesteps</code> to 10,000 and 100,000. Compare the reward curves. What does training duration buy you? What are the diminishing returns?</p>
+      </div>
+
+      <!-- Challenge cards -->
+      <div class="challenge-card nerdy">
+        <div class="challenge-header">
+          For the nerdy — try a different algorithm
+          <span class="chevron">▼</span>
+        </div>
+        <div class="challenge-body">
+          <p>Stable-Baselines3 supports several algorithms. Try replacing <code>PPO</code> with <code>A2C</code> or <code>SAC</code> (for continuous action spaces) and compare training speed.</p>
+          <ol>
+            <li>In <code>exercise.py</code>, change <code>from stable_baselines3 import PPO</code> to <code>from stable_baselines3 import A2C</code></li>
+            <li>Replace <code>PPO("MlpPolicy", env, verbose=0)</code> with <code>A2C("MlpPolicy", env, verbose=0)</code></li>
+            <li>Train for 50,000 steps and compare the reward curve shape with PPO</li>
+            <li>Read the SB3 docs on what makes A2C different from PPO architecturally</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="challenge-card super-nerdy">
+        <div class="challenge-header">
+          Super nerdy — implement a custom reward function on HalfCheetah
+          <span class="chevron">▼</span>
+        </div>
+        <div class="challenge-body">
+          <p>HalfCheetah's default reward is forward velocity minus a control cost. Write a <code>gymnasium.Wrapper</code> that modifies the reward and observe how the agent's behaviour changes.</p>
+          <ol>
+            <li>Create <code>modules/03_rl/custom_reward.py</code></li>
+            <li>Subclass <code>gymnasium.RewardWrapper</code>; override <code>reward(self, reward)</code> to penalise high joint velocities (add <code>-0.1 * sum(abs(self.env.unwrapped.data.qvel))</code>)</li>
+            <li>Wrap HalfCheetah-v5 with your wrapper and train PPO for 200,000 steps</li>
+            <li>Compare the resulting gait to the unwrapped baseline in <code>03_pretrained_agent.py</code></li>
+            <li>Question: What does your modified agent optimise for? What does it sacrifice?</li>
+          </ol>
+        </div>
       </div>
     </div>
   </section>
@@ -435,27 +719,89 @@
     <h1>Module 4 — Perception to Action</h1>
     <p class="section-subtitle">40 min &nbsp;|&nbsp; Hand gestures drive Reacher joint torques — the full sense–plan–act loop.</p>
     <div id="module-4-content">
-      <div class="two-col">
-        <div class="panel">
-          <p style="font-size:0.82rem; color:var(--color-muted); margin-bottom:8px;">Hand tracking (camera)</p>
-          <div style="position:relative; width:320px; height:240px;">
-            <video id="m4-video" autoplay playsinline muted style="width:320px;height:240px;display:none;"></video>
-            <canvas id="m4-canvas" width="320" height="240" style="width:320px;height:240px;border:1px solid var(--color-border);"></canvas>
+
+      <div class="card">
+        <h3>Closing the loop</h3>
+        <p>This module wires together everything from Modules 1 and 2. Your hand position becomes the <strong>action</strong> sent directly to the MuJoCo environment — no learned policy, just a direct mapping.</p>
+
+        <div class="concept-card">
+          <h4>Landmark → action mapping</h4>
+          <p>MediaPipe returns landmark 8 (index fingertip) as normalised coordinates in [0, 1]. The Reacher action space expects torques in [−1, 1]. The mapping is a simple linear stretch:</p>
+          <div class="formula-block">action = 2 × landmark_x − 1</div>
+          <p style="margin-top:6px;">Move your finger from left to right: torque goes from −1 to +1. Up/down maps to the second joint. That's it — the entire "brain" in this module is two lines of maths.</p>
+        </div>
+
+        <div class="concept-card" style="margin-top:10px;">
+          <h4>Teleoperation and imitation learning</h4>
+          <p>What you're doing here is <strong>teleoperation</strong> — a human directly controls a robot's actuators through a sensory interface. This is how large demonstration datasets are collected for imitation learning algorithms like Behaviour Cloning (BC), ACT, and Diffusion Policy.</p>
+          <p style="margin-top:6px;">The key insight: the <em>same physical setup</em> — camera + landmarks + action mapping — that you're using interactively today is used in real robotics labs to collect thousands of demonstrations that train production robot policies.</p>
+        </div>
+
+        <div class="callout-box" style="margin-top:10px;">
+          <strong>Torque ≠ position.</strong> You're commanding <em>force</em>, not target angle. The arm overshoots and corrects because of inertia. This is why the arm keeps spinning when you hold the slider at full torque — there's no position controller, only continuous force application.
+        </div>
+      </div>
+
+      <!-- Interactive widget -->
+      <div class="card mt-16">
+        <h3>Try it — move your index finger to drive the arm</h3>
+        <div class="two-col">
+          <div class="panel">
+            <p style="font-size:0.82rem; color:var(--color-muted); margin-bottom:8px;">Hand tracking (camera)</p>
+            <div style="position:relative; width:320px; height:240px;">
+              <video id="m4-video" autoplay playsinline muted style="width:320px;height:240px;display:none;"></video>
+              <canvas id="m4-canvas" width="320" height="240" style="width:320px;height:240px;border:1px solid var(--color-border);"></canvas>
+            </div>
+          </div>
+          <div class="panel">
+            <p style="font-size:0.82rem; color:var(--color-muted); margin-bottom:8px;">Reacher simulation</p>
+            <img id="m4-sim" alt="Reacher sim" style="width:100%;max-width:480px;height:auto;border:1px solid var(--color-border);border-radius:var(--radius);display:block;" />
           </div>
         </div>
-        <div class="panel">
-          <p style="font-size:0.82rem; color:var(--color-muted); margin-bottom:8px;">Reacher simulation</p>
-          <img id="m4-sim" alt="Reacher sim" style="width:100%;max-width:480px;height:auto;border:1px solid var(--color-border);border-radius:var(--radius);display:block;" />
+        <div style="margin: 12px 0; display:flex; gap:8px; align-items:center;">
+          <button class="btn-primary" id="m4-start-btn" data-requires-server>Start</button>
+          <button class="btn-secondary" id="m4-stop-btn" disabled>Stop</button>
+          <span id="m4-status" style="font-size:0.82rem; color:var(--color-muted);">Start to begin.</span>
         </div>
       </div>
-      <div style="margin: 12px 0; display:flex; gap:8px; align-items:center;">
-        <button class="btn-primary" id="m4-start-btn" data-requires-server>Start</button>
-        <button class="btn-secondary" id="m4-stop-btn" disabled>Stop</button>
-        <span id="m4-status" style="font-size:0.82rem; color:var(--color-muted);">Start to begin.</span>
-      </div>
+
+      <!-- Exercise -->
       <div class="card mt-16">
-        <h3>Exercise — exercise.py</h3>
-        <p>Open <code>modules/04_perception_to_action/exercise.py</code>. Map a second landmark to a third joint torque command.</p>
+        <h3>Exercise — <code>modules/04_perception_to_action/exercise.py</code></h3>
+        <p>Currently only landmark 8 (index fingertip) drives the arm. Add landmark 4 (thumb tip) as a third action dimension using the provided <code>ActionSliceWrapper</code>. The wrapper handles slicing — you only write the mapping.</p>
+      </div>
+
+      <!-- Challenges -->
+      <div class="challenge-card nerdy">
+        <div class="challenge-header">
+          For the nerdy — add a dead-zone and smoothing
+          <span class="chevron">▼</span>
+        </div>
+        <div class="challenge-body">
+          <p>Raw landmark coordinates jitter. Real teleoperation systems use dead-zones and exponential smoothing to reduce noise. Implement both in <code>01_hand_to_reacher.py</code>:</p>
+          <ol>
+            <li>Add a dead-zone: if <code>|action| &lt; 0.08</code>, set <code>action = 0</code> (small movements ignored)</li>
+            <li>Add exponential smoothing: <code>action_smooth = 0.7 * action_smooth + 0.3 * action_raw</code></li>
+            <li>Compare the arm behaviour with and without smoothing — which produces more useful demonstration data?</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="challenge-card super-nerdy">
+        <div class="challenge-header">
+          Super nerdy — record a demonstration dataset and train a Behaviour Cloning policy
+          <span class="chevron">▼</span>
+        </div>
+        <div class="challenge-body">
+          <p>Collect your own demonstrations and train a neural network to imitate them — the core of imitation learning.</p>
+          <ol>
+            <li>Modify <code>01_hand_to_reacher.py</code> to write <code>(observation, action)</code> pairs to a CSV file while you teleoperate</li>
+            <li>Collect ~500 steps with the arm reaching the target (use the distance display in the hub to guide yourself)</li>
+            <li>Create <code>modules/04_perception_to_action/bc_train.py</code> — load your CSV, train a 2-layer MLP (<code>torch.nn.Sequential</code>) to predict action from observation using MSE loss</li>
+            <li>Run the trained policy in the Reacher environment and measure the mean distance to target over 200 steps</li>
+            <li>Compare to a random policy. How many demonstrations does BC need to outperform random?</li>
+          </ol>
+        </div>
       </div>
     </div>
   </section>
@@ -467,31 +813,100 @@
     <h1>Module 5 — Foundation Models</h1>
     <p class="section-subtitle">25 min &nbsp;|&nbsp; Camera frames sent to Gemini, structured robot action suggestions returned.</p>
     <div id="module-5-content">
-      <div class="two-col">
-        <div class="panel">
-          <p style="font-size:0.82rem; color:var(--color-muted); margin-bottom:8px;">Camera feed</p>
-          <div style="position:relative; width:320px; height:240px;">
-            <video id="m5-video" autoplay playsinline muted style="width:320px;height:240px;display:none;"></video>
-            <canvas id="m5-canvas" width="320" height="240" style="width:320px;height:240px;border:1px solid var(--color-border);"></canvas>
-          </div>
-          <div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;">
-            <button class="btn-secondary" id="m5-cam-btn">Start Camera</button>
-            <button class="btn-primary" id="m5-describe-btn" data-requires-server disabled>Capture and Analyse</button>
-            <button class="btn-primary" id="m5-action-btn" data-requires-server disabled>Get Robot Action</button>
-          </div>
+
+      <div class="card">
+        <h3>Vision-Language Models for robotics</h3>
+        <p>Large language models can read images. A <strong>Vision-Language Model (VLM)</strong> accepts both text and images as input and produces text as output. For robotics, the key insight is: if you prompt the model with an image of the robot's workspace and ask for a structured action, you get a <em>zero-shot robot controller</em> — no training required.</p>
+
+        <div class="concept-card">
+          <h4>The Vision-Language-Action (VLA) pattern</h4>
+          <ul>
+            <li><strong>Capture:</strong> grab one camera frame as a JPEG</li>
+            <li><strong>Encode:</strong> convert to base64 — the format the API accepts</li>
+            <li><strong>Prompt:</strong> send frame + text instruction to the model</li>
+            <li><strong>Parse:</strong> extract structured JSON from the response</li>
+            <li><strong>Act:</strong> map the JSON action field to robot commands</li>
+          </ul>
+          <p style="margin-top:6px;">This is exactly the pattern used in production VLA systems like RT-2, OpenVLA, and π0 — just at much larger scale and with fine-tuned models.</p>
         </div>
-        <div class="panel">
-          <div class="card" style="min-height:200px;">
-            <h3>Result</h3>
-            <div id="m5-spinner" style="display:none; color:var(--color-muted); font-size:0.85rem;">Calling Gemini...</div>
-            <pre id="m5-result" style="font-size:0.82rem; color:var(--color-ok); white-space:pre-wrap; word-break:break-word;">—</pre>
-            <p id="m5-cache-notice" style="font-size:0.75rem; color:var(--color-warn); margin-top:6px; display:none;">Using cached response (no API key / fallback active).</p>
+
+        <div class="concept-card" style="margin-top:10px;">
+          <h4>Why prompting matters</h4>
+          <p>The model has no world model for your specific robot. The <strong>system prompt</strong> defines the entire action vocabulary, output format, and reasoning context. A poorly written prompt produces unstructured or hallucinated outputs. A good prompt constrains the model to return exactly the JSON your parser expects.</p>
+          <div class="formula-block" style="text-align:left; font-size:0.78rem; margin-top:6px;">{"action": "LEFT|RIGHT|FORWARD|BACK|WAIT", "reason": "one sentence"}</div>
+        </div>
+
+        <div class="callout-box" style="margin-top:10px;">
+          <strong>No API key?</strong> Pre-cached responses load automatically and the exercise still runs.
+          You'll see the same JSON structure as a live response, but the text came from a static dataset — the model is <em>not</em> analysing your camera frame.
+          The response will include <code>"_source": "cache"</code> to make this visible. Add a key above and use a live camera frame for real inference.
+        </div>
+      </div>
+
+      <div class="card mt-16">
+        <h3>Try it — capture a frame and ask Gemini</h3>
+        <div class="two-col">
+          <div class="panel">
+            <p style="font-size:0.82rem; color:var(--color-muted); margin-bottom:8px;">Camera feed</p>
+            <div style="position:relative; width:320px; height:240px;">
+              <video id="m5-video" autoplay playsinline muted style="width:320px;height:240px;display:none;"></video>
+              <canvas id="m5-canvas" width="320" height="240" style="width:320px;height:240px;border:1px solid var(--color-border);"></canvas>
+            </div>
+            <div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;">
+              <button class="btn-secondary" id="m5-cam-btn">Start Camera</button>
+              <button class="btn-primary" id="m5-describe-btn" data-requires-server disabled>Describe scene</button>
+              <button class="btn-primary" id="m5-action-btn" data-requires-server disabled>Get robot action</button>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="card" style="min-height:200px;">
+              <h3>Gemini response</h3>
+              <div id="m5-spinner" style="display:none; color:var(--color-muted); font-size:0.85rem;">Calling Gemini…</div>
+              <pre id="m5-result" style="font-size:0.82rem; color:var(--color-ok); white-space:pre-wrap; word-break:break-word;">—</pre>
+              <p id="m5-cache-notice" style="font-size:0.75rem; color:var(--color-warn); margin-top:6px; display:none; border-left:3px solid var(--color-warn); padding:4px 8px; border-radius:2px;"></p>
+            </div>
           </div>
         </div>
       </div>
+
       <div class="card mt-16">
-        <h3>Exercise — exercise.py</h3>
-        <p>Open <code>modules/05_foundation_models/exercise.py</code>. Write your own system prompt and observe how the model's reasoning changes.</p>
+        <h3>Exercise — <code>modules/05_foundation_models/exercise.py</code></h3>
+        <p>Write a custom system prompt that makes the model respond with a different action vocabulary (e.g. joint torques instead of directional commands). Compare the model's reasoning under different prompt framings.</p>
+      </div>
+
+      <div class="challenge-card nerdy">
+        <div class="challenge-header">
+          For the nerdy — chain two Gemini calls (perceive → plan)
+          <span class="chevron">▼</span>
+        </div>
+        <div class="challenge-body">
+          <p>Use Gemini twice per frame: first to describe the scene, then to plan an action given that description. Separating perception from planning can improve structured outputs.</p>
+          <ol>
+            <li>In <code>exercise.py</code>, make a first call: <em>"Describe the position and state of each object in one sentence per object."</em></li>
+            <li>Feed that description as context into a second call: <em>"Given this scene description: [description], what robot action should be taken? Respond in JSON: {action, reason}"</em></li>
+            <li>Compare the two-call output to the single-call baseline — is the JSON more reliable?</li>
+            <li>Measure the latency difference (time both calls)</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="challenge-card super-nerdy">
+        <div class="challenge-header">
+          Super nerdy — close the loop: Gemini drives the simulation
+          <span class="chevron">▼</span>
+        </div>
+        <div class="challenge-body">
+          <p>Connect Module 5's Gemini action output to Module 2's Reacher simulation — a fully autonomous VLA loop.</p>
+          <ol>
+            <li>Create <code>modules/05_foundation_models/vla_loop.py</code></li>
+            <li>Start the Reacher env with <code>render_mode="rgb_array"</code></li>
+            <li>Every 10 steps: render the frame, encode it, call <code>gemini_action(frame, api_key)</code></li>
+            <li>Map the string action (LEFT/RIGHT/FORWARD/BACK) to a 2-element torque vector (e.g. LEFT → [−0.5, 0])</li>
+            <li>Apply that torque for the next 10 steps, then repeat</li>
+            <li>Run for 200 steps and measure mean distance to target. How does the VLA controller compare to random? To your P controller from Module 2?</li>
+            <li>Question: Why is 10 steps per Gemini call a reasonable choice? What happens if you call it every step?</li>
+          </ol>
+        </div>
       </div>
     </div>
   </section>

@@ -150,7 +150,19 @@ const mediapipeHandler = (() => {
       await webcamManager.start(onFrame);
       stopBtn.disabled = false;
     } catch (err) {
-      stateVec.textContent = 'Error: ' + err.message;
+      // Give actionable guidance based on the error type
+      let msg = '';
+      const m = err.message || '';
+      if (m.includes('fetch') || m.includes('Failed to load') || m.includes('import')) {
+        msg = 'MediaPipe failed to load from CDN — check your internet connection and reload the page.';
+      } else if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+        msg = 'Camera permission denied — allow camera access in your browser settings and click Start Camera again.';
+      } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+        msg = 'No camera found — connect a webcam or check Windows camera privacy settings (Settings \u2192 Privacy \u2192 Camera).';
+      } else {
+        msg = 'Error: ' + m;
+      }
+      stateVec.textContent = msg;
       statusEl.textContent = '';
       startBtn.disabled = false;
     }

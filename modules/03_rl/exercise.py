@@ -20,29 +20,23 @@ from utils.gym_utils import make_env, LivePlotCallback
 
 
 def main():
-    env = make_env("CartPole-v1", render_mode="rgb_array")
+    env = make_env("CartPole-v1", render_mode=None)
     model = PPO("MlpPolicy", env, verbose=0)
     callback = LivePlotCallback(check_freq=1000)
 
-    # TODO START — Set total_timesteps to observe how training duration affects
-    # the reward curve.  Try values like 10_000, 50_000, or 100_000 and compare
-    # the results.
-    raise NotImplementedError(
-        "Implement main() at line 30. "
-        "See # EXPECTED OUTPUT comment below."
-    )
-    # TODO END
-
-    # SOLUTION HINT: Replace the NotImplementedError with a call to
-    # model.learn(total_timesteps=YOUR_VALUE, callback=callback).
-    # Choose a value different from the default 50_000 — for example 20_000
-    # or 100_000 — to see how training duration affects the final reward curve.
-    # Then save the model and print the final mean reward.
-
-    # EXPECTED OUTPUT: training_result
-    # Final mean episode reward: <float>
-
-    env.close()
+    try:
+        # TODO START — Set total_timesteps to observe how training duration affects
+        # the reward curve.  Try values like 10_000, 50_000, or 100_000 and compare.
+        raise NotImplementedError(
+            "Implement main() at line 30. "
+            "See # EXPECTED OUTPUT comment below."
+        )
+        # TODO END
+        # SOLUTION HINT: Replace the NotImplementedError with a call to
+        # model.learn(total_timesteps=YOUR_VALUE, callback=callback).
+        # EXPECTED OUTPUT: Final mean episode reward: <float>
+    finally:
+        env.close()
 
 
 if __name__ == "__main__":

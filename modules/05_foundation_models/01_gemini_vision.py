@@ -28,58 +28,63 @@ _fm = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_fm)
 load_cache = _fm.load_cache
 
-import cv2
-from dotenv import load_dotenv
-from PIL import Image
-from utils.camera import open_camera
 
-# ---------------------------------------------------------------------------
-# 1. Load environment
-# ---------------------------------------------------------------------------
-load_dotenv(REPO_ROOT / ".env")
-api_key: str = os.getenv("GEMINI_API_KEY", "").strip()
+def main() -> None:
+    """Run the Gemini Vision demo."""
+    import cv2
+    from dotenv import load_dotenv
+    from PIL import Image
+    from utils.camera import open_camera
 
-# ---------------------------------------------------------------------------
-# 2. Load cache (exits with code 1 if the file is missing or empty)
-# ---------------------------------------------------------------------------
-cache = load_cache()  # defaults to sibling cached_responses.json
+    # -----------------------------------------------------------------------
+    # 1. Load environment
+    # -----------------------------------------------------------------------
+    load_dotenv(REPO_ROOT / ".env")
+    api_key: str = os.getenv("GEMINI_API_KEY", "").strip()
 
-PROMPT = "Describe this scene in one sentence."
+    # -----------------------------------------------------------------------
+    # 2. Load cache (exits with code 1 if the file is missing or empty)
+    # -----------------------------------------------------------------------
+    cache = load_cache()  # defaults to sibling cached_responses.json
 
-# ---------------------------------------------------------------------------
-# 3. No API key — fall back to cache immediately (no camera, no API call)
-# ---------------------------------------------------------------------------
-if not api_key:
-    print("Warning: GEMINI_API_KEY not set. Using cached response (no API call).")
-    print(random.choice(list(cache.values())))
-    sys.exit(0)
+    PROMPT = "Describe this scene in one sentence."
 
-# ---------------------------------------------------------------------------
-# 4. API key present — open camera, capture one frame
-# ---------------------------------------------------------------------------
-cap = open_camera()
-ret, frame = cap.read()
-cap.release()
+    # -----------------------------------------------------------------------
+    # 3. No API key — fall back to cache immediately (no camera, no API call)
+    # -----------------------------------------------------------------------
+    if not api_key:
+        print("Warning: GEMINI_API_KEY not set. Using cached response (no API call).")
+        print(random.choice(list(cache.values())))
+        return
 
-if not ret:
-    print("Warning: Could not read a frame from the camera. Using cached response.")
-    print(random.choice(list(cache.values())))
-    sys.exit(0)
+    # -----------------------------------------------------------------------
+    # 4. API key present — open camera, capture one frame
+    # -----------------------------------------------------------------------
+    cap = open_camera()
+    ret, frame = cap.read()
+    cap.release()
 
-# Convert BGR (OpenCV) → RGB (PIL)
-pil_image = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+    if not ret:
+        print("Warning: Could not read a frame from the camera. Using cached response.")
+        print(random.choice(list(cache.values())))
+        return
 
-# ---------------------------------------------------------------------------
-# 5. Call Gemini — deferred import so the fallback path never requires the
-#    google-genai package to be importable (useful in offline environments)
-# ---------------------------------------------------------------------------
-from google import genai  # noqa: E402
+    # Convert BGR (OpenCV) → RGB (PIL)
+    pil_image = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
 
-client = genai.Client(api_key=api_key)
+    # -----------------------------------------------------------------------
+    # 5. Call Gemini — deferred import so the fallback path never requires the
+    #    google-genai package to be importable (useful in offline environments)
+    # -----------------------------------------------------------------------
+    from google import genai  # noqa: E402
 
-response = client.models.generate_content(
-    model="gemini-2.5-flash",
-    contents=[PROMPT, pil_image],
-)
+    client = genai.Client(api_key=api_key)
+    response = client.models.generate_content(
+        model="gemini-2.5-flash-lite",
+        contents=[PROMPT, pil_image],
+    )
+    print(response.text)
 
-print(response.text)
+
+if __name__ == "__main__":
+    main()

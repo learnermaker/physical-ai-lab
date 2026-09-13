@@ -22,20 +22,21 @@ def main() -> None:
     print("One sample observation:", obs)
     print()
 
-    # TODO START — Print the lower and upper bounds of the observation space
-    raise NotImplementedError(
-        "Implement main() at line 25. "
-        "See # EXPECTED OUTPUT comment below."
-    )
-    # TODO END
-    # SOLUTION HINT: Access the low and high attributes on env.observation_space and print
-    # each one with a descriptive label such as "Lower bounds:" and "Upper bounds:".
+    try:
+        # TODO START — Print the lower and upper bounds of the observation space
+        raise NotImplementedError(
+            "Implement main() at line 25. "
+            "See # EXPECTED OUTPUT comment below."
+        )
+        # TODO END
+        # SOLUTION HINT: Access the low and high attributes on env.observation_space and print
+        # each one with a descriptive label such as "Lower bounds:" and "Upper bounds:".
 
-    # EXPECTED OUTPUT: obs_bounds
-    # Lower bounds: [array of 11 floats]
-    # Upper bounds: [array of 11 floats]
-
-    env.close()
+        # EXPECTED OUTPUT: obs_bounds
+        # Lower bounds: [array of 11 floats]
+        # Upper bounds: [array of 11 floats]
+    finally:
+        env.close()
 
 
 if __name__ == "__main__":

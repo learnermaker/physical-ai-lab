@@ -98,7 +98,17 @@
       detect();
       status.textContent = 'Move your index finger to control the simulation.';
     } catch (err) {
-      status.textContent = 'Error: ' + err.message;
+      // Give actionable guidance based on the error type
+      const m = err.message || '';
+      if (m.includes('fetch') || m.includes('Failed to load') || m.includes('import')) {
+        status.textContent = 'MediaPipe failed to load — check internet connection and reload.';
+      } else if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+        status.textContent = 'Camera permission denied — allow camera in browser settings, then click Start again.';
+      } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+        status.textContent = 'No camera found — connect a webcam or check Windows camera privacy settings.';
+      } else {
+        status.textContent = 'Error: ' + m;
+      }
     }
   });
 

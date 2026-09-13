@@ -202,14 +202,15 @@ def main() -> None:
     )
 
     # ------------------------------------------------------------------
-    # Main loop
+    # Main loop  — wrapped in try/finally so env/cap always close
     # ------------------------------------------------------------------
     timestamp_ms = 0
     last_hand_time = time.monotonic()
     # Default: 3-element zero action (landmark 8 x, landmark 8 y, landmark 4 x)
     action = np.zeros(3, dtype=np.float32)
 
-    with mp_vision.HandLandmarker.create_from_options(options) as landmarker:
+    try:
+        with mp_vision.HandLandmarker.create_from_options(options) as landmarker:
         while True:
             ret, frame = cap.read()
             if not ret or frame is None:
@@ -325,13 +326,11 @@ def main() -> None:
 
             if cv2.waitKey(1) & 0xFF == ord("q"):
                 break
-
-    # ------------------------------------------------------------------
-    # Cleanup
-    # ------------------------------------------------------------------
-    env.close()
-    cap.release()
-    cv2.destroyAllWindows()
+    finally:
+        # Cleanup always runs — even when NotImplementedError is raised
+        env.close()
+        cap.release()
+        cv2.destroyAllWindows()
 
 
 if __name__ == "__main__":
