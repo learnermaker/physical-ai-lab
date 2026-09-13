@@ -429,6 +429,7 @@
             <pre id="m1-state-vector" class="state-vector-out">—</pre>
             <p class="text-hint">[θ_thumb, θ_index, θ_middle] in degrees</p>
             <p class="text-hint mt-10">Angles are the MCP joint opening angle — 0° = closed, ~180° = fully open.</p>
+            <p class="text-hint mt-10">A robot gripper controller reads this vector every frame to decide how wide to open each finger. Try closing your fist — watch all values drop toward 0°.</p>
           </div>
         </div>
       </div>
@@ -437,12 +438,13 @@
         <h3>Exercise — <code>modules/01_perception/exercise.py</code></h3>
         <p>The ring finger angle (lm0 → lm13 → lm14) is stubbed out. Add it to produce a 4-element
            state vector [θ_thumb, θ_index, θ_middle, <strong>θ_ring</strong>].</p>
+        <p class="card-lead mt-10">Why does this matter? A 4-DOF hand state can distinguish gestures that a 3-DOF state cannot — for example, a "ring only curled" grip. More fingers in the state vector means more expressive robot grasps.</p>
       </div>
 
       <details class="challenge-card nerdy">
         <summary>For the nerdy — gesture classifier</summary>
         <div class="challenge-body">
-          <p>Four joint angles give enough information to distinguish common hand gestures. Build a rule-based classifier:</p>
+          <p>Four joint angles give enough information to distinguish common hand gestures. In teleoperation and physical HRI (human-robot interaction), a gesture classifier lets a human switch robot modes — e.g. fist = stop, open hand = release, point = move to target:</p>
           <ol>
             <li>Run the exercise script; print the state vector for a fist, open hand, and pointing gesture</li>
             <li>Write a <code>classify_gesture(angles: list) → str</code> function with thresholds (e.g. all angles &lt; 60° = "fist")</li>
@@ -461,7 +463,7 @@
             <li>Train a <code>torch.nn.Sequential(Linear(4,16), ReLU(), Linear(16,5))</code> classifier with cross-entropy loss</li>
             <li>Report train/validation accuracy and a confusion matrix</li>
             <li>Integrate the trained model back into the live loop: print the predicted class on screen</li>
-            <li>Measure how accuracy changes with 20, 50, and 100 samples per class</li>
+            <li>Measure how accuracy changes with 20, 50, and 100 samples per class — this data-efficiency question is exactly what researchers ask when designing data collection rigs for real robots</li>
           </ol>
         </div>
       </details>
@@ -478,7 +480,7 @@
 
       <details class="card" open>
         <summary><strong>What is a simulation environment?</strong></summary>
-        <p class="mt-10">Gymnasium wraps physics simulations behind a standard interface. Every environment exposes two key objects:</p>
+        <p class="mt-10">Before you can train or test a robot controller on real hardware, you need a safe place to run thousands of episodes without breaking anything. Gymnasium wraps physics simulations behind a standard interface that every RL algorithm and controller can talk to. Every environment exposes two key objects:</p>
 
         <details class="concept-card">
           <summary>Observation space — what the agent sees</summary>
@@ -491,7 +493,7 @@
               <li><code>obs[6,7]</code> — joint angular velocities ω₁, ω₂</li>
               <li><code>obs[8,9]</code> — fingertip−target vector (distance = <code>norm(obs[8:10])</code>)</li>
             </ul>
-            <p class="mt-10">This is exactly what you see in the data panel of the simulation stream above — live values from the running environment.</p>
+            <p class="mt-10">This is exactly what you see in the data panel of the simulation stream above — live values from the running environment. On a physical arm, these values come from encoders and IMUs, not a physics engine.</p>
           </div>
         </details>
 
@@ -500,12 +502,13 @@
           <div class="concept-body">
             <p>For Reacher-v5: a 2-element float array in [−1, 1]. Each value is a <strong>torque</strong> applied to one joint.
                Positive torque rotates clockwise; negative rotates anticlockwise. The sliders below let you apply these torques interactively.</p>
+            <p class="mt-10">On a real servo motor, this translates to a current command. The motor's driver converts it to force. The inertia of the arm means the position doesn't snap — it takes several steps to reach a target, exactly like the simulation.</p>
           </div>
         </details>
 
         <blockquote class="callout-box mt-10">
           <strong>Why use cos/sin instead of the angle directly?</strong> Angles wrap around — 359° and 1° are numerically
-          far apart but physically adjacent. Representing angle θ as (cos θ, sin θ) removes the discontinuity and makes learning much easier.
+          far apart but physically adjacent. Representing angle θ as (cos θ, sin θ) removes the discontinuity. This matters enormously for a robot joint near ±180°: a naive angle representation would cause the policy to output a huge corrective torque at the exact moment the joint wraps around, which can physically damage a servo.
         </blockquote>
       </details>
 
@@ -563,16 +566,17 @@
         <h3>Exercise — <code>modules/02_simulation/exercise.py</code></h3>
         <p>Print the lower and upper bounds of the Reacher-v5 observation space. Why are all bounds <code>-inf</code> to <code>+inf</code>?
            What does that tell you about how the environment normalises its state?</p>
+        <p class="card-lead mt-10">On a real robot, joint angle sensors have physical limits — but the controller code shouldn't hard-code those limits, because they change between robot models. Unbounded obs spaces force the learning algorithm to discover the real operating range from data, which is more robust.</p>
       </div>
 
       <details class="challenge-card nerdy">
         <summary>For the nerdy — implement a random policy and measure performance</summary>
         <div class="challenge-body">
-          <p>Run 10 episodes of 200 steps each using a random policy and compute the mean episode distance to target.</p>
+          <p>A random policy is your baseline. Any controller you build — hand-coded, RL-trained, or VLA-driven — needs to beat it to be worth deploying on real hardware. Measure it now so you have a reference for Modules 3 and 5:</p>
           <ol>
             <li>Open <code>modules/02_simulation/exercise.py</code> and add a second loop after the TODO block</li>
             <li>For 10 episodes: reset, run 200 random steps, record the mean distance <code>np.linalg.norm(obs[8:10])</code> (obs[8:10] is already the fingertip→target vector)</li>
-            <li>Print the mean ± std distance across episodes — this is your random baseline for Module 3</li>
+            <li>Print the mean ± std distance across episodes — write this number down. You'll compare your PPO agent and your VLA controller to it</li>
           </ol>
         </div>
       </details>
@@ -586,7 +590,7 @@
             <li>Scale it: <code>action = K * error</code> where <code>K = 5.0</code> (tune this)</li>
             <li>Clip to [−1, 1] and step the environment</li>
             <li>Measure mean distance over 10 episodes — how does it compare to random? To PPO?</li>
-            <li>Why does a P controller fail to reach zero error in a physics simulation?</li>
+            <li>Why does a P controller fail to reach zero error? (Hint: inertia and lack of damping — the same reason servo tuning on real robots is non-trivial, and why RL was invented to replace it)</li>
           </ol>
         </div>
       </details>
@@ -605,7 +609,7 @@
         <summary><strong>What is reinforcement learning?</strong></summary>
         <p class="mt-10">RL is a trial-and-error loop. An <strong>agent</strong> observes the world, takes an <strong>action</strong>,
            and receives a <strong>reward</strong> signal. Over many episodes it learns which actions lead to more reward.
-           No labelled data — just feedback from the environment.</p>
+           No labelled data — just feedback from the environment. This is the only practical approach when the space of possible robot situations is too large to hand-code rules for — which is almost always.</p>
 
         <details class="concept-card">
           <summary>The MDP — Markov Decision Process</summary>
@@ -624,22 +628,23 @@
         <details class="concept-card mt-10">
           <summary>Policy, value function, and PPO</summary>
           <div class="concept-body">
-            <p>A <strong>policy π(a|s)</strong> is a mapping from state to action probabilities — it is what the agent learns.</p>
+            <p>A <strong>policy π(a|s)</strong> is a mapping from state to action probabilities — it is what the agent learns. On a real robot, this is the neural network running on the onboard computer at 50–100 Hz, reading joint sensors and outputting motor commands.</p>
             <p class="mt-10"><strong>PPO (Proximal Policy Optimisation)</strong> updates the policy in small, safe steps. It computes
                an advantage estimate (how much better an action was than expected) and clips the update to prevent catastrophically large
-               policy changes. Same algorithm used in real robot controllers at scale.</p>
+               policy changes. The same algorithm underpins real robot controllers from NVIDIA Isaac Lab to OpenAI's dexterous hand work.</p>
           </div>
         </details>
 
         <blockquote class="callout-box mt-10">
           <strong>What to watch for in the chart:</strong> The reward curve stays flat at first (random exploration), then rises sharply.
-          That inflection point is when the agent discovers the balancing strategy. If you train for too few steps, it never finds it.
+          That inflection is when the agent discovers the balancing strategy. On a real robot, every step to the left of that inflection represents expensive, failed hardware time — this is why sample efficiency in simulation matters so much before any physical deployment.
         </blockquote>
       </details>
 
       <div class="card mt-16">
         <h3>PPO CartPole-v1 — live training</h3>
-        <p class="card-lead">Trains a PPO agent for 50,000 timesteps. The chart updates live. CartPole max reward is 500 — a well-trained agent sustains it.</p>
+        <p class="card-lead">Trains a PPO agent for 50,000 timesteps. The chart updates live. CartPole max reward is 500 — a well-trained agent sustains it indefinitely.</p>
+        <p class="card-lead mt-6">In a sim-to-real deployment, 50,000 simulated steps might take seconds on a GPU — but represent months of real robot time. This is why simulation-first training is the standard approach in Physical AI.</p>
         <div class="flex-row mt-12">
           <button class="btn-primary" id="m3-train-btn" data-requires-server>Start Training</button>
           <span id="m3-status" class="text-status">Ready.</span>
@@ -653,12 +658,13 @@
         <h3>Exercise — <code>modules/03_rl/exercise.py</code></h3>
         <p>Change <code>total_timesteps</code> to 10,000 and 100,000. Compare the reward curves.
            What does training duration buy you? What are the diminishing returns?</p>
+        <p class="card-lead mt-10">This maps directly to a real deployment decision: how long do you run simulation training before deploying on physical hardware? Training 10× longer doesn't buy 10× better performance — find where the curve flattens.</p>
       </div>
 
       <details class="challenge-card nerdy">
         <summary>For the nerdy — try a different algorithm</summary>
         <div class="challenge-body">
-          <p>Stable-Baselines3 supports several algorithms. Try replacing <code>PPO</code> with <code>A2C</code> or <code>SAC</code> (for continuous action spaces) and compare training speed.</p>
+          <p>Different RL algorithms have different sample efficiency and stability — a practical choice every robotics team makes before a training run. Try replacing PPO with A2C:</p>
           <ol>
             <li>In <code>exercise.py</code>, change <code>from stable_baselines3 import PPO</code> to <code>from stable_baselines3 import A2C</code></li>
             <li>Replace <code>PPO("MlpPolicy", env, verbose=0)</code> with <code>A2C("MlpPolicy", env, verbose=0)</code></li>
@@ -671,13 +677,13 @@
       <details class="challenge-card super-nerdy">
         <summary>Super nerdy — implement a custom reward function on HalfCheetah</summary>
         <div class="challenge-body">
-          <p>HalfCheetah's default reward is forward velocity minus a control cost. Write a <code>gymnasium.Wrapper</code> that modifies the reward and observe how the agent's behaviour changes.</p>
+          <p>Reward shaping is the most powerful — and most dangerous — tool in robot RL. Change the reward and you change what the robot optimises for. HalfCheetah's default reward is forward velocity minus a control cost. Add a joint velocity penalty and observe the gait change:</p>
           <ol>
             <li>Create <code>modules/03_rl/custom_reward.py</code></li>
             <li>Subclass <code>gymnasium.RewardWrapper</code>; override <code>reward(self, reward)</code> to penalise high joint velocities (add <code>-0.1 * sum(abs(self.env.unwrapped.data.qvel))</code>)</li>
             <li>Wrap HalfCheetah-v5 with your wrapper and train PPO for 200,000 steps</li>
             <li>Compare the resulting gait to the unwrapped baseline in <code>03_pretrained_agent.py</code></li>
-            <li>Question: What does your modified agent optimise for? What does it sacrifice?</li>
+            <li>Your modified robot moves more smoothly but slower. On a real hardware deployment, why might slower + smoother be worth it? (Think: motor wear, joint stress, battery life)</li>
           </ol>
         </div>
       </details>
@@ -695,7 +701,7 @@
       <details class="card" open>
         <summary><strong>Closing the loop</strong></summary>
         <p class="mt-10">This module wires together everything from Modules 1 and 2. Your hand position becomes the <strong>action</strong>
-           sent directly to the MuJoCo environment — no learned policy, just a direct mapping.</p>
+           sent directly to the MuJoCo environment — no learned policy, just a direct mapping. This is exactly how a surgeon controls a da Vinci robotic arm, or how a warehouse operator teleoperates a picking robot from a safe distance.</p>
 
         <details class="concept-card">
           <summary>Landmark → action mapping</summary>
@@ -723,7 +729,7 @@
         <blockquote class="callout-box mt-10">
           <strong>Torque ≠ position.</strong> You're commanding <em>force</em>, not target angle. The arm overshoots and corrects
           because of inertia. This is why the arm keeps spinning when you hold the slider at full torque — there's no position
-          controller, only continuous force application.
+          controller, only continuous force application. Every real robot joint faces this same physics: to stop precisely, you must apply opposite torque before you reach the target, not at it.
         </blockquote>
       </details>
 
@@ -753,12 +759,13 @@
         <h3>Exercise — <code>modules/04_perception_to_action/exercise.py</code></h3>
         <p>Currently only landmark 8 (index fingertip) drives the arm. Add landmark 4 (thumb tip) as a third action dimension
            using the provided <code>ActionSliceWrapper</code>. The wrapper handles slicing — you only write the mapping.</p>
+        <p class="card-lead mt-10">Why? Real robot arms have 6–7 DOF. A single-finger mapping only controls 2 joints. Adding the thumb gives a third control channel — one step toward the richer action spaces needed for dexterous manipulation like opening bottles or folding clothes.</p>
       </div>
 
       <details class="challenge-card nerdy">
         <summary>For the nerdy — add a dead-zone and smoothing</summary>
         <div class="challenge-body">
-          <p>Raw landmark coordinates jitter. Real teleoperation systems use dead-zones and exponential smoothing to reduce noise. Implement both in <code>01_hand_to_reacher.py</code>:</p>
+          <p>Try teleoperating without smoothing — the arm shakes with every small hand tremor. Now consider: if you recorded those jittery demonstrations and trained a BC policy on them, the robot would <em>learn to shake</em>. Dead-zones and smoothing directly determine the quality of demonstration data collected for imitation learning:</p>
           <ol>
             <li>Add a dead-zone: if <code>|action| &lt; 0.08</code>, set <code>action = 0</code> (small movements ignored)</li>
             <li>Add exponential smoothing: <code>action_smooth = 0.7 * action_smooth + 0.3 * action_raw</code></li>
@@ -770,13 +777,13 @@
       <details class="challenge-card super-nerdy">
         <summary>Super nerdy — record a demonstration dataset and train a Behaviour Cloning policy</summary>
         <div class="challenge-body">
-          <p>Collect your own demonstrations and train a neural network to imitate them — the core of imitation learning.</p>
+          <p>This is the core loop of imitation learning — used in production by every major robot lab building manipulation policies (ALOHA, UMI, Mobile ALOHA). Collect demonstrations by controlling the robot yourself, then train a network to reproduce your behaviour:</p>
           <ol>
-            <li>Modify <code>01_hand_to_reacher.py</code> to write <code>(observation, action)</code> pairs to a CSV file while you teleoperate</li>
-            <li>Collect ~500 steps with the arm reaching the target (use the distance display in the hub to guide yourself)</li>
+            <li>Modify <code>01_hand_to_reacher.py</code> to write <code>(observation, action)</code> pairs to a CSV file while you teleoperate — try to consistently reach the target</li>
+            <li>Collect ~500 steps with the arm near the target (use the distance display to guide yourself)</li>
             <li>Create <code>modules/04_perception_to_action/bc_train.py</code> — load your CSV, train a 2-layer MLP (<code>torch.nn.Sequential</code>) to predict action from observation using MSE loss</li>
             <li>Run the trained policy in the Reacher environment and measure the mean distance to target over 200 steps</li>
-            <li>Compare to a random policy. How many demonstrations does BC need to outperform random?</li>
+            <li>Compare to random and to your teleoperated baseline. How many demonstrations does BC need to outperform random? This data-efficiency question drives the design of real teleoperation rigs</li>
           </ol>
         </div>
       </details>
@@ -795,7 +802,7 @@
         <summary><strong>Vision-Language Models for robotics</strong></summary>
         <p class="mt-10">Large language models can read images. A <strong>Vision-Language Model (VLM)</strong> accepts both text and images as
            input and produces text as output. For robotics, the key insight is: if you prompt the model with an image of the
-           robot's workspace and ask for a structured action, you get a <em>zero-shot robot controller</em> — no training required.</p>
+           robot's workspace and ask for a structured action, you get a <em>zero-shot robot controller</em> — no task-specific training required. The model's world knowledge becomes the robot's world model.</p>
 
         <details class="concept-card">
           <summary>The Vision-Language-Action (VLA) pattern</summary>
@@ -858,6 +865,7 @@
         <h3>Exercise — <code>modules/05_foundation_models/exercise.py</code></h3>
         <p>Write a custom system prompt that makes the model respond with a different action vocabulary
            (e.g. joint torques instead of directional commands). Compare the model's reasoning under different prompt framings.</p>
+        <p class="card-lead mt-10">The prompt <em>is</em> the interface between the LLM and the robot's hardware. Changing it changes what the robot can do without retraining. Try prompting for numeric torque values directly and observe how reliable the JSON output is — this is the core engineering challenge in production VLA systems.</p>
       </div>
 
       <details class="challenge-card nerdy">
@@ -868,7 +876,7 @@
             <li>In <code>exercise.py</code>, make a first call: <em>"Describe the position and state of each object in one sentence per object."</em></li>
             <li>Feed that description as context into a second call: <em>"Given this scene description: [description], what robot action should be taken? Respond in JSON: {action, reason}"</em></li>
             <li>Compare the two-call output to the single-call baseline — is the JSON more reliable?</li>
-            <li>Measure the latency difference (time both calls)</li>
+            <li>Measure the latency difference — on a real robot at 10 Hz, every millisecond of inference delay matters</li>
           </ol>
         </div>
       </details>
@@ -876,15 +884,15 @@
       <details class="challenge-card super-nerdy">
         <summary>Super nerdy — close the loop: Gemini drives the simulation</summary>
         <div class="challenge-body">
-          <p>Connect Module 5's Gemini action output to Module 2's Reacher simulation — a fully autonomous VLA loop.</p>
+          <p>This is the full Physical AI pipeline end-to-end: simulation renders a frame → VLM decides the action → action changes the simulation → repeat. This is the same architecture as RT-2 and OpenVLA, just at smaller scale with a cloud API instead of a fine-tuned on-robot model:</p>
           <ol>
             <li>Create <code>modules/05_foundation_models/vla_loop.py</code></li>
             <li>Start the Reacher env with <code>render_mode="rgb_array"</code></li>
             <li>Every 10 steps: render the frame, encode it, call <code>gemini_action(frame, api_key)</code></li>
             <li>Map the string action (LEFT/RIGHT/FORWARD/BACK) to a 2-element torque vector (e.g. LEFT → [−0.5, 0])</li>
             <li>Apply that torque for the next 10 steps, then repeat</li>
-            <li>Run for 200 steps and measure mean distance to target. How does the VLA controller compare to random? To your P controller from Module 2?</li>
-            <li>Question: Why is 10 steps per Gemini call a reasonable choice? What happens if you call it every step?</li>
+            <li>Run for 200 steps and measure mean distance to target. Compare to random (Module 2), your P controller (Module 2), and your BC policy (Module 4)</li>
+            <li>Why is 10 steps per Gemini call a reasonable choice? What happens if you call it every step? (Think: API latency, rate limits, and whether the scene changes meaningfully in 1 step vs 10)</li>
           </ol>
         </div>
       </details>
@@ -901,6 +909,7 @@
 
       <div class="card">
         <h3>Concept map — pipeline to practice</h3>
+        <p class="card-lead">Every row below is a layer of a real production Physical AI system. Together they form the complete stack from camera to actuator.</p>
         <table class="concept-table" aria-label="Workshop concept map">
           <thead>
             <tr><th>Module</th><th>Pipeline Stage</th><th>Key Concept</th><th>Real-world Example</th></tr>
@@ -910,37 +919,37 @@
               <td>0 — Kickoff</td>
               <td>Pipeline overview</td>
               <td>Closed-loop feedback</td>
-              <td>Any robot that "sees and does"</td>
+              <td>Any robot that reacts to its environment — surgical arms, drones, self-driving cars</td>
             </tr>
             <tr>
               <td>1 — Perception</td>
               <td>Webcam → State Vector</td>
               <td>Hand landmark normalisation</td>
-              <td>Factory vision system</td>
+              <td>Factory vision systems, surgical robot hand tracking, sign-language interpreters</td>
             </tr>
             <tr>
               <td>2 — Simulation</td>
               <td>State Vector → Action</td>
               <td>MuJoCo physics</td>
-              <td>Sim-to-real transfer</td>
+              <td>Robot policy testing before hardware deployment — NVIDIA Isaac Lab, MuJoCo Menagerie</td>
             </tr>
             <tr>
               <td>3 — Reinforcement Learning</td>
               <td>Training the agent</td>
               <td>PPO policy gradient</td>
-              <td>NVIDIA Isaac Lab</td>
+              <td>Boston Dynamics Spot locomotion, NVIDIA Isaac Lab dexterous hand</td>
             </tr>
             <tr>
               <td>4 — Perception to Action</td>
               <td>Closed loop</td>
               <td>Teleoperation</td>
-              <td>Demonstration data for BC/ACT</td>
+              <td>da Vinci surgical robot, ALOHA/UMI demo collection for ACT and Diffusion Policy</td>
             </tr>
             <tr>
               <td>5 — Foundation Models</td>
               <td>Reasoning layer</td>
               <td>Vision-language-action</td>
-              <td>RT-2, OpenVLA, π0</td>
+              <td>Google RT-2, OpenVLA, Physical Intelligence π0 — all use this exact pipeline pattern</td>
             </tr>
           </tbody>
         </table>
