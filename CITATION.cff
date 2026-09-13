@@ -1,0 +1,34 @@
+cff-version: 1.2.0
+message: "If you use or adapt this workshop, please cite it as below."
+title: "Physical AI Workshop"
+abstract: >
+  A self-contained, 3-hour, beginner-friendly workshop covering the complete
+  Physical AI pipeline end-to-end: webcam perception with MediaPipe hand
+  landmarks, MuJoCo simulation with Gymnasium, reinforcement learning with
+  PPO (Stable-Baselines3), teleoperation, and vision-language-action control
+  with Google Gemini. Designed for ~30 participants on Windows 11 laptops.
+  No GPU required.
+authors:
+  - family-names: Seelan
+    given-names: Jim
+    alias: learnermaker
+repository-code: "https://github.com/learnermaker/physical-ai-workshop"
+license: MIT
+version: "1.0.0"
+date-released: "2026-09-13"
+keywords:
+  - physical-ai
+  - robotics
+  - mediapipe
+  - hand-tracking
+  - mujoco
+  - gymnasium
+  - reinforcement-learning
+  - stable-baselines3
+  - teleoperation
+  - vision-language-action
+  - gemini
+  - workshop
+  - python
+  - ppo
+  - imitation-learning

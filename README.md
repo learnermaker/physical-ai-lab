@@ -1,5 +1,11 @@
 ﻿# Physical AI Workshop
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/)
+[![Platform: Windows](https://img.shields.io/badge/platform-Windows%2011-lightgrey.svg)]()
+
+> A hands-on workshop covering the complete Physical AI pipeline — webcam → hand tracking → simulation → reinforcement learning → teleoperation → foundation model control. No GPU required.
+
 **Created by Jim Seelan** — a self-contained, 3-hour, beginner-friendly workshop for ~30 participants on Windows 11 laptops. Work through the complete Physical AI pipeline end-to-end:
 
 ```
