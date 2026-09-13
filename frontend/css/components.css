@@ -1,6 +1,7 @@
 /* ==========================================================================
    components.css — Reusable UI components
-   Sidebar, cards, schedule table, status badges, form elements, buttons
+   Sidebar, cards, status badges, buttons, form hints
+   (Tables, inputs, labels, base button styles handled by Pico CSS)
    Physical AI Workshop Hub
    ========================================================================== */
 
@@ -54,7 +55,7 @@
 }
 
 /* -----------------------------------------------------------------------
-   Cards / panels
+   Cards
 ----------------------------------------------------------------------- */
 .card {
   background: var(--color-surface);
@@ -81,57 +82,36 @@
 .card ul { margin-left: 18px; }
 
 /* -----------------------------------------------------------------------
-   Schedule table
+   Buttons — overrides on Pico's base.
+   Use .pico prefix to match Pico's specificity level.
 ----------------------------------------------------------------------- */
-.schedule-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.88rem;
+.pico .btn-primary,
+button.btn-primary {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #fff;
+}
+.pico .btn-primary:hover:not(:disabled),
+button.btn-primary:hover:not(:disabled) {
+  background: #92400e;
+  border-color: #92400e;
 }
 
-.schedule-table th {
-  text-align: left;
-  padding: 8px 14px;
+.pico .btn-secondary,
+button.btn-secondary {
+  background: var(--color-surface);
+  border-color: var(--color-border-strong);
+  color: var(--color-text);
+}
+.pico .btn-secondary:hover:not(:disabled),
+button.btn-secondary:hover:not(:disabled) {
   background: var(--color-bg);
-  color: var(--color-muted);
-  font-weight: 600;
-  border-bottom: 1px solid var(--color-border);
+  border-color: var(--color-border-strong);
 }
-
-.schedule-table td {
-  padding: 9px 14px;
-  border-bottom: 1px solid var(--color-border);
-  vertical-align: top;
-}
-
-.schedule-table tr:last-child td { border-bottom: none; }
-
-.schedule-table td:first-child {
-  font-weight: 600;
-  color: var(--color-accent);
-  white-space: nowrap;
-}
-
-.schedule-table td:nth-child(2) {
-  color: var(--color-muted);
-  white-space: nowrap;
-}
-
-.schedule-table tr.buffer td { color: var(--color-muted); font-style: italic; }
 
 /* -----------------------------------------------------------------------
-   Setup section — status badges
+   Status badges
 ----------------------------------------------------------------------- */
-.status-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 0;
-  font-size: 0.88rem;
-  border-bottom: 1px solid var(--color-border);
-}
-.status-row:last-of-type { border-bottom: none; }
-
 .badge {
   display: inline-block;
   padding: 2px 8px;
@@ -139,66 +119,10 @@
   font-size: 0.78rem;
   font-weight: 600;
 }
-.badge.ok      { background: var(--color-ok-bg);   color: var(--color-ok); }
-.badge.warn    { background: var(--color-warn-bg);  color: var(--color-warn); }
-.badge.error   { background: var(--color-error-bg); color: var(--color-error); }
-.badge.checking { background: var(--color-border);  color: var(--color-muted); }
-
-/* -----------------------------------------------------------------------
-   Form elements
------------------------------------------------------------------------ */
-label {
-  display: block;
-  font-size: 0.82rem;
-  color: var(--color-muted);
-  margin-bottom: 5px;
-}
-
-input[type="text"], input[type="password"] {
-  width: 100%;
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius);
-  color: var(--color-text);
-  padding: 8px 12px;
-  font-size: 0.88rem;
-  font-family: var(--font-mono);
-  transition: border-color 0.15s;
-}
-
-input[type="text"]:focus, input[type="password"]:focus {
-  outline: none;
-  border-color: var(--color-accent);
-}
-
-button {
-  padding: 8px 18px;
-  border: none;
-  border-radius: var(--radius);
-  cursor: pointer;
-  font-size: 0.88rem;
-  font-weight: 600;
-  font-family: var(--font);
-  transition: opacity 0.15s, background 0.15s;
-}
-
-button:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.btn-primary {
-  background: var(--color-accent);
-  color: #fff;
-}
-.btn-primary:hover:not(:disabled) { opacity: 0.9; }
-
-.btn-secondary {
-  background: var(--color-surface);
-  color: var(--color-text);
-  border: 1px solid var(--color-border-strong);
-}
-.btn-secondary:hover:not(:disabled) { background: var(--color-bg); }
+.badge.ok       { background: var(--color-ok-bg);   color: var(--color-ok); }
+.badge.warn     { background: var(--color-warn-bg);  color: var(--color-warn); }
+.badge.error    { background: var(--color-error-bg); color: var(--color-error); }
+.badge.checking { background: var(--color-border);   color: var(--color-muted); }
 
 /* -----------------------------------------------------------------------
    Coming-soon placeholder
@@ -211,4 +135,56 @@ button:disabled {
   color: var(--color-muted);
   font-size: 0.88rem;
   text-align: center;
+}
+
+/* -----------------------------------------------------------------------
+   details.card — concept card that is collapsible
+   Pico styles <details> with padding and border-radius; we layer our
+   card look (border, shadow) on top and style the summary as a heading.
+----------------------------------------------------------------------- */
+details.card {
+  /* Pico sets padding on details; our .card also sets padding — reset
+     to Pico's value so we don't double up */
+  padding: 0;
+}
+
+details.card > summary {
+  padding: 14px 20px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-accent);
+  list-style: none;       /* hide default browser marker */
+  cursor: pointer;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+}
+
+/* Replace default triangle with a rotating chevron */
+details.card > summary::after {
+  content: '▾';
+  margin-left: auto;
+  font-size: 0.9rem;
+  color: var(--color-muted);
+  transition: transform 0.18s ease;
+  flex-shrink: 0;
+}
+
+details.card[open] > summary::after {
+  transform: rotate(-180deg);
+}
+
+details.card > summary::-webkit-details-marker { display: none; }
+
+/* Body content — restore card padding when open */
+details.card > :not(summary) {
+  padding: 0 20px 16px;
+}
+
+/* First element after summary gets a bit of top breathing room */
+details.card[open] > summary {
+  border-bottom: 1px solid var(--color-border);
+  border-radius: var(--radius) var(--radius) 0 0;
 }

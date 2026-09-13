@@ -71,17 +71,19 @@ const serverCheck = (() => {
   function setTile(id, cls, text) {
     const el = tiles[id];
     if (!el) return;
-    const s = el.querySelector('.svc-status');
+    const s = el.querySelector('.svc-status, .badge');   // handles both pre- and post-setBadge state
     if (s) {
       s.className = 'svc-status ' + cls;
       s.textContent = text;
-      // Add contextual tooltip for the Gemini tile
-      if (id === 'gemini' && cls === 'svc-warn') {
-        s.title = 'Cache only — pre-written responses are returned. The model is NOT analysing your camera frame. Set a valid API key (below) to enable live inference.';
-      } else if (id === 'gemini' && cls === 'svc-ok') {
-        s.title = 'Live key configured — Gemini will analyse real camera frames when called from Module 5.';
-      } else if (id === 'gemini' && cls === 'svc-error') {
-        s.title = 'No key and no cache — Module 5 Gemini calls will return an error.';
+      // Update tooltip content for the Gemini tile based on current state
+      if (id === 'gemini') {
+        if (cls === 'svc-ok') {
+          s.setAttribute('data-tooltip', 'Gemini key ready — Module 5 will use live inference.');
+        } else if (cls === 'svc-warn') {
+          s.setAttribute('data-tooltip', 'No key → cache only. Module 5 returns pre-written responses.');
+        } else if (cls === 'svc-error') {
+          s.setAttribute('data-tooltip', 'No key and no cache — Module 5 Gemini calls will fail.');
+        }
       }
     }
   }
@@ -133,13 +135,23 @@ const serverCheck = (() => {
     setTile('mediapipe', dep['mediapipe']          ? 'svc-ok'   : 'svc-warn',
                          dep['mediapipe']          ? 'OK'       : 'Not found');
 
-    const geminiOk = status.gemini_key_configured;
-    const cacheOk  = status.gemini_cache_loaded;
-    setBadge(geminiSvrBadge, geminiOk ? 'ok' : 'warn', geminiOk ? 'Configured' : 'Not configured');
-    setTile('gemini',
-      geminiOk  ? 'svc-ok'   : cacheOk ? 'svc-warn' : 'svc-error',
-      geminiOk  ? 'Live key' : cacheOk ? 'Cache only' : 'No key/cache'
-    );
+    const geminiOk  = status.gemini_key_configured;    // server-side .env key
+    const cacheOk   = status.gemini_cache_loaded;
+    const browserKey = window.hubConfig?.getApiKey();  // browser sessionStorage key
+
+    // Show the browser key state (what the hub actually uses for Module 5)
+    // The server .env key is used by the Python scripts in the terminal.
+    if (browserKey) {
+      setBadge(geminiSvrBadge, 'ok', 'Key saved (browser)');
+      setTile('gemini', 'svc-ok', 'Browser key set');
+    } else if (geminiOk) {
+      setBadge(geminiSvrBadge, 'ok', 'Configured (.env)');
+      setTile('gemini', 'svc-ok', 'Server .env key');
+    } else {
+      setBadge(geminiSvrBadge, 'warn', 'No key set');
+      setTile('gemini', cacheOk ? 'svc-warn' : 'svc-error',
+                        cacheOk ? 'Cache only' : 'No key/cache');
+    }
 
     const active = status.active_training_jobs || 0;
     setTile('training',
@@ -155,32 +167,71 @@ const serverCheck = (() => {
 
 
 // ---------------------------------------------------------------------------
-// serverControl — restart/stop buttons in the Setup server-panel
+// ---------------------------------------------------------------------------
+// serverControl — status panel buttons
+//
+// "Refresh status"   — re-polls /api/status and updates all tiles immediately.
+//                      Can't restart the Python process from the browser, but
+//                      this confirms it's alive and surfaces any new errors.
+//
+// "Stop simulation"  — calls POST /api/simulation/stop.  This sets _sim_stop
+//                      so any stuck worker exits within ~50 ms and releases
+//                      the lock.  Useful after a crash or when switching
+//                      between Module 2 and Module 4 without pressing Stop.
 // ---------------------------------------------------------------------------
 (() => {
   const restartBtn = document.getElementById('server-restart-btn');
+  const simStopBtn = document.getElementById('sim-stop-btn');
   const logEl      = document.getElementById('server-log');
 
-  function log(msg) {
+  function log(msg, isError) {
     if (!logEl) return;
     logEl.classList.add('visible');
+    logEl.style.color = isError ? 'var(--color-error, #c0392b)' : '';
     logEl.textContent = new Date().toLocaleTimeString() + '  ' + msg;
   }
 
   if (restartBtn) {
     restartBtn.addEventListener('click', async () => {
       restartBtn.disabled = true;
-      log('Requesting server status check…');
-      // We can't restart the Python process from the browser, but we can
-      // immediately re-poll to confirm the server is alive and refresh all tiles.
-      const status = await hubConfig.fetchStatus();
-      if (status) {
-        log('Server is running — all status tiles refreshed.');
-        serverCheck.check();
-      } else {
-        log('Server unreachable. Start it with: python start_hub.py');
+      log('Checking server…');
+      try {
+        const status = await hubConfig.fetchStatus();
+        if (status) {
+          log('Server is running — status tiles refreshed.');
+          serverCheck.check();
+        } else {
+          log('Server unreachable. Run: python start_hub.py', true);
+        }
+      } catch {
+        log('Server unreachable. Run: python start_hub.py', true);
+      } finally {
+        restartBtn.disabled = false;
       }
-      restartBtn.disabled = false;
+    });
+  }
+
+  if (simStopBtn) {
+    simStopBtn.addEventListener('click', async () => {
+      simStopBtn.disabled = true;
+      log('Stopping simulation worker…');
+      try {
+        const r = await fetch('/api/simulation/stop', {
+          method: 'POST',
+          signal: AbortSignal.timeout(3000),
+        });
+        if (r.ok) {
+          log('Simulation stopped — lock released. You can now start a fresh simulation.');
+        } else {
+          log('Stop request failed (server returned ' + r.status + ').', true);
+        }
+      } catch {
+        log('Could not reach server — is it running?', true);
+      } finally {
+        simStopBtn.disabled = false;
+        // Refresh tiles so the status panel reflects the new state
+        setTimeout(() => serverCheck.check(), 400);
+      }
     });
   }
 })();
@@ -204,6 +255,7 @@ const serverCheck = (() => {
     hubConfig.setApiKey(input.value);
     notice.style.display = 'inline';
     setTimeout(() => { notice.style.display = 'none'; }, 3000);
+    serverCheck.check();   // update Gemini tile immediately
   });
 
   clearBtn.addEventListener('click', () => {
@@ -211,6 +263,7 @@ const serverCheck = (() => {
     input.value = '';
     notice.style.display = 'none';
     testOut.style.display = 'none';
+    serverCheck.check();   // update Gemini tile immediately
   });
 
   testBtn.addEventListener('click', async () => {
@@ -227,6 +280,9 @@ const serverCheck = (() => {
     testOut.textContent = 'Calling Gemini\u2026';
 
     try {
+      // Sends an empty frame — the server now handles this with a text-only prompt
+      // ("Reply: API key is valid.") rather than an empty image, so the key is
+      // actually validated without needing a camera frame.
       const res = await fetch('/api/gemini/describe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -234,22 +290,34 @@ const serverCheck = (() => {
         signal: AbortSignal.timeout(35000),
       });
       const data = await res.json();
-      // Use server's _source field — reliable, unlike a fragile length heuristic.
-      // "cache" means the API call failed (bad key, empty frame rejected, rate limit, etc.)
       const isCache = data._source === 'cache';
       if (isCache) {
+        // Key test failed — show reason clearly, skip the confusing cache response text
+        const reason = (data._reason || 'unknown');
+        const isNoKey = reason === 'no_api_key';
         testOut.style.color = 'var(--color-warn)';
-        testOut.textContent =
-          'Cache fallback returned \u2014 the empty test frame was rejected or the key is invalid.\n\n'
-          + 'Tip: For a definitive test, start the camera in Module 5, point it at a scene, and press "Describe scene".\n\n'
-          + JSON.stringify(data, null, 2);
+
+        let msg = '';
+        if (isNoKey) {
+          msg = 'No key transmitted (internal error — try again).';
+        } else if (reason.includes('401') || reason.includes('UNAUTHENTICATED')) {
+          msg = 'Key rejected (401) — this is not a valid Gemini API key.\n\nGemini API keys start with AIza... and are issued at:\nhttps://aistudio.google.com/app/apikey';
+        } else if (reason.includes('429') || reason.includes('RESOURCE_EXHAUSTED')) {
+          msg = 'Rate limit hit (429) — the key is valid but you\'ve exceeded the free quota.\n\nWait a minute and try again, or check usage at https://aistudio.google.com/';
+        } else {
+          msg = 'API call failed.\n\nReason: ' + reason.substring(0, 200)
+            + '\n\nGet a free key at https://aistudio.google.com/app/apikey';
+        }
+        testOut.textContent = msg;
       } else {
-        // _source === "gemini" — API was reached and responded to the call
+        // Key is valid — show the response, but strip internal fields
         hubConfig.setApiKey(key);
         notice.style.display = 'inline';
         setTimeout(() => { notice.style.display = 'none'; }, 3000);
         testOut.style.color = 'var(--color-ok)';
-        testOut.textContent = 'Gemini API responded (key accepted):\n\n' + JSON.stringify(data, null, 2);
+        const display = Object.fromEntries(Object.entries(data).filter(([k]) => !k.startsWith('_')));
+        testOut.textContent = '\u2714 Key is valid — Gemini responded:\n\n' + JSON.stringify(display, null, 2);
+        serverCheck.check();   // update Gemini tile to "Browser key set"
       }
     } catch (err) {
       testOut.style.color = 'var(--color-error)';
@@ -299,16 +367,6 @@ const serverCheck = (() => {
 
 
 // ---------------------------------------------------------------------------
-// Challenge card accordion — open/close on header click
-// ---------------------------------------------------------------------------
-document.querySelectorAll('.challenge-card .challenge-header').forEach(header => {
-  header.addEventListener('click', () => {
-    header.closest('.challenge-card').classList.toggle('open');
-  });
-});
-
-
-// ---------------------------------------------------------------------------
 // Module 3 — RL training chart (Chart.js + SSE progress stream)
 // ---------------------------------------------------------------------------
 (() => {
@@ -345,6 +403,7 @@ document.querySelectorAll('.challenge-card .challenge-header').forEach(header =>
 
   trainBtn.addEventListener('click', async () => {
     trainBtn.disabled = true;
+    trainBtn.setAttribute('aria-busy', 'true');   // Pico spinner on button
     statusEl.textContent = 'Starting training\u2026';
     statusEl.style.color = 'var(--color-muted)';
     chart.data.labels = [];
@@ -362,8 +421,8 @@ document.querySelectorAll('.challenge-card .challenge-header').forEach(header =>
       es.onmessage = (e) => {
         const data = JSON.parse(e.data);
         if (data.done) {
+          trainBtn.removeAttribute('aria-busy');
           if (data.error) {
-            // Training failed — surface the error clearly
             statusEl.textContent = 'Training failed: ' + data.error;
             statusEl.style.color = 'var(--color-error)';
           } else {
@@ -372,7 +431,7 @@ document.querySelectorAll('.challenge-card .challenge-header').forEach(header =>
           }
           es.close();
           trainBtn.disabled = false;
-          serverCheck.check();   // refresh training tile
+          serverCheck.check();
           return;
         }
         if (data.timestep != null && data.mean_reward != null) {
@@ -386,15 +445,89 @@ document.querySelectorAll('.challenge-card .challenge-header').forEach(header =>
       };
 
       es.onerror = () => {
+        trainBtn.removeAttribute('aria-busy');
         statusEl.textContent = 'Stream error \u2014 training may still be running in background.';
         statusEl.style.color = 'var(--color-warn)';
         es.close();
         trainBtn.disabled = false;
       };
     } catch (err) {
+      trainBtn.removeAttribute('aria-busy');
       statusEl.textContent = 'Error: ' + err.message;
       statusEl.style.color = 'var(--color-error)';
       trainBtn.disabled = false;
     }
   });
+})();
+
+
+// ---------------------------------------------------------------------------
+// File opener — auto-wire all <code> elements that reference .py / .ipynb files
+// Adds a small [open] button next to each reference; clicking calls the server
+// which uses the OS default handler (whatever IDE the user has set up).
+// ---------------------------------------------------------------------------
+(() => {
+  /**
+   * Call the server to open a file using the OS default handler.
+   * @param {string} relPath  Relative path from repo root, e.g. "modules/01_perception/exercise.py"
+   * @param {HTMLElement} btn  The button element — shows brief feedback
+   */
+  async function openFile(relPath, btn) {
+    const original = btn.textContent;
+    btn.textContent = '\u23f3';   // hourglass while opening
+    btn.disabled = true;
+    try {
+      const res = await fetch(
+        '/api/open-file?path=' + encodeURIComponent(relPath),
+        { signal: AbortSignal.timeout(5000) }
+      );
+      const data = await res.json();
+      if (data.opened) {
+        btn.textContent = '\u2713';  // checkmark on success
+        setTimeout(() => { btn.textContent = original; btn.disabled = false; }, 1500);
+      } else {
+        btn.textContent = '!';
+        btn.title = data.error || 'Could not open file';
+        setTimeout(() => { btn.textContent = original; btn.disabled = false; btn.title = ''; }, 3000);
+      }
+    } catch {
+      btn.textContent = original;
+      btn.disabled = false;
+    }
+  }
+
+  /**
+   * Returns true if the text looks like a file path we can open.
+   * Matches: modules/XX_.../something.py, utils/something.py, something.ipynb
+   */
+  function isOpenablePath(text) {
+    return /\.(py|ipynb)$/.test(text.trim()) &&
+           /^(modules\/|utils\/|api\/|[a-zA-Z0-9_/.-]+\.(py|ipynb)$)/.test(text.trim());
+  }
+
+  function wireFileLinks() {
+    document.querySelectorAll('code').forEach(el => {
+      const text = el.textContent.trim();
+      if (!isOpenablePath(text)) return;
+      // Don't double-wire
+      if (el.nextSibling && el.nextSibling.classList?.contains('file-open-btn')) return;
+
+      const btn = document.createElement('button');
+      btn.className = 'file-open-btn';
+      btn.textContent = 'open';
+      btn.title = 'Open in default editor: ' + text;
+      btn.setAttribute('aria-label', 'Open ' + text + ' in default editor');
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        openFile(text, btn);
+      });
+
+      // Insert immediately after the <code> element
+      el.insertAdjacentElement('afterend', btn);
+    });
+  }
+
+  // Run once DOM is ready, then re-run if content is dynamically injected
+  wireFileLinks();
 })();

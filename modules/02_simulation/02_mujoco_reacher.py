@@ -3,14 +3,19 @@
 Module 2 Demo: MuJoCo Reacher
 Introduces the Reacher-v5 environment and its state vector.
 
-Reacher state vector — shape (11,):
-  [cos θ0, sin θ0, cos θ1, sin θ1,   # joint angles (cos/sin encoding)
-   target_x, target_y,                 # target position in the plane
-   angular_vel0, angular_vel1,         # joint angular velocities
-   fingertip_x, fingertip_y, dist]     # fingertip position + distance to target
+Reacher-v5 state vector — shape (10,):
+  obs[0] = cos(θ₁)   obs[1] = cos(θ₂)   — joint angles, cos-encoded
+  obs[2] = sin(θ₁)   obs[3] = sin(θ₂)   — joint angles, sin-encoded
+  obs[4] = target_x  obs[5] = target_y   — target world position
+  obs[6] = ω₁        obs[7] = ω₂         — joint angular velocities
+  obs[8] = fingertip_x − target_x        — relative vector to target
+  obs[9] = fingertip_y − target_y        —   (distance = hypot(obs[8], obs[9]))
+
+NOTE: obs[8]/obs[9] are NOT absolute fingertip coordinates — they are the
+vector FROM target TO fingertip. This changed in v5 (z was removed).
 
 Action vector — shape (2,):
-  [torque_joint0, torque_joint1]       # continuous torques in [-1, 1]
+  [torque_joint0, torque_joint1]   — continuous torques in [-1, 1]
 
 If OpenGL / display rendering is unavailable the render fallback in
 make_env() activates silently (rgb_array → None), so the script works on

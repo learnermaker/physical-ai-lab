@@ -4,8 +4,6 @@
  * Exports (via window.*):
  *   window.webcamManager    — getUserMedia lifecycle, canvas draw loop
  *   window.mediapipeHandler — HandLandmarker init, overlay drawing, angle computation
- *
- * Both are exposed on window so Module 4 can reuse them if needed.
  */
 'use strict';
 
@@ -26,7 +24,7 @@ const webcamManager = (() => {
 
   let stream   = null;
   let rafId    = null;
-  let _onFrame = null;   // callback(ctx, video, timestamp)
+  let _onFrame = null;
 
   async function start(onFrame) {
     if (stream) return;   // already running
@@ -42,7 +40,10 @@ const webcamManager = (() => {
   function _loop() {
     rafId = requestAnimationFrame((ts) => {
       if (!stream) return;
-      if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA) {
+      // HAVE_CURRENT_DATA + videoWidth > 0 ensures the browser is actually
+      // decoding frames. display:none can suppress decoding on some engines —
+      // we use opacity:0 in CSS instead to keep the video in the render pipeline.
+      if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA && video.videoWidth > 0) {
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         if (_onFrame) _onFrame(ctx, video, ts);
       }
@@ -68,7 +69,7 @@ window.webcamManager = webcamManager;
 // mediapipeHandler — HandLandmarker init, joint angle computation, overlay
 // ---------------------------------------------------------------------------
 const mediapipeHandler = (() => {
-  let handLandmarker      = null;
+  let handLandmarker      = null;   // null until first _init(); null again after stop()
   let latestResult        = null;
   let lastTs              = -1;
   let drawingUtils        = null;
@@ -79,8 +80,6 @@ const mediapipeHandler = (() => {
   const stopBtn  = document.getElementById('m1-stop-btn');
   const statusEl = document.getElementById('m1-status');
 
-  // Angle at vertex V between rays V→A and V→B.
-  // atan2(|u×v|, u·v) handles the full [0°, 180°] range without acos issues.
   function computeAngle(ax, ay, vx, vy, bx, by) {
     const ux = ax - vx, uy = ay - vy;
     const wx = bx - vx, wy = by - vy;
@@ -90,42 +89,40 @@ const mediapipeHandler = (() => {
   }
 
   async function _init() {
+    if (handLandmarker) return;   // already initialised — skip reload
+
     statusEl.textContent = 'Loading model\u2026';
-    const { HandLandmarker, FilesetResolver, DrawingUtils } = await import(
-      MEDIAPIPE_CDN + 'vision_bundle.mjs'
-    );
-    HandLandmarkerClass = HandLandmarker;
-    const filesetResolver = await FilesetResolver.forVisionTasks(MEDIAPIPE_CDN + 'wasm');
-    handLandmarker = await HandLandmarker.createFromOptions(filesetResolver, {
-      baseOptions:    { modelAssetPath: MODEL_URL },
-      runningMode:    'LIVE_STREAM',
-      numHands:       2,
-      resultCallback: (result, _image, ts) => {
-        latestResult = result;
-        _processResult(result);
-      }
-    });
-    const canvas = webcamManager.getCanvas();
-    drawingUtils = new DrawingUtils(canvas.getContext('2d'));
-    statusEl.textContent = '';
+    startBtn.setAttribute('aria-busy', 'true');
+    try {
+      const { HandLandmarker, FilesetResolver, DrawingUtils } = await import(
+        MEDIAPIPE_CDN + 'vision_bundle.mjs'
+      );
+      HandLandmarkerClass = HandLandmarker;
+      const filesetResolver = await FilesetResolver.forVisionTasks(MEDIAPIPE_CDN + 'wasm');
+      handLandmarker = await HandLandmarker.createFromOptions(filesetResolver, {
+        baseOptions:    { modelAssetPath: MODEL_URL },
+        runningMode:    'LIVE_STREAM',
+        numHands:       2,
+        resultCallback: (result) => {
+          _processResult(result);
+        }
+      });
+      const canvas = webcamManager.getCanvas();
+      drawingUtils = new DrawingUtils(canvas.getContext('2d'));
+      statusEl.textContent = '';
+    } finally {
+      startBtn.removeAttribute('aria-busy');
+    }
   }
 
   function _processResult(result) {
-    const canvas = webcamManager.getCanvas();
-    const ctx    = canvas.getContext('2d');
+    // Store result — drawing happens in onFrame() so landmarks are always
+    // composited on top of the freshly drawn video frame in the same rAF tick.
+    latestResult = result;
 
     if (!result.landmarks || result.landmarks.length === 0) {
       stateVec.textContent = '\u2014 no hand detected \u2014';
       return;
-    }
-
-    for (const landmarks of result.landmarks) {
-      drawingUtils.drawConnectors(
-        landmarks,
-        HandLandmarkerClass.HAND_CONNECTIONS,
-        { color: '#38bdf8', lineWidth: 2 }
-      );
-      drawingUtils.drawLandmarks(landmarks, { color: '#5b6af0', radius: 3 });
     }
 
     const lm = result.landmarks[0];
@@ -138,6 +135,20 @@ const mediapipeHandler = (() => {
 
   function onFrame(_ctx, video, ts) {
     if (!handLandmarker) return;
+
+    // Draw landmarks from the PREVIOUS result on top of the video frame drawn
+    // by webcamManager just before calling this callback — same rAF tick, no wipe.
+    if (latestResult && latestResult.landmarks && latestResult.landmarks.length > 0) {
+      for (const landmarks of latestResult.landmarks) {
+        drawingUtils.drawConnectors(
+          landmarks,
+          HandLandmarkerClass.HAND_CONNECTIONS,
+          { color: '#38bdf8', lineWidth: 2 }
+        );
+        drawingUtils.drawLandmarks(landmarks, { color: '#5b6af0', radius: 3 });
+      }
+    }
+
     if (ts <= lastTs) return;
     lastTs = ts;
     handLandmarker.detectForVideo(video, ts);
@@ -146,19 +157,18 @@ const mediapipeHandler = (() => {
   async function start() {
     startBtn.disabled = true;
     try {
-      await _init();
+      await _init();                      // no-op if already loaded
       await webcamManager.start(onFrame);
       stopBtn.disabled = false;
     } catch (err) {
-      // Give actionable guidance based on the error type
       let msg = '';
       const m = err.message || '';
       if (m.includes('fetch') || m.includes('Failed to load') || m.includes('import')) {
-        msg = 'MediaPipe failed to load from CDN — check your internet connection and reload the page.';
+        msg = 'MediaPipe failed to load from CDN \u2014 check your internet connection and reload.';
       } else if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-        msg = 'Camera permission denied — allow camera access in your browser settings and click Start Camera again.';
+        msg = 'Camera permission denied \u2014 allow camera access in browser settings, then click Start again.';
       } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
-        msg = 'No camera found — connect a webcam or check Windows camera privacy settings (Settings \u2192 Privacy \u2192 Camera).';
+        msg = 'No camera found \u2014 connect a webcam or check Windows camera privacy settings.';
       } else {
         msg = 'Error: ' + m;
       }
@@ -169,11 +179,25 @@ const mediapipeHandler = (() => {
   }
 
   function stop() {
+    // Stop the camera + rAF loop
     webcamManager.stop();
+
+    // Close the MediaPipe landmarker and release WASM/WebGL resources
+    if (handLandmarker) {
+      try { handLandmarker.close(); } catch (_) {}
+      handLandmarker      = null;
+      drawingUtils        = null;
+      HandLandmarkerClass = null;
+    }
+
+    // Clear stale state so re-start is clean
+    latestResult = null;
+    lastTs       = -1;
+
     stateVec.textContent = '\u2014';
+    statusEl.textContent = '';
     startBtn.disabled    = false;
     stopBtn.disabled     = true;
-    lastTs = -1;
   }
 
   function getLatestResult() { return latestResult; }

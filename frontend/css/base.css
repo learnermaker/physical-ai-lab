@@ -1,12 +1,8 @@
 /* ==========================================================================
-   base.css — Reset, CSS custom properties, typography, layout grid, utilities
+   base.css — CSS custom properties, layout grid, utilities
    Physical AI Workshop Hub
+   (Reset, typography, code/pre handled by Pico CSS conditional)
    ========================================================================== */
-
-/* -----------------------------------------------------------------------
-   Reset & base
------------------------------------------------------------------------ */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
   --sidebar-w: 220px;
@@ -19,13 +15,13 @@
   --color-border:   #e5e2dc;
   --color-border-strong: #c8c4bb;
   --color-accent:   #b45309;   /* warm amber-brown — primary interactive colour */
-  --color-accent2:  #b45309;   /* unified: was electric blue, now same warm amber */
+  --color-accent2:  #b45309;
   --color-text:     #1c1917;
   --color-muted:    #78716c;
   --color-code-bg:  #f5f3ee;
   --color-code-border: #d6d0c4;
 
-  /* Status colours — muted, print-like */
+  /* Status colours */
   --color-ok:       #166534;
   --color-ok-bg:    #f0fdf4;
   --color-warn:     #92400e;
@@ -36,9 +32,25 @@
   --radius: 5px;
   --font: 'Inter', system-ui, -apple-system, sans-serif;
   --font-mono: 'Consolas', 'JetBrains Mono', monospace;
+
+  /* Pico overrides — map our palette into Pico's CSS var system */
+  --pico-font-family-sans-serif: var(--font);
+  --pico-font-family-monospace: var(--font-mono);
+  --pico-primary:           var(--color-accent);
+  --pico-primary-hover:     #92400e;
+  --pico-primary-focus:     rgba(180,83,9,0.25);
+  --pico-border-radius:     var(--radius);
+  --pico-code-background-color: var(--color-code-bg);
+  --pico-code-color:        #44403c;
+  --pico-color:             var(--color-text);
+  --pico-background-color:  var(--color-bg);
+  --pico-card-background-color: var(--color-surface);
+  --pico-card-border-color: var(--color-border);
+  --pico-muted-color:       var(--color-muted);
+  --pico-muted-border-color: var(--color-border);
 }
 
-html { font-size: 15px; scroll-behavior: smooth; }
+html { font-size: 14px; scroll-behavior: smooth; }
 
 body {
   font-family: var(--font);
@@ -54,7 +66,7 @@ body {
    Server-not-running banner (full-width, row 1)
 ----------------------------------------------------------------------- */
 #server-banner {
-  display: none;             /* JS shows/hides */
+  display: none;
   grid-column: 1 / -1;
   background: #7c2d12;
   color: #fde68a;
@@ -79,9 +91,11 @@ body.server-down #server-banner { display: block; }
 #content {
   grid-column: 2;
   grid-row: 2;
-  padding: 32px 40px;
+  padding: 28px 40px;
   overflow-y: auto;
-  max-width: 960px;
+  /* No max-width — let content fill the column. Inner cards have their own widths. */
+  /* Use a soft max to keep lines readable on very wide screens */
+  max-width: min(100%, 1200px);
 }
 
 section {
@@ -134,29 +148,240 @@ section > .section-subtitle {
 .mt-16 { margin-top: 16px; }
 .mt-20 { margin-top: 20px; }
 
-code {
-  font-family: var(--font-mono);
+/* -----------------------------------------------------------------------
+   Extracted inline-style utilities
+   (replaces repeated style="" attributes throughout index.html)
+----------------------------------------------------------------------- */
+
+/* Status / caption text — muted small print */
+.text-status {
+  font-size: 0.82rem;
+  color: var(--color-muted);
+}
+
+/* Card lead paragraph — slightly larger muted intro line */
+.card-lead {
+  font-size: 0.85rem;
+  color: var(--color-muted);
+  margin-bottom: 10px;
+}
+
+/* Hint text — smallest muted annotation */
+.text-hint {
+  font-size: 0.78rem;
+  color: var(--color-muted);
+}
+
+/* Inline flex row — buttons / controls row */
+.flex-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Camera / canvas wrapper — fixed 320×240 positioned container */
+.cam-wrap {
+  position: relative;
+  width: 320px;
+  height: 240px;
+}
+
+/* Camera video element — must NOT be display:none.
+   Browsers skip frame decoding for display:none video, which breaks MediaPipe.
+   We hide it visually with opacity:0 while keeping it in the rendering pipeline. */
+.cam-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 320px;
+  height: 240px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Camera canvas overlay */
+.cam-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 320px;
+  height: 240px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+/* Sim image — fluid, border, block */
+.sim-img {
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  display: block;
+}
+
+/* Concept/callout card spacing when stacked */
+.concept-card + .concept-card,
+.mt-10 { margin-top: 10px; }
+
+/* chart container */
+.chart-wrap {
+  position: relative;
+  height: 280px;
+}
+
+/* Live state vector pre */
+.state-vector-out {
+  font-size: 1.1rem;
+  color: var(--color-ok);
+  min-height: 2em;
+  margin: 8px 0;
+}
+
+/* Gemini response pre */
+.gemini-out {
+  font-size: 0.82rem;
+  color: var(--color-ok);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Gemini cache notice */
+.cache-notice {
+  font-size: 0.75rem;
+  color: var(--color-warn);
+  margin-top: 6px;
+  border-left: 3px solid var(--color-warn);
+  padding: 4px 8px;
+  border-radius: 2px;
+}
+
+/* Gemini test result box */
+.api-test-result {
+  display: none;
+  margin-top: 12px;
+  padding: 10px 14px;
   background: var(--color-code-bg);
   border: 1px solid var(--color-code-border);
-  padding: 1px 5px;
-  border-radius: 3px;
-  font-size: 0.85em;
-  color: #44403c;
-}
-
-pre {
-  background: var(--color-code-bg);
-  border-left: 3px solid var(--color-border-strong);
-  padding: 12px 16px;
   border-radius: var(--radius);
-  overflow-x: auto;
+  font-size: 0.82rem;
+  font-family: var(--font-mono);
+  color: var(--color-text);
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
-/* pre > code inherits pre's background — remove double border */
-pre code {
-  background: none;
-  border: none;
+/* M2 simulation frame image */
+.sim-frame {
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  display: block;
+  cursor: zoom-in;
+}
+
+/* M2 fullscreen overlay */
+.sim-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0,0,0,0.92);
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+/* M2 overlay close button */
+.sim-overlay-close {
+  margin-top: 14px;
+  padding: 8px 20px;
+  background: #333;
+  color: #fff;
+  border: 1px solid #555;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+/* M2 torque slider panel */
+.slider-panel {
+  display: none;
+  margin-bottom: 14px;
+  padding: 12px 14px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}
+
+/* M2 torque slider row label */
+.slider-row {
+  font-size: 0.82rem;
+  color: var(--color-text);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Torque slider value readout */
+.slider-val {
+  min-width: 42px;
+  text-align: right;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+}
+
+/* M2 legend row */
+.sim-legend {
+  display: none;
+  margin-top: 10px;
+  font-size: 0.78rem;
+  color: var(--color-muted);
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* Legend colour swatch — line style */
+.legend-line {
+  display: inline-block;
+  width: 18px;
+  height: 4px;
+  border-radius: 2px;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+
+/* Legend colour swatch — dot style */
+.legend-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+
+/* Key saved notice */
+.key-notice {
+  font-size: 0.82rem;
+  color: var(--color-ok);
+  display: none;
+}
+
+/* Next-steps list */
+.next-steps-list {
+  list-style: none;
+  margin: 0;
   padding: 0;
-  font-size: inherit;
-  color: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* formula-block left-aligned variant (used inline in concept cards) */
+.formula-block.formula-left {
+  text-align: left;
+  font-size: 0.78rem;
 }

@@ -44,7 +44,7 @@
 
       const src = 'data:image/jpeg;base64,' + b64;
       frameImg.src = src;
-      if (overlay.style.display === 'flex') overlayImg.src = src;
+      if (overlay.open) overlayImg.src = src;   // keep dialog fresh while open
 
       // Detect the "Simulation busy" sentinel frame — stop auto-retrying,
       // show a plain stop state so the user clicks Start themselves after
@@ -68,6 +68,8 @@
       const renderBadge = renderMode === 'software'
         ? '  \u00b7  \u26a0\ufe0f software render (no GPU)'
         : '';
+      // First real frame arrived — re-enable Start so the user can restart if needed
+      startBtn.disabled = false;
       status.textContent =
         `Streaming at ~20 fps  |  \u03c4\u2081=${t0Input.value}  \u03c4\u2082=${t1Input.value}${renderBadge}`;
     };
@@ -89,7 +91,7 @@
 
   startBtn.addEventListener('click', () => {
     isRunning = true;
-    startBtn.disabled  = false;
+    startBtn.disabled  = true;     // prevent double-click while connecting
     stopBtn.disabled   = false;
     expandBtn.disabled = false;
     sliders.style.display = 'flex';
@@ -97,13 +99,17 @@
     openStream();
   });
 
-  stopBtn.addEventListener('click', () => {
+  stopBtn.addEventListener('click', async () => {
     isRunning = false;
     clearTimeout(reconnectTimer);
+    // Signal server worker to stop before closing SSE — ensures lock releases promptly
+    try {
+      await fetch('/api/simulation/stop', { method: 'POST', signal: AbortSignal.timeout(2000) });
+    } catch (_) {}
     if (es) { es.close(); es = null; }
     frameImg.src = '';
-    if (overlay.style.display === 'flex') {
-      overlay.style.display = 'none';
+    if (overlay.open) {
+      overlay.close();
       overlayImg.src = '';
     }
     status.textContent = 'Simulation stopped.';
@@ -128,23 +134,23 @@
   t0Input.addEventListener('input', onSliderChange);
   t1Input.addEventListener('input', onSliderChange);
 
-  // Expand overlay
+  // Expand overlay — native <dialog> for focus-trap, Esc, and backdrop
   function showOverlay() {
     if (frameImg.src && frameImg.src !== window.location.href) {
       overlayImg.src = frameImg.src;
-      overlay.style.display = 'flex';
+      overlay.showModal();
     }
   }
   function closeOverlay() {
-    overlay.style.display = 'none';
+    overlay.close();
     overlayImg.src = '';
   }
 
   expandBtn.addEventListener('click', showOverlay);
   frameImg.addEventListener('click', () => { if (isRunning) showOverlay(); });
   overlayClose.addEventListener('click', closeOverlay);
+  // Clicking the backdrop (outside the dialog content) also closes
   overlay.addEventListener('click', (e) => { if (e.target === overlay) closeOverlay(); });
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && overlay.style.display === 'flex') closeOverlay();
-  });
+  // Esc is handled automatically by the browser for <dialog>; sync our state:
+  overlay.addEventListener('close', () => { overlayImg.src = ''; });
 })();

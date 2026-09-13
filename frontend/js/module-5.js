@@ -21,7 +21,7 @@
   const canvas      = document.getElementById('m5-canvas');
   const ctx         = canvas.getContext('2d');
   const resultEl    = document.getElementById('m5-result');
-  const spinner     = document.getElementById('m5-spinner');
+  const resultCard  = document.getElementById('m5-result-card');  // aria-busy target
   const cacheNotice = document.getElementById('m5-cache-notice');
   let stream = null;
 
@@ -31,9 +31,8 @@
   }
 
   function showResult(data, isText) {
-    spinner.style.display = 'none';
+    resultCard.removeAttribute('aria-busy');   // stop Pico spinner
 
-    // Show the content (strip internal _source/_reason keys from display)
     const displayData = Object.fromEntries(
       Object.entries(data).filter(([k]) => !k.startsWith('_'))
     );
@@ -41,8 +40,6 @@
       ? (data.text || JSON.stringify(displayData))
       : JSON.stringify(displayData, null, 2);
 
-    // Show fallback notice based on server's _source field, not on key presence.
-    // This correctly catches: no key, invalid key, API down, rate limit, etc.
     const isCache = data._source === 'cache';
     if (isCache) {
       const reason = data._reason || 'unknown';
@@ -57,10 +54,9 @@
   }
 
   async function callApi(endpoint) {
-    // If camera is not running, send empty frame — server will use cache fallback.
     const frame_b64 = stream ? getFrame() : '';
     const api_key   = window.hubConfig?.getApiKey() || null;
-    spinner.style.display = 'block';
+    resultCard.setAttribute('aria-busy', 'true');   // Pico shows spinner
     resultEl.textContent  = '';
     cacheNotice.style.display = 'none';
     const res = await fetch(endpoint, {
@@ -118,7 +114,7 @@
     try {
       showResult(await callApi('/api/gemini/describe'), true);
     } catch (err) {
-      spinner.style.display = 'none';
+      resultCard.removeAttribute('aria-busy');
       resultEl.textContent = 'Error: ' + err.message;
     }
   });
@@ -127,7 +123,7 @@
     try {
       showResult(await callApi('/api/gemini/action'), false);
     } catch (err) {
-      spinner.style.display = 'none';
+      resultCard.removeAttribute('aria-busy');
       resultEl.textContent = 'Error: ' + err.message;
     }
   });

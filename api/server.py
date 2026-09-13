@@ -124,7 +124,89 @@ _jobs: dict[str, queue.Queue] = {}
 
 # Concurrency guard for simulation stream — one active MuJoCo env at a time.
 # MuJoCo's GLFW/EGL context is not safe to use from multiple concurrent threads.
-_sim_lock = threading.Semaphore(1)
+_sim_lock   = threading.Lock()    # Lock (not Semaphore) — double-release raises RuntimeError immediately
+_sim_stop   = threading.Event()   # Set to signal the worker to exit at any safe point.
+                                  # Cleared automatically when a new stream successfully acquires the lock.
+_sim_action = np.zeros(2, dtype=np.float32)   # Mutable action updated via POST /api/simulation/action.
+                                              # Worker reads this each step — no reconnect needed on move.
+
+# ---------------------------------------------------------------------------
+# Gemini response cache — prevents duplicate calls on rapid double-click.
+# Each participant runs their own server with their own API key, so this
+# cache is per-user and per-process. TTL is kept short (5 s) so that moving
+# the camera and clicking again always gets a fresh response.
+# ---------------------------------------------------------------------------
+import hashlib as _hashlib  # noqa: E402
+import time as _time_module  # noqa: E402
+
+_gemini_response_cache: dict = {}          # {hash: (timestamp, response_dict)}
+_GEMINI_CACHE_TTL_S: int = 5               # seconds — short enough that a new frame always gets a fresh call
+
+
+def _gemini_cache_get(cache_key: str) -> dict | None:
+    """Return cached Gemini response if still fresh, else None."""
+    entry = _gemini_response_cache.get(cache_key)
+    if entry is None:
+        return None
+    ts, payload = entry
+    if _time_module.monotonic() - ts > _GEMINI_CACHE_TTL_S:
+        del _gemini_response_cache[cache_key]
+        return None
+    return payload
+
+
+def _gemini_cache_put(cache_key: str, payload: dict) -> None:
+    """Store a Gemini response; evict entries older than 2× TTL to cap memory."""
+    now = _time_module.monotonic()
+    _gemini_response_cache[cache_key] = (now, payload)
+    # Evict stale entries if the cache grows large
+    if len(_gemini_response_cache) > 200:
+        cutoff = now - 2 * _GEMINI_CACHE_TTL_S
+        stale = [k for k, (ts, _) in list(_gemini_response_cache.items()) if ts < cutoff]
+        for k in stale:
+            _gemini_response_cache.pop(k, None)
+
+
+def _gemini_cache_key(endpoint: str, api_key: str, frame_bytes: bytes) -> str:
+    h = _hashlib.sha256(f"{endpoint}:{api_key}:".encode() + frame_bytes).hexdigest()[:16]
+    return h
+
+
+@app.get("/api/open-file")
+async def open_file(path: str = Query(...)) -> JSONResponse:
+    """Open a repo file in the OS default handler.
+
+    Accepts a relative path (e.g. ``modules/01_perception/exercise.py``).
+    Resolves it against the repo root and calls the OS default file handler —
+    whatever the participant has set as their default for ``.py`` / ``.ipynb``
+    (VS Code, Cursor, PyCharm, Notepad, etc.).
+
+    Returns JSON with ``opened: true`` on success, ``error: str`` on failure.
+    Only paths inside the repo root are permitted (path traversal guard).
+    """
+    import subprocess  # noqa: PLC0415
+
+    try:
+        # Resolve and validate — must stay inside the repo root
+        target = (_REPO_ROOT / path).resolve()
+        if not str(target).startswith(str(_REPO_ROOT)):
+            return JSONResponse({"opened": False, "error": "Path outside repo"}, status_code=400)
+        if not target.exists():
+            return JSONResponse({"opened": False, "error": f"File not found: {path}"}, status_code=404)
+
+        # Use the OS default handler — respects user's configured IDE
+        import sys as _sys  # noqa: PLC0415
+        if _sys.platform == "win32":
+            import os as _os  # noqa: PLC0415
+            _os.startfile(str(target))
+        elif _sys.platform == "darwin":
+            subprocess.Popen(["open", str(target)])
+        else:  # Linux / other
+            subprocess.Popen(["xdg-open", str(target)])
+
+        return JSONResponse({"opened": True, "path": str(target)})
+    except Exception as exc:
+        return JSONResponse({"opened": False, "error": str(exc)}, status_code=500)
 
 
 @app.get("/api/config")
@@ -168,18 +250,21 @@ async def get_status() -> JSONResponse:
 
 
 def _make_status_frame(obs: np.ndarray, action: np.ndarray, step: int) -> str:
-    """Render a 480x360 JPEG frame showing the Reacher-v5 arm geometry.
+    """Render a 640x480 JPEG frame showing the Reacher-v5 arm geometry.
 
     Draws the two-link arm, target, fingertip, and torque indicators using
     PIL — no GPU or OpenGL required.
 
-    Reacher-v5 observation layout (10 values):
-        obs[0] = cos(θ₁)   obs[2] = sin(θ₁)   — joint 1 (shoulder)
-        obs[1] = cos(θ₂)   obs[3] = sin(θ₂)   — joint 2 (elbow)
-        obs[4] = target_x  obs[5] = target_y
-        obs[6] = vel_θ₁    obs[7] = vel_θ₂
-        obs[8] = fingertip_x  obs[9] = fingertip_y
-    All positions are in MuJoCo world units; each arm link is 0.1 m.
+    Reacher-v5 observation layout (10 values, per gymnasium docs):
+        obs[0] = cos(θ₁)   obs[1] = cos(θ₂)   — joint angles (shoulder, elbow)
+        obs[2] = sin(θ₁)   obs[3] = sin(θ₂)
+        obs[4] = target_x  obs[5] = target_y   — target world position
+        obs[6] = ω₁        obs[7] = ω₂         — angular velocities
+        obs[8] = fingertip_x − target_x        — relative vector (NOT absolute)
+        obs[9] = fingertip_y − target_y
+    Fingertip absolute position is recovered via forward kinematics.
+    Distance to target = hypot(obs[8], obs[9]).
+    Each arm link is 0.1 m.
     """
     import io  # noqa: PLC0415
     import math  # noqa: PLC0415
@@ -235,23 +320,36 @@ def _make_status_frame(obs: np.ndarray, action: np.ndarray, step: int) -> str:
     draw.line([(sx, sy), (ex, ey)], fill=C_AXIS, width=1)
 
     # ── extract geometry ────────────────────────────────────────────────────
+    # Official Reacher-v5 obs layout (10 values, from gymnasium docs):
+    #   obs[0] = cos(θ₁)  obs[1] = cos(θ₂)   — joint 1 (shoulder), joint 2 (elbow)
+    #   obs[2] = sin(θ₁)  obs[3] = sin(θ₂)
+    #   obs[4] = target_x   obs[5] = target_y   — target in world coords
+    #   obs[6] = ω₁          obs[7] = ω₂         — angular velocities
+    #   obs[8] = fingertip_x − target_x          — relative vector (NOT absolute!)
+    #   obs[9] = fingertip_y − target_y
     cos1, cos2 = float(obs[0]), float(obs[1])
     sin1, sin2 = float(obs[2]), float(obs[3])
     target_x, target_y  = float(obs[4]), float(obs[5])
-    finger_x, finger_y  = float(obs[8]), float(obs[9])
+    # obs[8], obs[9] are relative (fingertip - target), not absolute positions.
+    # Recover absolute fingertip via forward kinematics: two links of length L.
+    rel_x, rel_y = float(obs[8]), float(obs[9])
 
     theta1 = math.atan2(sin1, cos1)
     theta2 = math.atan2(sin2, cos2)
     L = 0.1
 
-    shoulder = (0.0, 0.0)
-    elbow    = (L * math.cos(theta1),
-                L * math.sin(theta1))
-    fingertip = (finger_x, finger_y)  # use observed position (includes physics)
+    shoulder  = (0.0, 0.0)
+    elbow     = (L * math.cos(theta1),
+                 L * math.sin(theta1))
+    # Forward kinematics: fingertip = shoulder + link1 + link2
+    finger_x  = L * math.cos(theta1) + L * math.cos(theta1 + theta2)
+    finger_y  = L * math.sin(theta1) + L * math.sin(theta1 + theta2)
+    # Scalar distance is simply the norm of the relative vector from obs
+    dist      = math.hypot(rel_x, rel_y)
 
     ps  = w2p(*shoulder)
     pe  = w2p(*elbow)
-    pf  = w2p(*fingertip)
+    pf  = w2p(finger_x, finger_y)
     pt  = w2p(target_x, target_y)
 
     # ── reach radius hint ───────────────────────────────────────────────────
@@ -268,7 +366,7 @@ def _make_status_frame(obs: np.ndarray, action: np.ndarray, step: int) -> str:
     draw.text((pt[0] + TR + 3, pt[1] - 7), "target", fill=C_TARGET)
 
     # ── distance line ───────────────────────────────────────────────────────
-    dist = math.hypot(finger_x - target_x, finger_y - target_y)
+    # dist already computed above as hypot(obs[8], obs[9]) — the relative vector
     draw.line([pf, pt], fill=(120, 60, 60), width=1)
     mx, my = (pf[0] + pt[0]) // 2, (pf[1] + pt[1]) // 2
     draw.text((mx + 3, my - 9), f"d={dist:.3f}", fill=(160, 90, 90))
@@ -330,8 +428,8 @@ def _make_status_frame(obs: np.ndarray, action: np.ndarray, step: int) -> str:
     draw.text((PX, 212), f"  x = {target_x:+.3f}", fill=C_TARGET)
     draw.text((PX, 230), f"  y = {target_y:+.3f}", fill=C_TARGET)
 
-    # Fingertip
-    draw.text((PX, 258), "Fingertip", fill=C_TEXT)
+    # Fingertip (forward-kinematics position)
+    draw.text((PX, 258), "Fingertip (FK)", fill=C_TEXT)
     draw.text((PX, 276), f"  x = {finger_x:+.3f}", fill=C_FINGER)
     draw.text((PX, 294), f"  y = {finger_y:+.3f}", fill=C_FINGER)
 
@@ -381,20 +479,25 @@ def _make_status_frame(obs: np.ndarray, action: np.ndarray, step: int) -> str:
 async def simulation_stream(action: str = Query("0.0,0.0")):
     """SSE: stream Reacher-v5 frames as base64 JPEG at ~20 fps.
 
+    The initial action comes from the query param.  Subsequent action updates
+    arrive via POST /api/simulation/action and are applied in-place to the
+    module-level _sim_action array — no reconnection needed when the finger moves.
+
     The entire MuJoCo env lifecycle runs in a single dedicated daemon thread
     to avoid NULL-pointer crashes from sharing MuJoCo state across thread-pool
     workers (MuJoCo is not safe to use concurrently from multiple threads).
 
     Requirements: 19.4
     """
+    global _sim_action
     try:
         parts = [float(x) for x in action.split(",")]
         if len(parts) != 2:
             parts = [0.0, 0.0]
     except (ValueError, AttributeError):
         parts = [0.0, 0.0]
-    # Clamp to action space [-1, 1]
-    action_array = np.clip(np.array(parts, dtype=np.float32), -1.0, 1.0)
+    # Set initial action on the module-level array
+    _sim_action[:] = np.clip(np.array(parts, dtype=np.float32), -1.0, 1.0)
 
     # Sentinel objects for inter-thread signalling
     _STOP  = object()
@@ -404,11 +507,14 @@ async def simulation_stream(action: str = Query("0.0,0.0")):
 
     def _env_worker() -> None:
         """Runs entirely in one dedicated thread — no shared thread-pool.
+
         Acquires _sim_lock to prevent concurrent MuJoCo instances.
+        Uses module-level _sim_stop (threading.Event) for interruptible sleep —
+        the stop signal wakes the worker immediately rather than waiting for the
+        next loop iteration or env.step() to finish.
+        Waits up to 2 s for a previous worker to release — handles rapid restart.
         """
-        # If another stream is already running, send an error frame immediately
-        # and exit — don't crash with NULL pointer access.
-        acquired = _sim_lock.acquire(blocking=False)
+        acquired = _sim_lock.acquire(blocking=True, timeout=2.0)
         if not acquired:
             try:
                 import io as _io  # noqa: PLC0415
@@ -417,19 +523,19 @@ async def simulation_stream(action: str = Query("0.0,0.0")):
                 d = _ID.Draw(img)
                 d.text((16, 12), "Simulation busy", fill=(255, 220, 100))
                 d.text((16, 32), "Another stream is already running.", fill=(220, 190, 80))
-                d.text((16, 52), "Stop the current simulation, then start again.", fill=(180, 150, 60))
+                d.text((16, 52), "Click Stop simulation, then Start again.", fill=(180, 150, 60))
                 buf = _io.BytesIO()
                 img.save(buf, format="JPEG", quality=70)
-                # Send the error frame and hold the connection open briefly so the
-                # browser shows it.  Do NOT put _STOP immediately — that would
-                # trigger the JS auto-retry loop.
                 frame_queue.put("software|" + base64.b64encode(buf.getvalue()).decode("ascii"))
                 import time as _t  # noqa: PLC0415
-                _t.sleep(1)  # keep connection alive briefly so user sees the message
+                _t.sleep(1)
             except Exception:
                 pass
             frame_queue.put(_STOP)
             return
+
+        # We hold the lock — clear the stop event so this worker runs cleanly.
+        _sim_stop.clear()
 
         env = None
         try:
@@ -442,25 +548,15 @@ async def simulation_stream(action: str = Query("0.0,0.0")):
 
             obs, _ = env.reset()
 
-            while True:
-                # Check if consumer has gone away (stop sentinel poisoned the queue)
-                if not frame_queue.empty():
-                    try:
-                        peeked = frame_queue.queue[0]
-                        if peeked is _STOP:
-                            return   # consumer cancelled — exit worker cleanly
-                    except IndexError:
-                        pass
-
-                # Check if the consumer has gone away
+            while not _sim_stop.is_set():
+                # Drop oldest frame if consumer is slow — keep latency low
                 if frame_queue.full():
-                    # Drop oldest frame rather than block — keeps latency low
                     try:
                         frame_queue.get_nowait()
                     except queue.Empty:
                         pass
 
-                obs, _reward, terminated, truncated, _info = env.step(action_array)
+                obs, _reward, terminated, truncated, _info = env.step(_sim_action.copy())
                 if terminated or truncated:
                     obs, _ = env.reset()
 
@@ -476,8 +572,8 @@ async def simulation_stream(action: str = Query("0.0,0.0")):
                                 frame_queue.put(
                                     "gpu|" + base64.b64encode(buf.tobytes()).decode("ascii")
                                 )
-                                import time as _time  # noqa: PLC0415
-                                _time.sleep(0.05)
+                                # Interruptible sleep — wakes immediately on stop signal
+                                _sim_stop.wait(timeout=0.05)
                                 continue
                         use_status_frame = True
                     except Exception as render_exc:
@@ -491,15 +587,12 @@ async def simulation_stream(action: str = Query("0.0,0.0")):
                 # PIL status-frame path (no GPU)
                 step_n = getattr(_env_worker, "_step", 0)
                 _env_worker._step = step_n + 1
-                # Tag the frame so the browser knows it's software-rendered
-                frame_queue.put("software|" + _make_status_frame(obs, action_array, step_n))
-
-                import time as _time  # noqa: PLC0415
-                _time.sleep(0.05)
+                frame_queue.put("software|" + _make_status_frame(obs, _sim_action, step_n))
+                # Interruptible sleep — wakes immediately on stop signal
+                _sim_stop.wait(timeout=0.05)
 
         except Exception as exc:
             print(f"[sim_worker] fatal: {exc}", file=sys.stderr)
-            # Send an error frame so the browser shows something useful
             try:
                 import io as _io  # noqa: PLC0415
                 from PIL import Image, ImageDraw as _ID  # noqa: PLC0415
@@ -510,7 +603,7 @@ async def simulation_stream(action: str = Query("0.0,0.0")):
                 d.text((16, 60), "Stop and restart simulation to retry.", fill=(180, 140, 140))
                 buf = _io.BytesIO()
                 img.save(buf, format="JPEG", quality=70)
-                frame_queue.put(base64.b64encode(buf.getvalue()).decode("ascii"))
+                frame_queue.put("software|" + base64.b64encode(buf.getvalue()).decode("ascii"))
             except Exception:
                 frame_queue.put(_ERROR)
         finally:
@@ -532,7 +625,6 @@ async def simulation_stream(action: str = Query("0.0,0.0")):
         loop = asyncio.get_running_loop()
         try:
             while True:
-                # Pull frames off the queue without blocking the event loop
                 frame = await loop.run_in_executor(
                     None, lambda: frame_queue.get(timeout=30)
                 )
@@ -540,16 +632,45 @@ async def simulation_stream(action: str = Query("0.0,0.0")):
                     break
                 yield f"data: {frame}\n\n"
         except asyncio.CancelledError:
-            # Client disconnected — signal the worker to stop on next iteration
-            # by draining and poisoning the queue
-            try:
-                while True:
-                    frame_queue.get_nowait()
-            except queue.Empty:
-                pass
-            frame_queue.put(_STOP)
+            # Client disconnected — signal the worker immediately via the event
+            _sim_stop.set()
+        except queue.Empty:
+            pass
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+
+@app.post("/api/simulation/stop")
+async def simulation_stop() -> JSONResponse:
+    """Force-stop any running simulation worker immediately.
+
+    Sets the module-level _sim_stop event so the worker wakes from its
+    interruptible sleep on the next 50 ms tick at most, exits its loop,
+    closes the MuJoCo env, and releases _sim_lock.
+
+    Safe to call even when no simulation is running.
+    """
+    _sim_stop.set()
+    return JSONResponse({"stopped": True})
+
+
+@app.post("/api/simulation/action")
+async def simulation_action(body: dict) -> JSONResponse:
+    """Update the action applied to the running simulation without reconnecting.
+
+    Accepts JSON body: {"action": [x, y]}  where x,y are floats in [-1, 1].
+    Writes directly into the module-level _sim_action array that the worker
+    reads on every env.step() — zero reconnection overhead.
+    """
+    global _sim_action
+    try:
+        vals = body.get("action", [0.0, 0.0])
+        if len(vals) != 2:
+            return JSONResponse({"error": "action must be [x, y]"}, status_code=400)
+        _sim_action[:] = np.clip(np.array(vals, dtype=np.float32), -1.0, 1.0)
+        return JSONResponse({"ok": True, "action": _sim_action.tolist()})
+    except Exception as exc:
+        return JSONResponse({"error": str(exc)}, status_code=400)
 
 
 @app.post("/api/training/start")
@@ -652,17 +773,42 @@ async def gemini_describe(req: GeminiDescribeRequest) -> JSONResponse:
         })
 
     try:
-        jpg_bytes = base64.b64decode(req.frame_b64)
-
         from google import genai  # noqa: PLC0415
         from google.genai import types  # noqa: PLC0415
 
+        # Decode and optionally downscale the frame first (before creating client)
+        jpg_bytes = base64.b64decode(req.frame_b64) if req.frame_b64 else b""
+
+        if jpg_bytes:
+            try:
+                import io as _io  # noqa: PLC0415
+                from PIL import Image as _Img  # noqa: PLC0415
+                img = _Img.open(_io.BytesIO(jpg_bytes))
+                img.thumbnail((512, 512), _Img.LANCZOS)
+                buf = _io.BytesIO()
+                img.save(buf, format="JPEG", quality=70)
+                jpg_bytes = buf.getvalue()
+            except Exception:
+                pass   # use original bytes if PIL fails
+
+            image_part = types.Part.from_bytes(data=jpg_bytes, mime_type="image/jpeg")
+            contents = ["Describe this scene in one sentence.", image_part]
+        else:
+            contents = ["Reply with exactly one sentence: 'API key is valid.'"]
+
+        # Check cache BEFORE creating the API client (avoids creating it on cache hits)
+        cache_key = _gemini_cache_key("describe", key, jpg_bytes)
+        cached = _gemini_cache_get(cache_key)
+        if cached is not None:
+            return JSONResponse({**cached, "_source": "gemini", "_cached": True})
+
         client = genai.Client(api_key=key)
-        image_part = types.Part.from_bytes(data=jpg_bytes, mime_type="image/jpeg")
         response = client.models.generate_content(
             model="gemini-2.5-flash-lite",
-            contents=["Describe this scene in one sentence.", image_part],
+            contents=contents,
         )
+        result = {"text": response.text}
+        _gemini_cache_put(cache_key, result)
         return JSONResponse({"text": response.text, "_source": "gemini"})
     except Exception as exc:
         print(f"[Gemini describe error] {exc}", file=sys.stderr)
@@ -698,23 +844,46 @@ async def gemini_action(req: GeminiActionRequest) -> JSONResponse:
         })
 
     try:
-        jpg_bytes = base64.b64decode(req.frame_b64)
-
         from google import genai  # noqa: PLC0415
         from google.genai import types  # noqa: PLC0415
 
+        # Decode and optionally downscale BEFORE cache check and client creation
+        jpg_bytes = base64.b64decode(req.frame_b64) if req.frame_b64 else b""
+
+        if jpg_bytes:
+            try:
+                import io as _io  # noqa: PLC0415
+                from PIL import Image as _Img  # noqa: PLC0415
+                img = _Img.open(_io.BytesIO(jpg_bytes))
+                img.thumbnail((512, 512), _Img.LANCZOS)
+                buf = _io.BytesIO()
+                img.save(buf, format="JPEG", quality=70)
+                jpg_bytes = buf.getvalue()
+            except Exception:
+                pass
+
+            image_part = types.Part.from_bytes(data=jpg_bytes, mime_type="image/jpeg")
+            contents = [system_prompt, image_part]
+        else:
+            contents = [system_prompt + " (No image available \u2014 respond with: WAIT, reason: no image provided)"]
+
+        # Check cache BEFORE creating the API client
+        cache_key = _gemini_cache_key("action", key, jpg_bytes)
+        cached = _gemini_cache_get(cache_key)
+        if cached is not None:
+            return JSONResponse({**cached, "_source": "gemini", "_cached": True})
+
         client = genai.Client(api_key=key)
-        image_part = types.Part.from_bytes(data=jpg_bytes, mime_type="image/jpeg")
         response = client.models.generate_content(
             model="gemini-2.5-flash-lite",
-            contents=[system_prompt, image_part],
+            contents=contents,
         )
 
-        # Strip markdown fences if the model wrapped the JSON (Design § 4.3).
+        # Strip markdown fences if the model wrapped the JSON.
         text = response.text.strip()
         if text.startswith("```"):
             text = text.split("```")[1]
-            if text.startswith("json"):
+            if text.lower().startswith("json"):   # handles both ```json and ```JSON
                 text = text[4:]
         text = text.strip()
 
@@ -722,6 +891,7 @@ async def gemini_action(req: GeminiActionRequest) -> JSONResponse:
         if "action" not in result:
             raise ValueError(f"Response missing 'action' key: {result}")
 
+        _gemini_cache_put(cache_key, result)
         return JSONResponse({**result, "_source": "gemini"})
     except Exception as exc:
         print(f"[Gemini action error] {exc}", file=sys.stderr)

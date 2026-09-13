@@ -1,7 +1,27 @@
 /* ==========================================================================
    modules.css — Module-specific and content-area styles
    Physical AI Workshop Hub
+   (Table structure/padding handled by Pico CSS; only palette overrides here)
    ========================================================================== */
+
+/* -----------------------------------------------------------------------
+   Table palette overrides — Pico handles structure, we set accent colours
+----------------------------------------------------------------------- */
+.schedule-table td:first-child {
+  font-weight: 600;
+  color: var(--color-accent);
+  white-space: nowrap;
+}
+.schedule-table td:nth-child(2) {
+  color: var(--color-muted);
+  white-space: nowrap;
+}
+.schedule-table tr.buffer td { color: var(--color-muted); font-style: italic; }
+
+.state-table td {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+}
 
 /* -----------------------------------------------------------------------
    Pipeline diagram (Module 0)
@@ -21,165 +41,134 @@
 }
 
 /* -----------------------------------------------------------------------
-   State vector table (Module 0)
+   Concept card — <details> collapsed by default
+   Pico styles <details>/<summary> natively; we add the blue left-accent
 ----------------------------------------------------------------------- */
-.state-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.85rem;
-  margin-top: 12px;
-}
-
-.state-table th {
-  text-align: left;
-  padding: 7px 12px;
-  background: var(--color-bg);
-  color: var(--color-muted);
-  font-weight: 600;
-  border-bottom: 1px solid var(--color-border);
-}
-
-.state-table td {
-  padding: 7px 12px;
-  border-bottom: 1px solid var(--color-border);
-  font-family: var(--font-mono);
-  font-size: 0.82rem;
-}
-
-.state-table tr:last-child td { border-bottom: none; }
-
-/* -----------------------------------------------------------------------
-   Concept map table (Wrap-up)
------------------------------------------------------------------------ */
-.concept-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.88rem;
-}
-
-.concept-table th {
-  text-align: left;
-  padding: 8px 14px;
-  background: var(--color-bg);
-  color: var(--color-muted);
-  font-weight: 600;
-  border-bottom: 1px solid var(--color-border);
-}
-
-.concept-table td {
-  padding: 9px 14px;
-  border-bottom: 1px solid var(--color-border);
-}
-
-.concept-table tr:last-child td { border-bottom: none; }
-
-/* -----------------------------------------------------------------------
-   Concept card — lightweight inline explainer within a module
-   Use inside .card; gives a left-accent stripe + tinted background
------------------------------------------------------------------------ */
-.concept-card {
-  background: #f0f4ff;
-  border: 1px solid #c5cff5;
+details.concept-card {
   border-left: 4px solid #5b6af0;
+  background: #f0f4ff;
   border-radius: var(--radius);
-  padding: 14px 18px;
   margin: 14px 0;
+  /* Pico provides padding, border-radius on details */
 }
 
-.concept-card h4 {
-  font-size: 0.85rem;
+details.concept-card > summary {
+  font-size: 0.82rem;
   font-weight: 700;
   color: #3b4ace;
-  margin-bottom: 6px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  cursor: pointer;
+  padding: 10px 14px;
+  list-style: none;           /* hide default triangle — Pico adds its own */
 }
 
-.concept-card p,
-.concept-card li {
+/* Pico's details summary marker */
+details.concept-card > summary::after {
+  float: right;
+  content: "▼";
+  font-size: 0.7rem;
+  opacity: 0.5;
+  transition: transform 0.2s;
+}
+details.concept-card[open] > summary::after {
+  transform: rotate(180deg);
+}
+
+details.concept-card .concept-body {
+  padding: 0 14px 12px;
   font-size: 0.85rem;
   line-height: 1.65;
   color: var(--color-text);
 }
 
-.concept-card ul {
-  margin: 6px 0 0 18px;
+details.concept-card .concept-body p { margin-bottom: 6px; }
+details.concept-card .concept-body p:last-child { margin-bottom: 0; }
+
+details.concept-card .concept-body ul {
+  margin: 4px 0 0 16px;
+  padding: 0;
 }
 
-.concept-card code {
+details.concept-card .concept-body li { margin-bottom: 3px; }
+
+details.concept-card .concept-body code {
   background: rgba(91, 106, 240, 0.1);
   border: none;
   color: #3b4ace;
-  padding: 1px 5px;
 }
 
 /* -----------------------------------------------------------------------
-   Callout box — a highlighted fact or "key insight" pull-quote
+   Callout box — <blockquote> — Pico styles blockquotes natively,
+   we override the border/background to amber
 ----------------------------------------------------------------------- */
-.callout-box {
+blockquote.callout-box {
+  border-left-color: var(--color-accent);
   background: #fffbeb;
-  border: 1px solid #f0c14b;
-  border-left: 4px solid #b45309;
-  border-radius: var(--radius);
-  padding: 12px 16px;
   margin: 12px 0;
   font-size: 0.85rem;
-  color: var(--color-text);
   line-height: 1.6;
+  color: var(--color-text);
 }
 
-.callout-box strong {
-  color: var(--color-accent);
-}
+blockquote.callout-box strong { color: var(--color-accent); }
 
 /* -----------------------------------------------------------------------
-   Challenge card — "For the nerdy" and "Super nerdy" exercise prompts
+   Challenge card — <details> collapsed by default
+   Two variants: nerdy (blue) and super-nerdy (purple)
 ----------------------------------------------------------------------- */
-.challenge-card {
-  border: 1px solid var(--color-border);
+details.challenge-card {
   border-radius: var(--radius);
   margin-top: 12px;
   overflow: hidden;
 }
 
-.challenge-card .challenge-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
+details.challenge-card > summary {
   font-size: 0.8rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   cursor: pointer;
-  user-select: none;
+  padding: 10px 16px;
+  list-style: none;
 }
 
-.challenge-card.nerdy .challenge-header {
-  background: #f0f9ff;
-  color: #0369a1;
-  border-bottom: 1px solid #bae6fd;
-}
-
-.challenge-card.super-nerdy .challenge-header {
-  background: #fdf4ff;
-  color: #7e22ce;
-  border-bottom: 1px solid #e9d5ff;
-}
-
-.challenge-card .challenge-header .chevron {
-  margin-left: auto;
+details.challenge-card > summary::after {
+  float: right;
+  content: "▼";
+  font-size: 0.7rem;
+  opacity: 0.5;
   transition: transform 0.2s;
-  font-size: 0.75rem;
-  opacity: 0.6;
 }
-
-.challenge-card.open .challenge-header .chevron {
+details.challenge-card[open] > summary::after {
   transform: rotate(180deg);
 }
 
-.challenge-card .challenge-body {
-  display: none;
+details.challenge-card.nerdy {
+  border: 1px solid #bae6fd;
+}
+details.challenge-card.nerdy > summary {
+  background: #f0f9ff;
+  color: #0369a1;
+  border-bottom: 1px solid transparent;
+}
+details.challenge-card.nerdy[open] > summary {
+  border-bottom-color: #bae6fd;
+}
+
+details.challenge-card.super-nerdy {
+  border: 1px solid #e9d5ff;
+}
+details.challenge-card.super-nerdy > summary {
+  background: #fdf4ff;
+  color: #7e22ce;
+  border-bottom: 1px solid transparent;
+}
+details.challenge-card.super-nerdy[open] > summary {
+  border-bottom-color: #e9d5ff;
+}
+
+details.challenge-card .challenge-body {
   padding: 14px 18px;
   font-size: 0.85rem;
   line-height: 1.65;
@@ -187,21 +176,11 @@
   background: var(--color-surface);
 }
 
-.challenge-card.open .challenge-body {
-  display: block;
-}
-
-.challenge-card .challenge-body ol {
+details.challenge-card .challenge-body ol {
   margin: 6px 0 0 20px;
 }
-
-.challenge-card .challenge-body li {
-  margin-bottom: 4px;
-}
-
-.challenge-card .challenge-body code {
-  font-size: 0.82rem;
-}
+details.challenge-card .challenge-body li { margin-bottom: 4px; }
+details.challenge-card .challenge-body code { font-size: 0.82rem; }
 
 /* -----------------------------------------------------------------------
    Landmark diagram — SVG-based hand diagram in Module 1
@@ -226,21 +205,8 @@
   min-width: 200px;
 }
 
-.landmark-diagram .landmark-legend table {
-  font-size: 0.82rem;
-  border-collapse: collapse;
-  width: 100%;
-}
-
-.landmark-diagram .landmark-legend td {
-  padding: 4px 8px;
-  border-bottom: 1px solid var(--color-border);
-  vertical-align: middle;
-}
-
-.landmark-diagram .landmark-legend tr:last-child td {
-  border-bottom: none;
-}
+.landmark-diagram .landmark-legend table { font-size: 0.82rem; width: 100%; }
+.landmark-diagram .landmark-legend td { padding: 4px 8px; vertical-align: middle; }
 
 .landmark-dot {
   display: inline-block;
@@ -294,10 +260,7 @@
   letter-spacing: 0.05em;
 }
 
-.service-tile .svc-status {
-  font-size: 0.82rem;
-  font-weight: 600;
-}
+.service-tile .svc-status { font-size: 0.82rem; font-weight: 600; }
 
 .svc-ok    { color: var(--color-ok); }
 .svc-warn  { color: var(--color-warn); }
@@ -324,7 +287,6 @@
   overflow-y: auto;
   display: none;
 }
-
 .server-log.visible { display: block; }
 
 /* -----------------------------------------------------------------------
@@ -341,4 +303,91 @@
   margin: 8px 0;
   text-align: center;
   letter-spacing: 0.02em;
+}
+
+.formula-block.formula-left {
+  text-align: left;
+  font-size: 0.78rem;
+}
+
+/* -----------------------------------------------------------------------
+   Module 2 simulation expand — native <dialog>
+   Pico styles the dialog and backdrop; we only set content constraints.
+----------------------------------------------------------------------- */
+#m2-overlay {
+  background: transparent;
+  border: none;
+  padding: 0;
+  max-width: 98vw;
+  max-height: 96vh;
+  text-align: center;
+}
+
+#m2-overlay::backdrop {
+  background: rgba(0, 0, 0, 0.88);
+}
+
+#m2-overlay img {
+  max-width: 92vw;
+  max-height: 80vh;
+  border-radius: 6px;
+  display: block;
+  margin: 0 auto;
+}
+
+#m2-overlay footer {
+  margin-top: 12px;
+  padding: 0;
+  background: transparent;
+  border: none;
+}
+
+/* -----------------------------------------------------------------------
+   aria-busy on buttons — Pico renders a spinner; keep text readable
+----------------------------------------------------------------------- */
+button[aria-busy="true"] {
+  opacity: 0.75;
+  cursor: wait;
+}
+
+/* -----------------------------------------------------------------------
+   File-open button — appears inline after .py / .ipynb <code> references
+   Must override Pico's [class~="pico"] button which fills with --pico-primary
+----------------------------------------------------------------------- */
+.file-open-btn,
+.pico .file-open-btn,
+[class~="pico"] .file-open-btn {
+  /* Reset Pico button chrome completely */
+  display: inline-block !important;
+  margin: 0 0 0 5px !important;
+  padding: 0 5px !important;
+  font-size: 0.68rem !important;
+  font-weight: 500 !important;
+  font-family: var(--font-mono, monospace) !important;
+  line-height: 1.6 !important;
+  height: auto !important;
+  min-height: unset !important;
+  width: auto !important;
+  /* Appearance: subtle outlined chip, not a CTA button */
+  color: var(--color-muted, #888) !important;
+  background: transparent !important;
+  border: 1px solid var(--color-border, #ccc) !important;
+  border-radius: 3px !important;
+  box-shadow: none !important;
+  cursor: pointer !important;
+  vertical-align: middle !important;
+  transition: border-color 0.12s, color 0.12s !important;
+}
+
+.file-open-btn:hover:not(:disabled),
+.pico .file-open-btn:hover:not(:disabled) {
+  color: var(--color-accent, #c0392b) !important;
+  border-color: var(--color-accent, #c0392b) !important;
+  background: transparent !important;
+}
+
+.file-open-btn:disabled,
+.pico .file-open-btn:disabled {
+  opacity: 0.5 !important;
+  cursor: wait !important;
 }
