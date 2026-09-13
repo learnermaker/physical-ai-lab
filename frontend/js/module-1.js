@@ -37,6 +37,22 @@ const webcamManager = (() => {
     _loop();
   }
 
+  // startDemo: use the looping hand demo video instead of getUserMedia.
+  // MediaPipe reads from the same <video> element — no other code changes needed.
+  async function startDemo(onFrame) {
+    if (stream) return;
+    _onFrame = onFrame;
+    // Sentinel: use the string 'demo' so stop() can tell it apart from a real stream
+    stream = 'demo';
+    video.srcObject = null;
+    video.src = '/assets/fallback_hand_demo.mp4?v=2';   // ?v=2 busts any browser cache
+    video.loop = true;
+    video.muted = true;
+    video.playbackRate = 1.0;
+    await video.play();
+    _loop();
+  }
+
   function _loop() {
     rafId = requestAnimationFrame((ts) => {
       if (!stream) return;
@@ -53,13 +69,21 @@ const webcamManager = (() => {
 
   function stop() {
     if (rafId)  { cancelAnimationFrame(rafId); rafId = null; }
-    if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
-    if (ctx)    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (stream === 'demo') {
+      // Demo video: pause and reset the src
+      video.pause();
+      video.src = '';
+      video.srcObject = null;
+    } else if (stream) {
+      stream.getTracks().forEach(t => t.stop());
+    }
+    stream = null;
+    if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
   }
 
   function getCanvas() { return canvas; }
 
-  return { start, stop, getCanvas };
+  return { start, startDemo, stop, getCanvas };
 })();
 
 window.webcamManager = webcamManager;
@@ -74,6 +98,7 @@ const mediapipeHandler = (() => {
   let lastTs              = -1;
   let drawingUtils        = null;
   let HandLandmarkerClass = null;
+  let _demoMode           = false;  // true when running demo video (VIDEO mode vs LIVE_STREAM)
 
   const stateVec = document.getElementById('m1-state-vector');
   const startBtn = document.getElementById('m1-start-btn');
@@ -151,7 +176,15 @@ const mediapipeHandler = (() => {
 
     if (ts <= lastTs) return;
     lastTs = ts;
-    handLandmarker.detectForVideo(video, ts);
+
+    if (_demoMode) {
+      // VIDEO mode: detectForVideo returns results synchronously
+      const result = handLandmarker.detectForVideo(video, ts);
+      if (result) _processResult(result);
+    } else {
+      // LIVE_STREAM mode: fire-and-forget, result arrives via resultCallback
+      handLandmarker.detectForVideo(video, ts);
+    }
   }
 
   async function start() {
@@ -178,6 +211,29 @@ const mediapipeHandler = (() => {
     }
   }
 
+  // startDemo: load MediaPipe the same way, but feed the looping demo video instead
+  async function startDemo() {
+    startBtn.disabled = true;
+    const demoBtn = document.getElementById('m1-demo-btn');
+    if (demoBtn) demoBtn.disabled = true;
+    statusEl.textContent = 'Loading model\u2026';
+    try {
+      await _init();
+      // Switch to VIDEO mode for the demo file — detectForVideo returns synchronously,
+      // which works reliably with a <video src=...> element (no async callback needed).
+      await handLandmarker.setOptions({ runningMode: 'VIDEO' });
+      _demoMode = true;
+      await webcamManager.startDemo(onFrame);
+      stopBtn.disabled = false;
+      statusEl.textContent = 'Demo video running — no real webcam needed.';
+    } catch (err) {
+      stateVec.textContent = 'Demo video failed to load: ' + (err.message || err);
+      statusEl.textContent = '';
+      startBtn.disabled = false;
+      if (demoBtn) demoBtn.disabled = false;
+    }
+  }
+
   function stop() {
     // Stop the camera + rAF loop
     webcamManager.stop();
@@ -193,16 +249,19 @@ const mediapipeHandler = (() => {
     // Clear stale state so re-start is clean
     latestResult = null;
     lastTs       = -1;
+    _demoMode    = false;
 
     stateVec.textContent = '\u2014';
     statusEl.textContent = '';
     startBtn.disabled    = false;
     stopBtn.disabled     = true;
+    const demoBtn = document.getElementById('m1-demo-btn');
+    if (demoBtn) demoBtn.disabled = false;
   }
 
   function getLatestResult() { return latestResult; }
 
-  return { start, stop, getLatestResult };
+  return { start, startDemo, stop, getLatestResult };
 })();
 
 window.mediapipeHandler = mediapipeHandler;
@@ -213,3 +272,4 @@ window.mediapipeHandler = mediapipeHandler;
 // ---------------------------------------------------------------------------
 document.getElementById('m1-start-btn').addEventListener('click', () => mediapipeHandler.start());
 document.getElementById('m1-stop-btn').addEventListener('click',  () => mediapipeHandler.stop());
+document.getElementById('m1-demo-btn')?.addEventListener('click', () => mediapipeHandler.startDemo());
