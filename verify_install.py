@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-verify_install.py — Physical AI Workshop environment verification script.
+verify_install.py — Physical AI Lab environment verification script.
 
 Performs 14 checks:
   - 12 package import checks

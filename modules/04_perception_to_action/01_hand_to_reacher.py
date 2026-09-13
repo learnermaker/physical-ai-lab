@@ -1,22 +1,39 @@
 #!/usr/bin/env python3
 """
 Module 4 Demo: Hand-to-Reacher Teleoperation
-Maps the index finger tip position (MediaPipe landmark 8) to joint torque
-commands for the Gymnasium Reacher-v5 environment in real time.
+==============================================
+This is the full Physical AI pipeline closed loop:
 
-Landmark coordinates from the Tasks API are already normalised to [0.0, 1.0].
-These are linearly mapped to the Reacher action space [-1.0, 1.0] via
-``scale_landmark_to_action``.
+  Your hand → MediaPipe landmarks → state vector → action → Reacher-v5 → repeat
+
+You ARE the controller.  Move your index finger left/right to apply torque to
+joint 1 (shoulder).  Move it up/down to apply torque to joint 2 (elbow).
+
+How the mapping works:
+  MediaPipe returns the index fingertip (landmark 8) as normalised coords [0, 1].
+  The Reacher action space expects torques in [-1, 1].
+  The mapping is a simple linear stretch:
+    action = 2 * landmark_x - 1
+  So finger at left edge (x=0) → torque=-1, centre (x=0.5) → 0, right (x=1) → +1.
+
+This is called TELEOPERATION — a human directly controlling a robot's actuators
+through a sensory interface.  The da Vinci surgical robot and warehouse picking
+robots use exactly this pattern.  The same setup is also used to collect
+demonstration datasets for training imitation-learning policies (BC, ACT, Diffusion Policy).
+
+What you will see:
+  - Camera window with hand landmarks overlaid
+  - Reacher simulation driven by your finger in real time
+  - Torque values printed in the camera window
 
 Press 'q' to quit.
 
-Pedagogical note: this teleoperation pattern is exactly how demonstration
-data is collected for imitation learning (Behaviour Cloning, ACT, Diffusion
-Policy) — the connection made explicit in Module 6.
-"""
+Run from the repo root:
+  python modules/04_perception_to_action/01_hand_to_reacher.py
 
-# Uses MediaPipe Tasks API:
-# https://developers.google.com/edge/mediapipe/solutions/vision/hand_landmarker (Apache-2.0)
+Uses MediaPipe Tasks API:
+  https://developers.google.com/edge/mediapipe/solutions/vision/hand_landmarker (Apache-2.0)
+"""
 
 import queue
 import sys
@@ -61,9 +78,21 @@ _CONNECTION_THICKNESS = 2
 # ---------------------------------------------------------------------------
 
 def scale_landmark_to_action(x: float) -> float:
-    """Map a normalised landmark coordinate [0, 1] to action space [-1, 1].
+    """
+    Map a normalised landmark coordinate [0, 1] to Reacher action space [-1, 1].
 
     Linear map:  f(x) = 2*x - 1
+
+    Why this formula?
+      MediaPipe returns positions in [0, 1] (fraction of frame width/height).
+      Reacher expects torques in [-1, 1].
+      A simple linear stretch maps the two ranges:
+        x=0.0 (left edge)   → action = -1.0 (full torque left)
+        x=0.5 (centre)      → action =  0.0 (no torque)
+        x=1.0 (right edge)  → action = +1.0 (full torque right)
+
+    This two-line "brain" is the entire intelligence of Module 4.
+    In Module 5, Gemini replaces this formula.
 
     Examples
     --------
@@ -150,9 +179,16 @@ def main() -> None:
         print("        Run setup.bat (or setup.sh) to download it.", file=sys.stderr)
         sys.exit(1)
 
+    # ── WHY THIS MATTERS FOR PHYSICAL AI ─────────────────────────────────────
+    # This script closes the Physical AI loop: camera → landmark → action → sim.
+    # You ARE the controller. The two-line mapping `action = 2*x - 1` is the
+    # entire "brain" here. In Module 5, Gemini replaces those two lines.
+    # In production (RT-2, π0), a 7B-parameter model replaces them.
+    # The loop structure — perceive, decide, act, repeat — is unchanged.
+    # ─────────────────────────────────────────────────────────────────────────
+
     # ------------------------------------------------------------------
-    # Open camera — falls back transparently to assets/fallback_hand_demo.mp4
-    # RuntimeError means neither webcam nor fallback video could be opened.
+    # Open camera — falls back to assets/fallback_hand_demo.mp4 if no webcam
     # ------------------------------------------------------------------
     try:
         cap = open_camera()
@@ -161,47 +197,51 @@ def main() -> None:
         sys.exit(1)
 
     # ------------------------------------------------------------------
-    # Create Reacher-v5 environment
-    # make_env handles the render fallback chain: human → rgb_array → None
+    # Create Reacher-v5
+    # make_env() tries render_mode="human" (a window) first.
+    # On Azure VDs and headless machines it falls back to "rgb_array" or None.
     # ------------------------------------------------------------------
     env = make_env("Reacher-v5", render_mode="human")
     obs, _ = env.reset()
 
-    # Detect which render mode we actually got (determines display strategy)
+    # actual_render_mode tells us what we actually got after the fallback chain
     actual_render_mode = env.unwrapped.render_mode
 
     # ------------------------------------------------------------------
-    # Configure HandLandmarker (Tasks API, LIVE_STREAM mode)
+    # Configure HandLandmarker (LIVE_STREAM mode — same as Module 1)
     # ------------------------------------------------------------------
     base_options = mp_python.BaseOptions(model_asset_path=MODEL_PATH)
     options = mp_vision.HandLandmarkerOptions(
         base_options=base_options,
         running_mode=mp_vision.RunningMode.LIVE_STREAM,
-        num_hands=2,
+        num_hands=2,       # detect up to 2 hands
         result_callback=_on_result,
     )
 
     # ------------------------------------------------------------------
     # Main loop
     # ------------------------------------------------------------------
+    # timestamp_ms increments each frame — MediaPipe requires a monotonically
+    # increasing timestamp to order async results correctly.
     timestamp_ms = 0
     last_hand_time = time.monotonic()  # tracks when a hand was last detected
+    # Default action: zero torques (arm holds position) until a hand is found
     action = np.zeros(2, dtype=np.float32)
 
     with mp_vision.HandLandmarker.create_from_options(options) as landmarker:
         while True:
-            # --- Read frame ---
+            # ── 1. Read camera frame ─────────────────────────────────────────
             ret, frame = cap.read()
             if not ret or frame is None:
                 break
 
-            # --- Send frame to HandLandmarker (async) ---
+            # ── 2. Submit frame to MediaPipe (async) ─────────────────────────
             rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
             mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame)
             landmarker.detect_async(mp_image, timestamp_ms)
             timestamp_ms += 1
 
-            # --- Consume latest landmark result ---
+            # ── 3. Read latest landmark result (non-blocking) ────────────────
             try:
                 result = _result_queue.get_nowait()
             except queue.Empty:
@@ -210,27 +250,36 @@ def main() -> None:
             no_hand_text = None
 
             if result is not None and result.hand_landmarks:
-                # Hand detected — use index finger tip (landmark 8)
+                # Hand detected — read landmark 8 (index fingertip)
                 lm8 = result.hand_landmarks[0][8]
                 norm_x, norm_y = lm8.x, lm8.y
 
+                # ── THE MAPPING — these two lines are the robot's "brain" ────
+                # scale_landmark_to_action maps [0,1] → [-1,1]
+                # action[0] = torque for joint 1 (shoulder) — driven by x position
+                # action[1] = torque for joint 2 (elbow)   — driven by y position
                 action = np.array(
-                    [scale_landmark_to_action(norm_x), scale_landmark_to_action(norm_y)],
+                    [scale_landmark_to_action(norm_x),
+                     scale_landmark_to_action(norm_y)],
                     dtype=np.float32,
                 )
                 last_hand_time = time.monotonic()
 
-                # Draw landmarks onto the camera frame
+                # Draw landmarks on the camera frame (visual feedback)
                 _draw_landmarks(frame, result)
             else:
-                # No result yet, or result has no hands
+                # No hand detected for more than _NO_HAND_TIMEOUT_S seconds
+                # → send zero torques so the arm doesn't drift
                 if time.monotonic() - last_hand_time > _NO_HAND_TIMEOUT_S:
                     action = np.zeros(2, dtype=np.float32)
                     no_hand_text = "No hand detected \u2014 holding position"
 
-            # --- Step the environment ---
+            # ── 4. Step the simulation ───────────────────────────────────────
+            # env.step() applies the torques for one simulation timestep (0.02 s)
+            # and returns the new observation, reward, and whether episode ended.
             obs, reward, terminated, truncated, info = env.step(action)
             if terminated or truncated:
+                # Episode ends after 50 steps — reset to a new random target position
                 obs, _ = env.reset()
 
             # --- Display ---

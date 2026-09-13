@@ -1,14 +1,28 @@
 #!/usr/bin/env python3
 """
 Module 1 Exercise: Joint Angle State Vector (4-element)
-Expected output: a 4-element list printed to stdout once per second,
-e.g. [145.2, 163.8, 171.4, 168.9]
+=========================================================
+Your task: extend the state vector from 3 fingers to 4 by adding
+the ring finger MCP angle.
 
-Your task: extend compute_state_vector() to include the ring finger MCP angle
-so the returned state vector has four elements instead of three.
+Start here:  Find the TODO block below (~line 98) and add one line of code.
+             The solution is commented out at the bottom of this file.
+
+Expected output (values vary with hand position):
+  [145.2, 163.8, 171.4, 168.9]
+  [θ_thumb, θ_index, θ_middle, θ_ring]
+
+How it connects to the pipeline:
+  This is the state vector that flows from the Perception layer to the
+  Controller.  On a real robotic hand, each element would correspond to
+  a joint encoder reading.
+
+Run from the repo root:
+  python modules/01_perception/exercise.py
 """
 
-# Uses MediaPipe Tasks API: https://developers.google.com/edge/mediapipe/solutions/vision/hand_landmarker (Apache-2.0)
+# Uses MediaPipe Tasks API:
+# https://developers.google.com/edge/mediapipe/solutions/vision/hand_landmarker (Apache-2.0)
 
 import math
 import queue
@@ -90,6 +104,11 @@ def compute_state_vector(landmarks: list) -> list[float]:
     def lm(i):
         return (landmarks[i].x, landmarks[i].y)
 
+    # ── Compute the three existing finger angles ──────────────────────────────
+    # _compute_angle(a, vertex, b) returns the angle at `vertex` in degrees.
+    # a      = wrist (lm 0) — the anchor point all angles share
+    # vertex = MCP joint (the knuckle where the angle is measured)
+    # b      = PIP joint (the next joint along the finger)
     theta_thumb  = _compute_angle(lm(0), lm(1),  lm(2))
     theta_index  = _compute_angle(lm(0), lm(5),  lm(6))
     theta_middle = _compute_angle(lm(0), lm(9),  lm(10))

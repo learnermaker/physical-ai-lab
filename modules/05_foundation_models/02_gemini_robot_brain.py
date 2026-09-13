@@ -1,21 +1,38 @@
 #!/usr/bin/env python3
 """
 Module 5 Demo 2: Gemini Robot Brain
-Captures a single frame from the camera, encodes it as a JPEG, and sends it
-to Gemini with a structured prompt asking for a robot action decision.
+======================================
+Builds on 01_gemini_vision.py by asking Gemini for a *structured robot action*
+instead of a free-text description.
 
-Expected output:
-  Calling Gemini...
-  Done.
-  action: FORWARD
-  reason: Path ahead appears clear
+The key idea: by specifying the exact JSON format in the prompt, we constrain
+the model to return something our code can parse and act on.  This structured
+output format is called a "schema" — the model must fill it in correctly or
+the parser will reject it and fall back to the cache.
 
-If the API call fails for any reason, a cached response is used instead and
-'[Fallback] Using cached response.' is printed in place of 'Done.'.
+The prompt acts as the interface between the LLM and the robot's hardware:
 
-If cached_responses.json is missing or empty the script exits with code 1.
+  SYSTEM PROMPT → defines action vocabulary + output format
+  IMAGE INPUT   → provides the visual context
+  JSON OUTPUT   → {"action": "LEFT|RIGHT|FORWARD|BACK|WAIT", "reason": "..."}
+                   ↓
+              robot executes the action
 
-# Adapted from: https://github.com/google-gemini/cookbook (Apache-2.0)
+What you will see:
+  - "Calling Gemini..." while the API call runs
+  - "Done." followed by the action and reason from the model
+  - Or "[Fallback] Using cached response." if the API call fails
+
+No API key? The cache fallback runs automatically.
+
+How it connects to the pipeline:
+  This is the complete VLA (Vision-Language-Action) pattern.
+  Next: exercise.py — write your own prompt and action vocabulary.
+
+Run from the repo root:
+  python modules/05_foundation_models/02_gemini_robot_brain.py
+
+Adapted from: https://github.com/google-gemini/cookbook (Apache-2.0)
 """
 
 import importlib.util
@@ -47,6 +64,15 @@ from utils.camera import open_camera  # noqa: E402
 # ---------------------------------------------------------------------------
 # Structured action prompt
 # ---------------------------------------------------------------------------
+# This prompt IS the robot's action vocabulary.
+# Changing it changes what the robot can do — without any retraining.
+#
+# Key design choices here:
+#   1. "Respond ONLY in JSON with no markdown" — prevents the model from
+#      wrapping the JSON in ```json fences, which would break json.loads().
+#   2. The pipe-separated options (LEFT|RIGHT|...) constrain the action space —
+#      any other word is rejected by the validator below.
+#   3. "one sentence" for reason keeps the response short and parseable.
 SYSTEM_PROMPT = (
     'You are a robot controller. Looking at this image, suggest an action. '
     'Respond ONLY in JSON with no markdown: '
@@ -128,17 +154,24 @@ def get_robot_action(
             contents=[SYSTEM_PROMPT, image_part],
         )
 
-        # Strip markdown fences if the model wrapped the JSON (Design § 4.3).
+        # ── Parse the JSON response ──────────────────────────────────────────
+        # The model should return something like:
+        #   {"action": "FORWARD", "reason": "Clear path ahead"}
+        # But it sometimes wraps it in markdown fences (```json ... ```) —
+        # we strip those first.
         text = response.text.strip()
         if text.startswith("```"):
+            # Strip the opening ``` or ```json
             text = text.split("```")[1]
             if text.startswith("json"):
                 text = text[4:]
         text = text.strip()
 
+        # json.loads() converts the JSON string into a Python dict
         result = json.loads(text)
 
-        # Validate expected shape — must have at least "action".
+        # Validate: the response must contain the "action" key
+        # A missing "action" means the model ignored our format — fall back
         if "action" not in result:
             raise ValueError(f"Response missing 'action' key: {result}")
 
@@ -155,6 +188,13 @@ def get_robot_action(
 # Script entry point
 # ---------------------------------------------------------------------------
 def main() -> None:
+    # ── WHY THIS MATTERS FOR PHYSICAL AI ─────────────────────────────────────
+    # This script implements the complete VLA (Vision-Language-Action) pattern:
+    # image → prompt → structured JSON → robot action.
+    # The SYSTEM_PROMPT below IS the robot's action vocabulary. Change it and
+    # you change what the robot can do — no retraining, no code changes.
+    # Production systems (RT-2, OpenVLA, π0) use the same pattern at scale.
+    # ─────────────────────────────────────────────────────────────────────────
     load_dotenv(REPO_ROOT / ".env")
     api_key: str = os.getenv("GEMINI_API_KEY", "").strip()
 

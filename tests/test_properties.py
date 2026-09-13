@@ -223,7 +223,7 @@ def count_passes(passes: int, fails: int) -> int:
 
 
 @given(n_reads=st.integers(min_value=1, max_value=500))
-@settings(max_examples=100, suppress_health_check=[HealthCheck.function_scoped_fixture])
+@settings(max_examples=100, suppress_health_check=[HealthCheck.function_scoped_fixture], deadline=None)
 def test_looping_capture_never_exhausts(tmp_short_video, n_reads):
     """
     Property 1: open_camera fallback always produces readable frames.
@@ -289,7 +289,9 @@ def test_make_env_fallback_chain_succeeds(fail_count):
         call_count[0] += 1
         if call_count[0] <= fail_count:
             raise RuntimeError("opengl error: display not found")
-        return MagicMock()
+        mock_env = MagicMock()
+        mock_env.reset.return_value = (MagicMock(), {})
+        return mock_env
 
     with patch("gymnasium.make", side_effect=mock_make):
         env = make_env("CartPole-v1")

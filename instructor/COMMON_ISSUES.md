@@ -17,8 +17,8 @@ Quick-reference troubleshooting for facilitators. Each section gives the symptom
 wsl --install
 
 # 2. After reboot, open the Ubuntu terminal and clone the repo
-git clone https://github.com/your-org/physical-ai-workshop.git
-cd physical-ai-workshop
+git clone https://github.com/learnermaker/physical-ai-lab.git
+cd physical-ai-lab
 
 # 3. Run the Linux setup script
 bash setup.sh
@@ -45,43 +45,11 @@ ms-settings:privacy-webcam
 
 ---
 
-## 3. Conda Solver Hang
+## 3. Jupyter Wrong Kernel Selected
 
-**Symptom:** `conda create -n physical-ai python=3.12` has been running for more than 2 minutes with no progress, or `setup.bat` prints `Conda solver is slow. Re-run with: ...`.
+**Symptom:** VS Code shows `Python 3.x.y` (system Python) in the kernel picker instead of `Physical AI Workshop`. Imports like `import mediapipe` or `import gymnasium` fail with `ModuleNotFoundError`.
 
-**Cause:** The classic conda solver (`pubgrub`) is slow on large channel indexes. The `libmamba` solver is significantly faster.
-
-**Fix:** Install the libmamba solver and retry.
-
-```bash
-conda install -n base conda-libmamba-solver
-conda config --set solver libmamba
-conda create -n physical-ai python=3.12 -y
-```
-
----
-
-## 4. PyTorch CUDA Build Accidentally Installed
-
-**Symptom:** `import torch` works but the conda environment is 3–4 GB instead of ~700 MB, or `torch.__version__` shows `+cu121` / `+cu124` instead of `+cpu`.
-
-**Cause:** Running `pip install torch` without `--index-url` fetches the CUDA build from PyPI by default, because PyPI hosts the CUDA wheel and pip picks it as the best match.
-
-**Fix:** Uninstall and reinstall the CPU-only build.
-
-```bash
-conda activate physical-ai
-pip uninstall torch -y
-pip install torch==2.14.0+cpu --index-url https://download.pytorch.org/whl/cpu
-```
-
----
-
-## 5. Jupyter Wrong Kernel Selected
-
-**Symptom:** VS Code shows `Python 3.x.y` (system Python) in the kernel picker instead of `Physical AI Workshop`. Imports such as `import mediapipe` or `import gymnasium` fail with `ModuleNotFoundError`.
-
-**Cause:** VS Code defaulted to a different Python interpreter. The workshop kernel was not selected.
+**Cause:** VS Code defaulted to a different Python interpreter rather than the workshop `.venv`.
 
 **Fix:** Select the correct kernel manually.
 
@@ -91,15 +59,15 @@ pip install torch==2.14.0+cpu --index-url https://download.pytorch.org/whl/cpu
 3. Select "Python Environments..." → choose "Physical AI Workshop (physical-ai)".
 ```
 
-```bash
-# If the kernel does not appear in the list, re-register it:
-conda activate physical-ai
+If the kernel doesn't appear in the list, re-register it from the activated `.venv`:
+```bat
+.venv\Scripts\activate
 python -m ipykernel install --user --name physical-ai --display-name "Physical AI Workshop"
 ```
 
 ---
 
-## 6. HuggingFace Download Blocked on Corporate Network
+## 4. HuggingFace Download Blocked on Corporate Network
 
 **Symptom:** `huggingface_hub.utils._errors.EntryNotFoundError`, a connection timeout, or an HTTP 403 error when a module tries to download a model at runtime.
 
@@ -107,21 +75,19 @@ python -m ipykernel install --user --name physical-ai --display-name "Physical A
 
 **Fix:** Pre-download the required files on an unrestricted network and copy them into the repo's `models/` directory.
 
-```bash
-# On an unrestricted machine, install huggingface_hub and download the required files:
+```bat
+.venv\Scripts\activate
 pip install huggingface_hub
 python -c "
 from huggingface_hub import hf_hub_download
-# Replace with the actual repo_id and filename needed by the workshop
-hf_hub_download(repo_id='YOUR_REPO_ID', filename='YOUR_FILE', local_dir='models/')
+# Replace repo_id and filename with the actual model needed
+hf_hub_download(repo_id='REPO_ID', filename='model.pt', local_dir='models/')
 "
-
-# Then copy the models/ directory to the participant's machine via USB or local network share.
 ```
 
 ---
 
-## 7. Windows SmartScreen Blocking `setup.bat`
+## 5. Windows SmartScreen Blocking `setup.bat`
 
 **Symptom:** A blue dialog appears: "Windows protected your PC — Microsoft Defender SmartScreen prevented an unrecognised app from starting."
 
@@ -142,7 +108,7 @@ Unblock-File -Path setup.bat
 
 ---
 
-## 8. Port 8000 Already in Use
+## 6. Port 8000 Already in Use
 
 **Symptom:** `python api/server.py` exits immediately with `[Errno 10048] error while attempting to bind on address ('0.0.0.0', 8000): only one usage of each socket address` (Windows) or similar.
 
@@ -163,7 +129,7 @@ python api/server.py
 
 ---
 
-## 9. `.env` File Missing or Incorrectly Formatted
+## 7. `.env` File Missing or Incorrectly Formatted
 
 **Symptom:** The Experience Hub shows "Gemini API key not configured", or Gemini endpoints return errors like `INVALID_ARGUMENT` or `API key not valid`.
 
@@ -187,7 +153,7 @@ GEMINI_API_KEY=AIzaSy...your_actual_key_here
 
 ---
 
-## 10. Visual C++ Redistributables Missing
+## 8. Visual C++ Redistributables Missing
 
 **Symptom:** `import mujoco` raises `OSError: [WinError 126] The specified module could not be found` or a similar DLL load error immediately after installation.
 
@@ -205,32 +171,23 @@ start https://aka.ms/vs/17/release/vc_redist.x64.exe
 
 ---
 
-## 11. pip Install Taking 10+ Minutes
+## 9. pip Install Taking 10+ Minutes
 
-**Symptom:** `pip install -r requirements.txt` has been running for more than 10 minutes with no apparent progress, or appears stuck on dependency resolution.
+**Symptom:** `pip install -r requirements.txt` has been running for more than 10 minutes with no apparent progress.
 
-**Cause:** pip's resolver exhaustively explores version combinations for large dependency graphs. This is especially slow with mediapipe, which pins many transitive dependencies.
+**Cause:** pip's resolver explores version combinations exhaustively for large dependency graphs. MediaPipe pins many transitive dependencies which slows this down.
 
-**Fix:** Upgrade pip first (newer pip has a faster resolver), then retry. If still slow, install known-expensive packages with `--no-deps` before the full install.
+**Fix:** Upgrade pip first, then retry.
 
-```bash
-conda activate physical-ai
-
-# Upgrade pip to get the faster resolver
+```bat
+.venv\Scripts\activate
 python -m pip install --upgrade pip
-
-# Retry the full install
-pip install -r requirements.txt
-
-# If still slow, install the heavy packages individually first, then the rest
-pip install mediapipe==1.0.0 --no-deps
-pip install torch==2.14.0+cpu --index-url https://download.pytorch.org/whl/cpu --no-deps
 pip install -r requirements.txt
 ```
 
 ---
 
-## 12. Gemini Free-Tier Rate Limit Hit During Demo
+## 10. Gemini Free-Tier Rate Limit Hit During Demo
 
 **Symptom:** The Experience Hub returns an error banner or the browser console shows `429 Too Many Requests` when calling the Gemini endpoints during the facilitator's live demo.
 
@@ -250,7 +207,7 @@ python api/server.py
 
 ---
 
-## 13. mediapipe 1.0.0 `mp.solutions.drawing_utils` Not Available
+## 11. mediapipe 1.0.0 `mp.solutions.drawing_utils` Not Available
 
 **Symptom:** `AttributeError: module 'mediapipe' has no attribute 'solutions'` when running any module that imports `mp.solutions.drawing_utils` or `mp.solutions.hands`.
 
@@ -258,10 +215,10 @@ python api/server.py
 
 **Fix:** The workshop's own `exercise.py` files already use the current API and direct OpenCV drawing. Point the participant to the workshop code instead of the older snippet.
 
-```bash
-# Confirm the installed version is correct
-conda activate physical-ai
+```bat
+.venv\Scripts\activate
 python -c "import mediapipe; print(mediapipe.__version__)"
+```
 # Expected output: 1.0.0
 
 # The workshop drawing pattern to use instead of mp.solutions.drawing_utils:
@@ -277,7 +234,7 @@ print('OpenCV drawing works correctly')
 
 ---
 
-## 14. Simulation Stream Immediately Closes (OPEN → ERROR Loop)
+## 12. Simulation Stream Immediately Closes (OPEN → ERROR Loop)
 
 **Symptom:** In the hub, Module 2 "Start Simulation" button causes the `EventSource` to cycle `OPEN → ERROR:0` repeatedly. No frames are ever displayed. The server log shows one of these sequences:
 
@@ -307,7 +264,7 @@ curl -N "http://localhost:8000/api/simulation/stream?action=0,0" | head -c 200
 
 ---
 
-## 15. RL Training Chart Stays at "Starting training…" Forever
+## 13. RL Training Chart Stays at "Starting training…" Forever
 
 **Symptom:** Clicking "Start Training" in Module 3 posts to `/api/training/start` successfully (returns a `job_id`), but the status text never advances beyond "Starting training…" and the Chart.js canvas receives no data points.
 
@@ -322,7 +279,7 @@ curl -s -X POST http://localhost:8000/api/training/start | python -c "import sys
 
 ---
 
-## 16. Gemini Model Deprecated (404 NOT_FOUND on API Calls)
+## 14. Gemini Model Deprecated (404 NOT_FOUND on API Calls)
 
 **Symptom:** The server log shows repeated errors like:
 
@@ -345,3 +302,7 @@ client = genai.Client(api_key='YOUR_KEY')
 for m in client.models.list(): print(m.name)
 "
 ```
+
+---
+
+*Physical AI Workshop — Common Issues — Jim Seelan*

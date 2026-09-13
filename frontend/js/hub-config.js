@@ -509,6 +509,8 @@ const serverCheck = (() => {
     document.querySelectorAll('code').forEach(el => {
       const text = el.textContent.trim();
       if (!isOpenablePath(text)) return;
+      // Don't wire "Create a new file" instructions — those files don't exist yet
+      if (el.hasAttribute('data-no-open')) return;
       // Don't double-wire
       if (el.nextSibling && el.nextSibling.classList?.contains('file-open-btn')) return;
 

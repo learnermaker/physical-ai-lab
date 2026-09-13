@@ -391,3 +391,95 @@ button[aria-busy="true"] {
   opacity: 0.5 !important;
   cursor: wait !important;
 }
+
+/* -----------------------------------------------------------------------
+   Capstone projects section
+----------------------------------------------------------------------- */
+#capstone-section {
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 2px solid var(--color-border);
+}
+
+#capstone-section h1 {
+  margin-bottom: 4px;
+}
+
+.capstone-note {
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  margin-bottom: 12px;
+}
+.capstone-note.info {
+  background: #e8f4f8;
+  border-left: 3px solid #1e7da8;
+  color: #1a4a60;
+}
+.capstone-note.warn {
+  background: #fff8e6;
+  border-left: 3px solid #d4a017;
+  color: #5c4000;
+}
+.capstone-note.tip {
+  background: #edf7ed;
+  border-left: 3px solid #2e7d32;
+  color: #1b4a1c;
+}
+
+.capstone-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  margin-top: 12px;
+}
+.capstone-table th {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 2px solid var(--color-border);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-muted);
+  white-space: nowrap;
+}
+.capstone-table td {
+  padding: 10px 10px;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: top;
+}
+.capstone-table td:first-child {
+  font-weight: 700;
+  color: var(--color-muted);
+  width: 28px;
+}
+.capstone-table .project-desc {
+  font-weight: 400;
+  color: var(--color-muted);
+  display: block !important;
+  margin-top: 4px;
+  line-height: 1.45;
+}
+.capstone-table .hw-badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+.hw-badge.laptop   { background: #e8f5e9; color: #2e7d32; }
+.hw-badge.pi       { background: #fff3e0; color: #e65100; }
+.hw-badge.advanced { background: #fce4ec; color: #880e4f; }
+.capstone-table .extends-badge {
+  font-size: 0.72rem;
+  color: var(--color-muted);
+  white-space: nowrap;
+}
+.capstone-table .pivot-text {
+  font-size: 0.78rem;
+  color: #444;
+  line-height: 1.45;
+}

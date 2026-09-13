@@ -1,33 +1,39 @@
 #!/usr/bin/env python3
 """
-Module 4 Exercise: Extend Hand-to-Reacher with a Second Landmark
-================================================================
-Building on ``01_hand_to_reacher.py``, this exercise adds a second landmark
-to create a 3-element action vector.  A thin Gymnasium wrapper strips the
-extra dimension before it reaches Reacher-v5, so the environment stays
-compatible while you practice constructing richer action representations.
+Module 4 Exercise: Add a Second Landmark (Thumb Tip)
+======================================================
+In 01_hand_to_reacher.py, only landmark 8 (index fingertip) drives the arm.
+That gives you control over 2 joints with 2 values (x, y of one fingertip).
 
-Expected output
----------------
-The camera window shows live hand landmarks.  Once you complete the TODO, the
-on-screen overlay will include::
+Your task: add landmark 4 (thumb tip) as a third control channel, producing
+a 3-element action vector:
+  action[0] = scale_landmark_to_action(lm8.x)   ← index fingertip x
+  action[1] = scale_landmark_to_action(lm8.y)   ← index fingertip y
+  action[2] = scale_landmark_to_action(lm4.x)   ← thumb tip x  ← YOU ADD THIS
 
-    Actions: [<j0>, <j1>, <j2>]   (three values, each in [-1.0, 1.0])
+The ActionSliceWrapper (already set up below) strips action[2] before
+sending to Reacher-v5, which only accepts 2 values.  Your extra dimension
+is visible in the on-screen overlay but doesn't damage the environment.
 
-Unmodified, the script raises ``NotImplementedError`` at the TODO block.
+Why add more fingers?
+  Real robot arms have 6–7 degrees of freedom.  Each additional landmark
+  you map gives you one more control channel.  This exercise is one step
+  toward full-hand teleoperation.
+
+Start here:  Find the TODO block below (~line 210) and add 3 lines of code.
+             The solution is commented out at the bottom of this file.
+
+Expected output: overlay shows three action values, e.g.
+  Actions: [-0.32,  0.14,  0.76]
 
 Press 'q' to quit.
 
-Pedagogical note
-----------------
-Collecting demonstrations with more joints than the target environment needs
-is common in imitation learning pipelines — a wrapper (or a learned projection)
-maps the richer signal down to the actuator space.  This pattern appears in
-Behaviour Cloning, ACT, and Diffusion Policy data-collection rigs.
-"""
+Run from the repo root:
+  python modules/04_perception_to_action/exercise.py
 
-# Uses MediaPipe Tasks API:
-# https://developers.google.com/edge/mediapipe/solutions/vision/hand_landmarker (Apache-2.0)
+Uses MediaPipe Tasks API:
+  https://developers.google.com/edge/mediapipe/solutions/vision/hand_landmarker (Apache-2.0)
+"""
 
 import queue
 import sys
@@ -92,25 +98,30 @@ def scale_landmark_to_action(x: float) -> float:
 # ---------------------------------------------------------------------------
 
 class ActionSliceWrapper(gym.ActionWrapper):
-    """Accept an action of any length and pass only the first ``n`` elements
+    """
+    Accept an action of any length and pass only the first ``n`` elements
     to the wrapped environment.
 
-    This lets the exercise send a 3-element action while Reacher-v5 expects 2.
-    The extra element is recorded (for display / logging) but not forwarded.
+    Why do we need this?
+      Reacher-v5 expects exactly 2 torque values.
+      Our exercise sends 3 values (index x, index y, thumb x).
+      This wrapper silently drops the extra dimension so Reacher doesn't crash.
+
+      In a real system you might use a learned projection instead of slicing,
+      but for learning purposes this is the clearest approach.
 
     Parameters
     ----------
-    env:
-        The environment to wrap.
-    n:
-        Number of action dimensions the inner environment expects.
+    env : The Reacher-v5 environment to wrap.
+    n   : Number of action dimensions the inner environment expects (2 for Reacher).
     """
 
     def __init__(self, env: gym.Env, n: int) -> None:
         super().__init__(env)
         self._n = n
 
-    def action(self, action: np.ndarray) -> np.ndarray:  # type: ignore[override]
+    def action(self, action: np.ndarray) -> np.ndarray:
+        # Keep only the first n elements — discard the rest
         return np.asarray(action, dtype=np.float32)[: self._n]
 
 
@@ -234,31 +245,29 @@ def main() -> None:
                 lm8 = result.hand_landmarks[0][8]   # index finger tip  — provided
 
                 # TODO START ────────────────────────────────────────────────
-                # Use landmark 4 (thumb tip) to add a third torque component.
+                # Add landmark 4 (thumb tip) as a third action dimension.
                 #
-                # Steps:
-                #   1. Read landmark 4 from result.hand_landmarks[0]:
-                #          lm4 = result.hand_landmarks[0][4]
-                #   2. Call scale_landmark_to_action on its x coordinate to get
-                #      a value in [-1, 1] — call it lm4_action.
-                #   3. Build a 3-element numpy array:
-                #          action = np.array([
-                #              scale_landmark_to_action(lm8.x),
-                #              scale_landmark_to_action(lm8.y),
-                #              lm4_action,
-                #          ], dtype=np.float32)
+                # Step 1: Get the thumb tip landmark (index 4)
+                #   lm4 = result.hand_landmarks[0][4]
+                #
+                # Step 2: Scale its x coordinate to [-1, 1]
+                #   lm4_action = scale_landmark_to_action(lm4.x)
+                #
+                # Step 3: Build the 3-element action array
+                #   action = np.array([
+                #       scale_landmark_to_action(lm8.x),  # joint 1 torque
+                #       scale_landmark_to_action(lm8.y),  # joint 2 torque
+                #       lm4_action,                       # YOUR new channel
+                #   ], dtype=np.float32)
                 raise NotImplementedError(
                     "Complete the TODO block starting at this line. "
                     "See # SOLUTION HINT below for guidance."
                 )
                 # TODO END ──────────────────────────────────────────────────
-                # SOLUTION HINT: Retrieve landmark 4 (thumb tip) from
-                # result.hand_landmarks[0][4] and pass its .x attribute to
-                # scale_landmark_to_action, then include that value as the
-                # third element of the action array alongside the two existing
-                # lm8-derived values.  Do not modify anything outside the TODO
-                # block — the ActionSliceWrapper already handles sending only
-                # the first two elements to the environment.
+                # SOLUTION HINT: The ActionSliceWrapper automatically sends
+                # only action[:2] to Reacher-v5.  Your action[2] appears in
+                # the on-screen overlay but does not affect the simulation.
+                # You only need to build the 3-element array.
 
                 last_hand_time = time.monotonic()
                 _draw_landmarks(frame, result)

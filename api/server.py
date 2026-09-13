@@ -1,5 +1,5 @@
 """
-Experience Hub — FastAPI backend for the Physical AI Workshop.
+Experience Hub — FastAPI backend for the Physical AI Lab.
 
 Start with:
     python api/server.py
@@ -96,7 +96,7 @@ _ACTION_PROMPT = (
 # ---------------------------------------------------------------------------
 # App
 # ---------------------------------------------------------------------------
-app = FastAPI(title="Physical AI Workshop Hub")
+app = FastAPI(title="Physical AI Lab Hub")
 
 
 # ---------------------------------------------------------------------------
@@ -763,7 +763,7 @@ async def gemini_describe(req: GeminiDescribeRequest) -> JSONResponse:
     # Gather string-valued cache entries for a sensible describe fallback.
     _describe_fallbacks = [v for v in _CACHE.values() if isinstance(v, str)]
     if not _describe_fallbacks:
-        _describe_fallbacks = ["A scene captured from the workshop camera."]
+        _describe_fallbacks = ["A scene captured from the camera."]
 
     if not key:
         return JSONResponse({
@@ -931,6 +931,6 @@ if __name__ == "__main__":
     finally:
         _sock.close()
 
-    print(f"Workshop hub running at http://localhost:{_port}")
+    print(f"Physical AI Lab hub running at http://localhost:{_port}")
     uvicorn.run("api.server:app", host="0.0.0.0", port=_port, reload=False)
 

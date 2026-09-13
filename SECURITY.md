@@ -13,7 +13,7 @@ This repo does not run as a service — it runs locally on participants' machine
 
 If you find a genuine security issue (e.g. a dependency with a known CVE, an unsafe code pattern, or a way the local server could be exploited), please **do not open a public issue**.
 
-Instead, report it via [GitHub's private vulnerability reporting](https://github.com/learnermaker/physical-ai-workshop/security/advisories/new).
+Instead, report it via [GitHub's private vulnerability reporting](https://github.com/learnermaker/physical-ai-lab/security/advisories/new).
 
 Include:
 - A description of the issue

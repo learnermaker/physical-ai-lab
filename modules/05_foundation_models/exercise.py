@@ -1,38 +1,36 @@
 #!/usr/bin/env python3
 """
 Module 5 Exercise: Design Your Own Robot Prompt
-================================================
-In ``02_gemini_robot_brain.py`` the system prompt always asks for one of five
-navigation actions (LEFT / RIGHT / FORWARD / BACK / WAIT).
+=================================================
+In 02_gemini_robot_brain.py the system prompt defines the action vocabulary:
+  LEFT / RIGHT / FORWARD / BACK / WAIT
 
-Your task: write a *different* system prompt and observe how the model's
-reasoning changes.  For example, you might ask it to:
+Your task: write a DIFFERENT system prompt and observe how the model's
+reasoning changes.  Try things like:
+  - A different action set (e.g. PICK_UP / PUT_DOWN / ROTATE)
+  - Joint torques instead of directional commands
+  - A different output schema (e.g. {"gesture": "...", "confidence": 0.9})
 
-  - Describe the objects it can see in the scene.
-  - Rate the lighting quality of the image.
-  - Suggest an emotion that matches the scene.
+Remember: the prompt IS the interface between the LLM and the robot's hardware.
+Changing it changes what the robot can do — without any code changes or retraining.
 
-The ``ask_gemini`` helper is already implemented — you only need to fill in
-the TODO block.
+Start here:  Find the TODO block below (~line 165) and define MY_PROMPT,
+             then call ask_gemini() with it.
+             The solution is commented out at the bottom of this file.
 
-Expected output
----------------
-Running the completed exercise should print every key-value pair from the
-model response, for example::
+Expected output (varies with your prompt and camera scene):
+  Calling Gemini...
+  Done.
+  action: INSPECT
+  reason: Several objects are visible on the desk
 
-    Calling Gemini...
-    Done.
-    action: INSPECT
-    reason: Several objects are visible on the desk
+No API key?  The cache fallback runs automatically and a cached response is used.
+The cache may not match your custom prompt — that's fine for understanding the structure.
 
-(The exact values depend on your prompt and the camera scene.)
+Run from the repo root:
+  python modules/05_foundation_models/exercise.py
 
-If no API key is available the cache fallback is used automatically and a
-different cached entry may be printed.
-
-Unmodified, the script raises ``NotImplementedError`` at the TODO block.
-
-# Adapted from: https://github.com/google-gemini/cookbook (Apache-2.0)
+Adapted from: https://github.com/google-gemini/cookbook (Apache-2.0)
 """
 
 import importlib.util
@@ -171,34 +169,32 @@ def main() -> None:
         ]
         frame = None  # ask_gemini handles None via the api_key-absent branch
 
-    # TODO START — Write your own prompt and observe how the robot's reasoning changes
+    # TODO START — Write your own prompt and observe how the robot reasons ──
     #
-    # Steps:
-    #   1. Define a custom system prompt string, e.g.:
-    #          MY_PROMPT = (
-    #              'Describe the main objects you can see. '
-    #              'Respond ONLY in JSON with no markdown: '
-    #              '{"action": "INSPECT", "reason": "one sentence describing the objects"}'
-    #          )
-    #   2. Call ask_gemini with your prompt, the captured frame, the api_key,
-    #      and the cache:
-    #          result = ask_gemini(MY_PROMPT, frame, api_key, cache)
-    #   3. Print each key-value pair from the result:
-    #          for key, value in result.items():
-    #              print(f"{key}: {value}")
+    # Step 1: Define a custom system prompt string.
+    #   Example:
+    #     MY_PROMPT = (
+    #         'Describe the main objects you can see. '
+    #         'Respond ONLY in JSON with no markdown: '
+    #         '{"action": "INSPECT", "reason": "one sentence describing the objects"}'
+    #     )
+    #   TIP: Always include "Respond ONLY in JSON with no markdown:" so the
+    #        parser can read the response.  The JSON schema you define here
+    #        IS your robot's action vocabulary.
+    #
+    # Step 2: Call ask_gemini() with your prompt:
+    #   result = ask_gemini(MY_PROMPT, frame, api_key, cache)
+    #
+    # Step 3: Print each key-value pair from the result dict:
+    #   for key, value in result.items():
+    #       print(f"{key}: {value}")
     raise NotImplementedError(
-        "Implement main() at the TODO block around line 174. "
+        "Implement main() at the TODO block around line 164. "
         "See # EXPECTED OUTPUT comment below."
     )
-    # TODO END
-    # SOLUTION HINT: Define a string variable that describes what you want the
-    # model to reason about (be specific — the more focused your prompt, the
-    # more informative the response).  Pass that string as the first argument
-    # to ask_gemini, then iterate over the returned dict and print each entry.
-    # Do not pass executable Python expressions inside the prompt string.
-
-    # EXPECTED OUTPUT: result
-    # action: <value from your prompt>
+    # TODO END ──────────────────────────────────────────────────────────────
+    # EXPECTED OUTPUT (varies with your prompt):
+    # action: <value from your prompt schema>
     # reason: <one-sentence explanation from the model>
 
 

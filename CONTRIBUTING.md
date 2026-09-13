@@ -1,65 +1,61 @@
-# Contributing to Physical AI Workshop
+# Contributing
 
-Thanks for your interest in contributing. This is a self-contained workshop repo — contributions that make it clearer, more robust, or more accessible are very welcome.
+Thanks for taking the time. Contributions that make this workshop clearer, more reliable, or more accessible are welcome.
 
 ---
 
-## What kinds of contributions are welcome
+## What fits
 
-- Bug fixes — broken scripts, incorrect outputs, setup failures
-- Typo and clarity fixes in documentation or code comments
-- Compatibility fixes — package version updates, platform issues
-- Fallback improvements — better no-camera, no-GPU, no-API-key behaviour
-- Exercise hints or solution improvements
+- Bug fixes — broken scripts, wrong outputs, setup failures on different machines
+- Typos and clarity improvements in docs or code comments
+- Compatibility fixes — package version updates, Windows version differences, platform edge cases
+- Fallback improvements — better handling when there's no camera, no GPU, or no API key
+- Exercise hint or solution improvements
 
-## What is out of scope
+## What doesn't fit
 
-- Restructuring the module order or renaming files (participants follow the numbered sequence)
-- Replacing core dependencies (MediaPipe, MuJoCo, Stable-Baselines3, Gemini)
+- Restructuring modules or renaming files — participants follow the numbered sequence and tools reference these paths
+- Replacing core dependencies (MediaPipe, MuJoCo, Stable-Baselines3, Gemini) — these are deliberate choices
 - Adding new modules — the 3-hour scope is intentional
-- Conda/Poetry/other environment managers — the repo uses `.venv` by design for simplicity on Windows
+- Switching to conda, Poetry, or other environment managers — the repo uses `.venv` for simplicity on Windows
 
-If you're unsure whether something fits, open an issue first and ask.
+If you're not sure whether something fits, open an issue first.
 
 ---
 
 ## How to contribute
 
-1. **Fork** the repository on GitHub.
+1. **Fork** the repository.
 
-2. **Clone your fork** locally:
+2. **Clone your fork:**
    ```bash
-   git clone https://github.com/<your-username>/physical-ai-workshop.git
-   cd physical-ai-workshop
+   git clone https://github.com/<your-username>/physical-ai-lab.git
+   cd physical-ai-lab
    ```
 
-3. **Create a branch** with a short descriptive name:
+3. **Create a branch:**
    ```bash
-   git checkout -b fix/module3-reward-plot
+   git checkout -b fix/brief-description
    ```
 
-4. **Set up the environment** (if you haven't already):
+4. **Set up the environment:**
    ```bat
    setup.bat
    ```
 
-5. **Make your changes.** Run the affected script to verify it works:
-   ```bash
+5. **Make your change** and verify it works:
+   ```bat
+   .venv\Scripts\activate
    python verify_install.py
    python modules/<affected_module>/<script>.py
    ```
 
-6. **Commit** with a clear message:
+6. **Commit:**
    ```bash
-   git commit -m "fix: reward plot not rendering on headless Windows"
+   git commit -m "fix: brief description of what changed"
    ```
 
-7. **Push** to your fork:
-   ```bash
-   git push origin fix/module3-reward-plot
-   ```
-
-8. **Open a Pull Request** against the `master` branch of this repo. Fill in:
+7. **Push and open a Pull Request** against the `master` branch. Include:
    - What the problem was
    - What you changed
    - How you tested it (OS, Python version, with/without webcam)
@@ -68,26 +64,26 @@ If you're unsure whether something fits, open an issue first and ask.
 
 ## Code style
 
-- Follow the existing style in each file — no linter is enforced, but consistency matters.
-- Keep line length reasonable (~100 chars).
-- Add a comment if something non-obvious is happening.
-- Do not remove or alter the `# TODO` / `# SOLUTION` blocks in exercise files — participants rely on them.
+- Match the existing style in the file you're editing
+- Keep lines to ~100 characters
+- Add a comment when something non-obvious is happening
+- Don't touch the `# TODO` / `# SOLUTION` blocks in exercise files — participants depend on them
 
----
-
-## Commit message format
-
-Use a short prefix:
+## Commit prefixes
 
 | Prefix | Use for |
 |--------|---------|
 | `fix:` | Bug fixes |
 | `docs:` | Documentation only |
 | `chore:` | Setup, dependencies, tooling |
-| `feat:` | New content (discuss in an issue first) |
+| `feat:` | New content (open an issue first) |
 
 ---
 
 ## Questions
 
-Open a GitHub Issue and tag it `question`. Response time may vary — this repo is maintained alongside workshop delivery.
+Open a GitHub Issue tagged `question`. Response time varies — this repo is maintained alongside active workshop delivery.
+
+---
+
+*Physical AI Workshop — Jim Seelan*

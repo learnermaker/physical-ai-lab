@@ -12,7 +12,7 @@ authors:
   - family-names: Seelan
     given-names: Jim
     alias: learnermaker
-repository-code: "https://github.com/learnermaker/physical-ai-workshop"
+repository-code: "https://github.com/learnermaker/physical-ai-lab"
 license: MIT
 version: "1.0.0"
 date-released: "2026-09-13"

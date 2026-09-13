@@ -64,6 +64,7 @@ def test_make_env_human_mode_succeeds():
     render_mode="human".
     """
     mock_env = MagicMock()
+    mock_env.reset.return_value = (MagicMock(), {})
     with patch("gymnasium.make", return_value=mock_env) as mock_make:
         result = make_env("CartPole-v1", render_mode="human")
 
@@ -78,6 +79,7 @@ def test_make_env_falls_back_to_rgb_array():
     returns the environment on success.  gym.make is called exactly twice.
     """
     mock_env = MagicMock()
+    mock_env.reset.return_value = (MagicMock(), {})
     call_count = [0]
 
     def side_effect(env_id, render_mode=None):
@@ -100,6 +102,7 @@ def test_make_env_falls_back_to_none():
     returns the environment on success.  gym.make is called exactly three times.
     """
     mock_env = MagicMock()
+    mock_env.reset.return_value = (MagicMock(), {})
     call_count = [0]
 
     def side_effect(env_id, render_mode=None):

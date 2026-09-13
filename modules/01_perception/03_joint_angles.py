@@ -1,21 +1,31 @@
 #!/usr/bin/env python3
 """
-Module 1 Demo: Joint Angle State Vector
-Detects hand landmarks in real-time and computes joint angles for the
-thumb, index, and middle finger MCP joints.
+Module 1 Demo 3: Joint Angle State Vector
+==========================================
+Builds on 02_hand_tracking.py by turning raw landmark positions into
+meaningful numbers — joint angles in degrees.
 
-The state vector [θ1, θ2, θ3] (in degrees) is printed to stdout once per
-second using a time.time() gate, so participants can see the live values
-without flooding the console.
+Why angles?  A robot arm controller doesn't care about pixel coordinates
+on a screen.  It cares about the *opening angle* at each knuckle — the same
+information a servo motor encoder would provide on a real robotic hand.
 
-Landmark overlay is drawn on the frame and shown in a window.
+This script computes the MCP (metacarpophalangeal) joint angle for the thumb,
+index, and middle fingers and prints them as a 3-element state vector once
+per second:  [θ_thumb, θ_index, θ_middle]
+
+What you will see:
+  - Live camera feed with landmark overlay
+  - State vector printed to the terminal every second
+    e.g. [145.2, 163.8, 171.4]
+
+How it connects to the pipeline:
+  Webcam → landmarks → [THIS FILE] → state vector → next: exercise.py (add ring finger)
+
 Press 'q' to quit.
-
-If no webcam is detected, falls back silently to the looping fallback
-video (assets/fallback_hand_demo.mp4).
 """
 
-# Uses MediaPipe Tasks API: https://developers.google.com/edge/mediapipe/solutions/vision/hand_landmarker (Apache-2.0)
+# Uses MediaPipe Tasks API:
+# https://developers.google.com/edge/mediapipe/solutions/vision/hand_landmarker (Apache-2.0)
 
 import math
 import queue
@@ -23,8 +33,7 @@ import sys
 import time
 from pathlib import Path
 
-# --- Python path convention (Design § 2.7) ---
-REPO_ROOT = Path(__file__).resolve().parents[2]  # two levels up from modules/01_perception/
+REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT))
 
 import cv2
@@ -39,7 +48,8 @@ from utils.camera import open_camera
 # ---------------------------------------------------------------------------
 MODEL_PATH = str(REPO_ROOT / "assets" / "hand_landmarker.task")
 
-# MediaPipe drawing helpers (still available in legacy solutions namespace)
+# MediaPipe legacy drawing helpers — still the easiest way to draw the
+# full 21-point hand skeleton with standard styling.
 _mp_drawing = mp.solutions.drawing_utils
 _mp_hands_connections = mp.solutions.hands.HAND_CONNECTIONS
 
@@ -50,50 +60,61 @@ _mp_hands_connections = mp.solutions.hands.HAND_CONNECTIONS
 
 def _compute_angle(a: tuple, vertex: tuple, b: tuple) -> float:
     """
-    Compute the angle at *vertex* formed by the vectors vertex→a and vertex→b,
-    returning the result in degrees.
+    Compute the angle AT the vertex formed by points a, vertex, and b.
 
-    Uses the dot-product / acos formula.  The cosine value is clamped to
-    [-1, 1] before acos to prevent a domain error from floating-point
-    rounding that can push the value fractionally outside that range.
+    Picture three points:
+        a --------- vertex --------- b
+    This function returns the angle at vertex (in degrees).
 
-    Parameters
-    ----------
-    a, vertex, b : tuple of (x, y)
-        Normalised 2-D landmark coordinates (z is ignored for the angle).
+    Formula: θ = acos( (u · v) / (|u| × |v|) )
+    where u = a - vertex and v = b - vertex are vectors from vertex to each end.
+
+    The result is clamped to [0°, 180°] to handle floating-point rounding.
+
+    For hand joint angles:
+      - a     = wrist (landmark 0) — the fixed anchor
+      - vertex = MCP joint (knuckle)
+      - b     = PIP joint (next knuckle along the finger)
+    So the angle measures how "open" the finger is at that knuckle.
     """
+    # Compute vectors from vertex to each of the other two points
     ax, ay = a[0] - vertex[0], a[1] - vertex[1]
     bx, by = b[0] - vertex[0], b[1] - vertex[1]
 
+    # Dot product: measures how much the two vectors point in the same direction
     dot = ax * bx + ay * by
+
+    # Magnitudes: length of each vector
     mag_a = math.sqrt(ax * ax + ay * ay)
     mag_b = math.sqrt(bx * bx + by * by)
 
+    # Guard against zero-length vectors (happens when two landmarks overlap)
     if mag_a < 1e-9 or mag_b < 1e-9:
-        return 0.0  # degenerate case: landmark overlap
+        return 0.0
 
+    # Clamp to [-1, 1] to prevent math domain errors from floating-point noise
+    # (e.g. dot/(mag_a*mag_b) might be 1.0000001 due to rounding)
     cos_theta = max(-1.0, min(1.0, dot / (mag_a * mag_b)))
+
     return math.degrees(math.acos(cos_theta))
 
 
 def compute_state_vector(landmarks: list) -> list[float]:
     """
-    Compute angles for thumb, index, and middle finger MCP joints.
+    Compute MCP joint angles for three fingers and return a 3-element state vector.
 
-    Angle definitions (all angles measured at the MCP/intermediate joint):
-      θ_thumb : angle at lm1 (THUMB_CMC)  between lm0→lm1 and lm1→lm2
-      θ_index : angle at lm5 (INDEX_MCP)  between lm0→lm5 and lm5→lm6
-      θ_middle: angle at lm9 (MIDDLE_MCP) between lm0→lm9 and lm9→lm10
+    Landmark indices used (see the hand diagram in the hub):
+      Thumb:   lm0 (wrist) → lm1 (CMC) → lm2 (MCP)
+      Index:   lm0 (wrist) → lm5 (MCP) → lm6 (PIP)
+      Middle:  lm0 (wrist) → lm9 (MCP) → lm10 (PIP)
 
-    Parameters
-    ----------
-    landmarks : list of NormalizedLandmark (21 elements, index 0..20)
-
-    Returns
-    -------
-    list of three floats in degrees [θ_thumb, θ_index, θ_middle]
+    Returns [θ_thumb, θ_index, θ_middle] in degrees.
+    0° = fully closed (fist), ~180° = fully open (flat hand).
     """
     def lm(i):
+        # Helper: return landmark i as a (x, y) tuple
+        # Normalised coordinates in [0, 1] — no need to multiply by frame size
+        # for angle computation (ratios cancel out)
         return (landmarks[i].x, landmarks[i].y)
 
     theta_thumb  = _compute_angle(lm(0), lm(1), lm(2))
@@ -104,23 +125,26 @@ def compute_state_vector(landmarks: list) -> list[float]:
 
 
 # ---------------------------------------------------------------------------
-# MediaPipe LIVE_STREAM callback
+# MediaPipe result queue
 # ---------------------------------------------------------------------------
-
-# Queue used to pass the latest landmark result from the async callback
-# to the main loop without blocking either side.
+# We use a Queue instead of a plain variable because MediaPipe calls _on_result
+# on its own thread, while the main loop reads results on the main thread.
+# Queue.get_nowait() is thread-safe — no lock needed.
 _result_queue: queue.Queue = queue.Queue(maxsize=1)
+# maxsize=1: if the main loop is slower than detection, old results are discarded.
 
 
 def _on_result(
     result: mp_vision.HandLandmarkerResult,
-    output_image: mp.Image,  # noqa: F841  (unused but required by signature)
-    timestamp_ms: int,       # noqa: F841
+    output_image: mp.Image,  # required by callback signature, unused here
+    timestamp_ms: int,       # required by callback signature, unused here
 ) -> None:
-    """Callback invoked by MediaPipe on the detection thread."""
-    # Keep only the freshest result; discard stale values.
+    """
+    Called by MediaPipe each time a frame is processed.
+    Puts the result in the queue, discarding any unread result first.
+    """
     try:
-        _result_queue.get_nowait()
+        _result_queue.get_nowait()  # discard stale result if main loop is slow
     except queue.Empty:
         pass
     _result_queue.put_nowait(result)
@@ -131,10 +155,9 @@ def _on_result(
 # ---------------------------------------------------------------------------
 
 def main() -> None:
-    # --- Open camera (with automatic fallback to looping video) ---
     cap = open_camera()
 
-    # --- Build the HandLandmarker ---
+    # Configure HandLandmarker — same as 02_hand_tracking.py
     base_options = mp_python.BaseOptions(model_asset_path=MODEL_PATH)
     options = mp_vision.HandLandmarkerOptions(
         base_options=base_options,
@@ -144,37 +167,48 @@ def main() -> None:
     )
     landmarker = mp_vision.HandLandmarker.create_from_options(options)
 
-    # --- State ---
     last_result: mp_vision.HandLandmarkerResult | None = None
-    last_print_time: float = 0.0
+    last_print_time: float = 0.0   # time.time() of last state vector print
     frame_index: int = 0
 
     print("Running — press 'q' in the window to quit.")
+    print("State vector format: [θ_thumb, θ_index, θ_middle] in degrees")
+    print()
+    # ── WHY THIS MATTERS FOR PHYSICAL AI ─────────────────────────────────────
+    # The 3-element array printed each second IS the state vector — the central
+    # data structure of the pipeline. A robot gripper controller reads exactly
+    # this kind of array (joint angles from encoders) to decide how to move.
+    # In Module 4, these numbers will flow directly into a MuJoCo simulation
+    # as joint torque commands. In Module 5, Gemini will reason about a camera
+    # frame instead — but the state → action pattern stays the same.
+    # ─────────────────────────────────────────────────────────────────────────
 
     while True:
         ret, frame = cap.read()
         if not ret:
             break
 
-        # Convert BGR frame to an mp.Image and send for async detection
+        # Send frame to MediaPipe for async detection
         rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame)
-        timestamp_ms = int(time.time() * 1000) + frame_index  # must be monotonically increasing
+        # timestamp_ms uses both wall-clock time and frame count to stay monotonic
+        # even if the clock resolution is low
+        timestamp_ms = int(time.time() * 1000) + frame_index
         landmarker.detect_async(mp_image, timestamp_ms)
         frame_index += 1
 
-        # Drain the result queue (non-blocking)
+        # Try to get the latest result (non-blocking)
         try:
             last_result = _result_queue.get_nowait()
         except queue.Empty:
-            pass
+            pass  # keep using the previous result until a new one arrives
 
-        # --- Draw landmark overlay ---
+        # Draw landmarks if we have a detection
         if last_result and last_result.hand_landmarks:
             h, w = frame.shape[:2]
             for hand_landmarks in last_result.hand_landmarks:
-                # Convert normalised landmarks to a legacy NormalizedLandmarkList
-                # so drawing_utils can render them with standard connectors.
+                # Convert Tasks API NormalizedLandmark objects to the legacy
+                # NormalizedLandmarkList format that drawing_utils expects
                 landmark_list = mp.framework.formats.landmark_pb2.NormalizedLandmarkList()
                 landmark_list.landmark.extend([
                     mp.framework.formats.landmark_pb2.NormalizedLandmark(
@@ -182,17 +216,18 @@ def main() -> None:
                     )
                     for lm in hand_landmarks
                 ])
+                # draw_landmarks renders the full 21-point skeleton
                 _mp_drawing.draw_landmarks(
                     frame,
                     landmark_list,
                     _mp_hands_connections,
                 )
 
-            # --- Print state vector once per second ---
+            # Print state vector once per second (avoids console flooding)
             now = time.time()
             if now - last_print_time >= 1.0:
-                # Use the first detected hand
                 angles = compute_state_vector(last_result.hand_landmarks[0])
+                # angles[0] = thumb, [1] = index, [2] = middle
                 print(f"[{angles[0]:.1f}, {angles[1]:.1f}, {angles[2]:.1f}]")
                 last_print_time = now
 

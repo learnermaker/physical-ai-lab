@@ -385,3 +385,23 @@ section > .section-subtitle {
   text-align: left;
   font-size: 0.78rem;
 }
+
+/* Camera idle placeholder — shown via ::before when camera is not started.
+   The JS sets aria-busy="true" while loading; we use a plain text fallback
+   via CSS content on the wrapper so no DOM changes are needed. */
+.cam-wrap::before {
+  content: "Camera not started";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 0.75rem;
+  color: var(--color-muted, #aaa);
+  pointer-events: none;
+  z-index: 0;
+  white-space: nowrap;
+}
+/* Hide the placeholder once the canvas has pixels (camera running) */
+.cam-wrap.active::before {
+  display: none;
+}
