@@ -1,4 +1,4 @@
-﻿# Facilitator Guide â€” Physical AI Workshop
+# Facilitator Guide — Physical AI Workshop
 
 **Total running time:** ~220 minutes (3 h 40 min including contingency buffer)
 
@@ -9,19 +9,19 @@
 | # | Segment | Duration |
 |---|---------|----------|
 | 0 | Pre-session | 30 min |
-| 1 | Module 0 â€” Kickoff | 15 min |
-| 2 | Module 1 â€” Perception | 30 min |
-| 3 | Module 2 â€” Simulation | 20 min |
-| 4 | Module 3 â€” Reinforcement Learning | 30 min |
-| 5 | Module 4 â€” Perception to Action | 40 min |
-| 6 | Module 5 â€” Foundation Models | 25 min |
+| 1 | Module 0 — Kickoff | 15 min |
+| 2 | Module 1 — Perception | 30 min |
+| 3 | Module 2 — Simulation | 20 min |
+| 4 | Module 3 — Reinforcement Learning | 30 min |
+| 5 | Module 4 — Perception to Action | 40 min |
+| 6 | Module 5 — Foundation Models | 25 min |
 | 7 | Wrap-up | 15 min |
-| â€” | Contingency buffer | 15 min |
+| — | Contingency buffer | 15 min |
 | **Total** | | **~220 min** |
 
 ---
 
-## Segment 1 â€” Pre-session (30 min)
+## Segment 1 — Pre-session (30 min)
 
 **What this time is for:** Participants arrive and complete environment validation. You are troubleshooting, not presenting.
 
@@ -44,7 +44,7 @@
 ### Key talking points
 
 - "If you see `Setup complete: 14/14 checks passed`, you're good to go."
-- "Webcam warnings are fine â€” the scripts fall back to a demo video automatically."
+- "Webcam warnings are fine — the scripts fall back to a demo video automatically."
 - ARM64 Windows participants should already be on WSL2 (flagged in pre-workshop comms). If not, see COMMON_ISSUES.md.
 
 ### Transition cue
@@ -53,7 +53,7 @@ Once most participants show a passing verify output (allow stragglers to catch u
 
 ---
 
-## Segment 2 â€” Module 0: Kickoff (15 min)
+## Segment 2 — Module 0: Kickoff (15 min)
 
 **Goal:** Set the conceptual stage. No code written by participants yet.
 
@@ -63,22 +63,22 @@ Once most participants show a passing verify output (allow stragglers to catch u
 2. Run all cells live on the projector.
 3. Draw the pipeline on the whiteboard or reference the diagram in the notebook:
    ```
-   [Webcam] â†’ [Perception] â†’ [State Vector] â†’ [Sim Agent] â†’ [Action] â†’ [World/Sim] â†’ (back to Webcam)
+   [Webcam] → [Perception] → [State Vector] → [Sim Agent] → [Action] → [World/Sim] → (back to Webcam)
    ```
 
 ### Key talking points
 
 - "Every module today builds one piece of this pipeline. By Module 4, the full loop is closed."
-- "The loop being *closed* is the key idea â€” the robot's action changes the environment, which changes the next camera frame."
+- "The loop being *closed* is the key idea — the robot's action changes the environment, which changes the next camera frame."
 - "We're not training a model from scratch today. We're wiring together pre-trained pieces and writing the glue code."
 
 ### Transition cue
 
-"Let's start at the very beginning of the pipeline â€” the camera." Open a terminal and navigate to `modules/01_perception/`.
+"Let's start at the very beginning of the pipeline — the camera." Open a terminal and navigate to `modules/01_perception/`.
 
 ---
 
-## Segment 3 â€” Module 1: Perception (30 min)
+## Segment 3 — Module 1: Perception (30 min)
 
 **Goal:** Participants run webcam capture, see hand landmarks drawn in real time, and extend the joint-angle state vector.
 
@@ -94,25 +94,25 @@ Once most participants show a passing verify output (allow stragglers to catch u
    ```
 3. Run `03_joint_angles.py` and point out the printed state vector in the terminal.
 4. Direct participants to open `exercise.py` in VS Code alongside the browser and complete the `# TODO` block (add a fourth finger angle). Allow ~10 min.
-5. Ask 1â€“2 volunteers to share their terminal output.
+5. Ask 1–2 volunteers to share their terminal output.
 
 ### Key talking points
 
-- "The MediaPipe model runs entirely on CPU â€” no GPU needed. This is the 2026 Tasks API, not the deprecated `solutions` API."
+- "The MediaPipe model runs entirely on CPU — no GPU needed. This is the 2026 Tasks API, not the deprecated `solutions` API."
 - "A state vector is just a list of numbers describing the world at this instant. We just built one from raw pixels."
-- "The fallback video loops automatically if your camera isn't detected â€” your code path is identical either way."
+- "The fallback video loops automatically if your camera isn't detected — your code path is identical either way."
 
 ### Transition cue
 
-"We now have a state vector. Next we need something to *receive* that state â€” a simulation environment." Switch terminal to `modules/02_simulation/`.
+"We now have a state vector. Next we need something to *receive* that state — a simulation environment." Switch terminal to `modules/02_simulation/`.
 
 ---
 
-## Segment 4 â€” Module 2: Simulation (20 min)
+## Segment 4 — Module 2: Simulation (20 min)
 
 **Goal:** Participants observe Gymnasium environments, understand observation and action spaces, and run random agents.
 
-> **Note:** The pretrained HalfCheetah demo (`03_pretrained_agent.py`) is run by participants *before* the session as a motivating preview. Do **not** run it live â€” reference the results instead.
+> **Note:** The pretrained HalfCheetah demo (`03_pretrained_agent.py`) is run by participants *before* the session as a motivating preview. Do **not** run it live — reference the results instead.
 
 ### Facilitator actions
 
@@ -132,7 +132,7 @@ Once most participants show a passing verify output (allow stragglers to catch u
 
 - "CartPole has 4 observations and 2 discrete actions. Reacher has 11 observations and 2 continuous torques. That's the action space Module 4 will control with your hand."
 - "A random agent is the baseline: if a trained agent can't beat random, something is wrong."
-- "You all ran the HalfCheetah pretrained agent before the session â€” that's what 1 million training steps buys you."
+- "You all ran the HalfCheetah pretrained agent before the session — that's what 1 million training steps buys you."
 
 ### Transition cue
 
@@ -140,7 +140,7 @@ Once most participants show a passing verify output (allow stragglers to catch u
 
 ---
 
-## Segment 5 â€” Module 3: Reinforcement Learning (30 min)
+## Segment 5 — Module 3: Reinforcement Learning (30 min)
 
 **Goal:** Participants watch a PPO agent learn CartPole live with a reward plot, then experiment with timestep count.
 
@@ -152,25 +152,25 @@ Once most participants show a passing verify output (allow stragglers to catch u
    python modules/03_rl/02_train_cartpole.py
    ```
    Keep the matplotlib window visible so the live reward curve is on screen.
-3. While it trains (~2â€“3 min), walk through the MDP slide / whiteboard diagram.
+3. While it trains (~2–3 min), walk through the MDP slide / whiteboard diagram.
 4. After training completes, confirm `models/ppo-CartPole-trained.zip` was saved.
 5. Direct participants to open `exercise.py` and modify the timestep count. Allow ~10 min.
 
 ### Key talking points
 
 - "Reward is the only supervision signal. The agent figures out the policy by trial and error."
-- "Watch the reward curve â€” it stays flat early, then climbs sharply. That inflection point is when the agent discovers balance."
+- "Watch the reward curve — it stays flat early, then climbs sharply. That inflection point is when the agent discovers balance."
 - "We're using PPO from Stable-Baselines3. In practice this is the same algorithm that trains many real robot controllers."
 
 ### Transition cue
 
-"We have perception. We have a simulation. We've seen a trained agent. Now let's wire them together â€” your hand drives the robot." Switch terminal to `modules/04_perception_to_action/`.
+"We have perception. We have a simulation. We've seen a trained agent. Now let's wire them together — your hand drives the robot." Switch terminal to `modules/04_perception_to_action/`.
 
 ---
 
-## Segment 6 â€” Module 4: Perception to Action (40 min)
+## Segment 6 — Module 4: Perception to Action (40 min)
 
-**Goal:** Participants close the physical AI loop: webcam â†’ hand landmark â†’ torque command â†’ Reacher joint movement.
+**Goal:** Participants close the physical AI loop: webcam → hand landmark → torque command → Reacher joint movement.
 
 ### Facilitator actions
 
@@ -179,16 +179,16 @@ Once most participants show a passing verify output (allow stragglers to catch u
    python modules/04_perception_to_action/01_hand_to_reacher.py
    ```
 2. Move your index finger left/right and up/down while participants watch the Reacher arm respond.
-3. Point out the "No hand detected â€” holding position" message when the hand leaves the frame.
+3. Point out the "No hand detected — holding position" message when the hand leaves the frame.
 4. Direct participants to open `exercise.py` and complete the `# TODO` block (map a second landmark to a third torque channel). Allow ~15 min.
-5. Ask 1â€“2 participants to demo their result on the projector.
+5. Ask 1–2 participants to demo their result on the projector.
 
 ### Key talking points
 
 - "The mapping is linear: the normalised [0,1] position of landmark 8 scales to a [-1,1] torque command."
-- "Torque means *force applied*, not *position target*. The arm overshoots and corrects â€” that's physics."
+- "Torque means *force applied*, not *position target*. The arm overshoots and corrects — that's physics."
 - "This is exactly how human demonstration data is collected for imitation learning at scale."
-- "The full loop is now closed: camera â†’ state â†’ action â†’ sim â†’ camera."
+- "The full loop is now closed: camera → state → action → sim → camera."
 
 ### Transition cue
 
@@ -196,7 +196,7 @@ Once most participants show a passing verify output (allow stragglers to catch u
 
 ---
 
-## Segment 7 â€” Module 5: Foundation Models (25 min)
+## Segment 7 — Module 5: Foundation Models (25 min)
 
 **Goal:** Participants send a camera frame to Gemini and receive a structured action suggestion.
 
@@ -218,7 +218,7 @@ Once most participants show a passing verify output (allow stragglers to catch u
 
 - "Gemini is receiving a base64-encoded JPEG and returning a JSON action dictionary. That's the full Foundation Model pattern for robotics."
 - "The fallback cache means the exercise works even without an API key or network access."
-- "This pattern â€” capture, encode, prompt, parse, act â€” is how VLMs are integrated into real robot pipelines today."
+- "This pattern — capture, encode, prompt, parse, act — is how VLMs are integrated into real robot pipelines today."
 
 ### Transition cue
 
@@ -226,7 +226,7 @@ Once most participants show a passing verify output (allow stragglers to catch u
 
 ---
 
-## Segment 8 â€” Wrap-up (15 min)
+## Segment 8 — Wrap-up (15 min)
 
 **Goal:** Map every module to the Physical AI pipeline and point participants toward next steps.
 
@@ -240,9 +240,9 @@ Once most participants show a passing verify output (allow stragglers to catch u
 
 ### Key talking points
 
-- "Perception â†’ State Vector is Module 1. State Vector â†’ Action is Module 4. Foundation Model reasoning is Module 5. The RL training loop is Module 3."
-- "Sim-to-real transfer is the hard part in industry. The simulation we used today is a research-grade MuJoCo environment â€” the same physics used in real robot labs."
-- "The skills you practised â€” camera I/O, environment wrappers, reward callbacks, REST API calls â€” are the literal building blocks of modern robotics stacks."
+- "Perception → State Vector is Module 1. State Vector → Action is Module 4. Foundation Model reasoning is Module 5. The RL training loop is Module 3."
+- "Sim-to-real transfer is the hard part in industry. The simulation we used today is a research-grade MuJoCo environment — the same physics used in real robot labs."
+- "The skills you practised — camera I/O, environment wrappers, reward callbacks, REST API calls — are the literal building blocks of modern robotics stacks."
 
 ### Transition cue
 
@@ -250,7 +250,7 @@ End the structured session. Remain available for individual questions during the
 
 ---
 
-## Segment 9 â€” Contingency Buffer (15 min)
+## Segment 9 — Contingency Buffer (15 min)
 
 **Purpose:** Absorb overruns, support participants who hit issues, and handle Q&A overflow.
 
@@ -266,9 +266,9 @@ End the structured session. Remain available for individual questions during the
 
 ### Key reminders
 
-- All exercises have a `# SOLUTION:` block commented out at the bottom â€” participants can uncomment it to see the reference implementation.
+- All exercises have a `# SOLUTION:` block commented out at the bottom — participants can uncomment it to see the reference implementation.
 - `verify_install.py` can be re-run at any time to diagnose environment issues.
-- The repo is self-contained and fully offline after setup â€” participants can continue at home.
+- The repo is self-contained and fully offline after setup — participants can continue at home.
 
 ---
 
