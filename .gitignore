@@ -35,6 +35,12 @@ models/*.onnx
 # Runtime
 *.log
 
+# Local dev/test scripts and their output artefacts
+_run_start_hub_test.py
+test_out.txt
+test_err.txt
+test_output.txt
+
 # IDE / editor
 .vscode/
 .idea/
