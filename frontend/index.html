@@ -862,6 +862,12 @@ details.exercise-detail[open] summary.exercise-detail-summary::before { transfor
             <img id="m4-sim" alt="Reacher sim" class="sim-img" />
           </div>
         </div>
+        <p id="m4-live-hint" class="text-muted mt-8" style="display:none;font-size:0.82rem;line-height:1.5">
+          The yellow dot marks your <strong>index fingertip</strong> (landmark 8).
+          Its position in the camera frame is mapped directly to the arm:
+          <strong>left/right</strong> drives joint 1 torque, <strong>up/down</strong> drives joint 2.
+          Watch the simulation arm react as your fingertip moves.
+        </p>
         <div class="flex-row mt-12">
           <button class="btn-primary" id="m4-start-btn" data-requires-server>Start</button>
           <button class="btn-secondary" id="m4-demo-btn" data-requires-server title="No webcam? Use the built-in hand demo video">Use demo video</button>

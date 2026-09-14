@@ -66,6 +66,95 @@
     }).catch(() => {});  // intentional no-op — next frame will retry
   }
 
+  // --- Readable status helper ---------------------------------------------
+
+  const _hintEl = document.getElementById('m4-live-hint');
+
+  /** Show or hide the fingertip→torque explanation row. */
+  function _showHint(visible) {
+    if (_hintEl) _hintEl.style.display = visible ? '' : 'none';
+  }
+
+  /**
+   * Convert normalised action values to a human-readable direction string.
+   * ax in [-1,+1]: negative = left, positive = right
+   * ay in [-1,+1]: negative = up,   positive = down   (y grows downward in image coords)
+   */
+  function _actionLabel(ax, ay) {
+    const hDir = ax < -0.15 ? 'left' : ax > 0.15 ? 'right' : 'centre';
+    const vDir = ay < -0.15 ? 'up'   : ay > 0.15 ? 'down'  : 'centre';
+    const hStr = `${hDir} (${ax >= 0 ? '+' : ''}${ax.toFixed(2)})`;
+    const vStr = `${vDir} (${ay >= 0 ? '+' : ''}${ay.toFixed(2)})`;
+    return `Index tip \u2192 arm torque: ${hStr}, ${vStr}`;
+  }
+
+  // --- Index fingertip highlight ------------------------------------------
+
+  /**
+   * Draw all hand landmarks on the canvas, with landmark 8 (index fingertip)
+   * visually emphasised so participants can clearly see which point drives the arm.
+   *
+   * Other landmarks: small dim grey dots + faint connectors.
+   * Landmark 8: large bright ring + inner dot + "index tip" label.
+   */
+  function _drawHandOverlay(hand) {
+    const W = canvas.width;
+    const H = canvas.height;
+
+    // Draw connectors (all joints) — faint sky blue
+    if (landmarker._du && landmarker._HLC) {
+      landmarker._du.drawConnectors(hand, landmarker._HLC.HAND_CONNECTIONS,
+        { color: 'rgba(56,189,248,0.35)', lineWidth: 1 });
+    }
+
+    // Draw all landmarks dim except landmark 8
+    hand.forEach((lm, i) => {
+      const px = lm.x * W;
+      const py = lm.y * H;
+      if (i === 8) return; // drawn separately below
+      ctx.beginPath();
+      ctx.arc(px, py, 3, 0, 2 * Math.PI);
+      ctx.fillStyle = 'rgba(200,200,200,0.55)';
+      ctx.fill();
+    });
+
+    // Landmark 8 — index fingertip — highlighted
+    const lm8 = hand[8];
+    const x8  = lm8.x * W;
+    const y8  = lm8.y * H;
+
+    // Outer glow ring
+    ctx.beginPath();
+    ctx.arc(x8, y8, 14, 0, 2 * Math.PI);
+    ctx.strokeStyle = 'rgba(255, 210, 60, 0.5)';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    // Solid inner dot
+    ctx.beginPath();
+    ctx.arc(x8, y8, 7, 0, 2 * Math.PI);
+    ctx.fillStyle = '#ffd23c';
+    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // "index tip" label — placed above the dot, flipping side if near top edge
+    const labelY = y8 > 20 ? y8 - 18 : y8 + 26;
+    ctx.font = 'bold 11px system-ui, sans-serif';
+    ctx.textAlign = 'center';
+    // Dark background pill for readability
+    const label = 'index tip';
+    const tw = ctx.measureText(label).width;
+    ctx.fillStyle = 'rgba(0,0,0,0.65)';
+    ctx.beginPath();
+    ctx.roundRect(x8 - tw / 2 - 4, labelY - 10, tw + 8, 14, 3);
+    ctx.fill();
+    ctx.fillStyle = '#ffd23c';
+    ctx.fillText(label, x8, labelY);
+    ctx.textAlign = 'left'; // reset
+  }
+
   // --- MediaPipe -----------------------------------------------------------
 
   async function initLandmarker() {
@@ -90,14 +179,15 @@
           const ax  = lm8.x * 2 - 1;
           const ay  = lm8.y * 2 - 1;
 
-          // Throttle action POSTs — no reconnect, just update the shared array
+          // Throttle action POSTs
           const now = performance.now();
           if (now - lastActionTs > ACTION_INTERVAL_MS) {
             lastActionTs = now;
             sendAction(ax, ay);
           }
 
-          status.textContent = `Action: [${ax.toFixed(2)}, ${ay.toFixed(2)}]`;
+          status.textContent = _actionLabel(ax, ay);
+          _showHint(true);
         }
       });
 
@@ -112,24 +202,20 @@
     if (!running || !landmarker) return;
 
     // Only process frames the browser is actually decoding.
-    // videoWidth === 0 means the video element isn't producing pixels yet.
     if (video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA && video.videoWidth > 0) {
       // 1. Draw video frame
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-      // 2. Overlay landmarks from the PREVIOUS result — same rAF tick as video draw
-      //    so the video paint never wipes them out.
-      if (latestHands && landmarker._du && landmarker._HLC) {
+      // 2. Overlay landmarks — custom drawing emphasises index fingertip
+      if (latestHands) {
         for (const hand of latestHands) {
-          landmarker._du.drawConnectors(hand, landmarker._HLC.HAND_CONNECTIONS,
-            { color: '#38bdf8', lineWidth: 2 });
-          landmarker._du.drawLandmarks(hand, { color: '#ffd23c', radius: 4 });
+          _drawHandOverlay(hand);
         }
       }
 
       // 3. Submit for detection
       if (_demoMode) {
-        // VIDEO mode: detectForVideo returns synchronously — process result immediately
+        // VIDEO mode: detectForVideo returns synchronously
         const result = landmarker.detectForVideo(video, performance.now());
         if (result) {
           const hands = result.hand_landmarks ?? result.landmarks;
@@ -143,9 +229,11 @@
               lastActionTs = now;
               sendAction(ax, ay);
             }
-            status.textContent = `Action: [${ax.toFixed(2)}, ${ay.toFixed(2)}]`;
+            status.textContent = _actionLabel(ax, ay);
+            _showHint(true);
           } else {
-            status.textContent = 'Demo video running \u2014 no hand detected in frame.';
+            status.textContent = 'Demo video running \u2014 point your index finger at the camera.';
+            _showHint(false);
           }
         }
       } else {
@@ -170,7 +258,7 @@
         // Use looping hand demo video instead of webcam
         stream = 'demo';
         video.srcObject = null;
-        video.src = '/assets/fallback_hand_demo.mp4?v=2';   // ?v=2 busts any old cached version
+        video.src = '/assets/fallback_hand_demo.mp4?v=3';   // ?v=3 — new pointing-finger video
         video.loop = true;
         video.muted = true;
         await video.play();
@@ -271,6 +359,7 @@
     latestHands  = null;
     lastActionTs = 0;
     _demoMode    = false;
+    _showHint(false);
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     status.textContent = 'Stopped.';

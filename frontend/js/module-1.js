@@ -45,7 +45,7 @@ const webcamManager = (() => {
     // Sentinel: use the string 'demo' so stop() can tell it apart from a real stream
     stream = 'demo';
     video.srcObject = null;
-    video.src = '/assets/fallback_hand_demo.mp4?v=2';   // ?v=2 busts any browser cache
+    video.src = '/assets/fallback_hand_demo.mp4?v=3';   // ?v=3 busts any browser cache
     video.loop = true;
     video.muted = true;
     video.playbackRate = 1.0;
