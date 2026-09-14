@@ -1,39 +1,39 @@
-{
+﻿{
   "describe the scene in one sentence": "A person is sitting at a desk in a modern workspace, appearing focused on their laptop screen.",
 
   "you are aria...working calmly": {
     "action": "WAIT",
     "confidence": 0.92,
     "observation": "A person is seated at a desk, typing on a laptop with focused posture and calm body language.",
-    "reason": "The individual is productively engaged and shows no signs of needing assistance — interrupting would disrupt their workflow.",
+    "reason": "The individual is productively engaged and shows no signs of needing assistance - interrupting would disrupt their workflow.",
     "next_step": "ARIA maintains a respectful distance and continues passive monitoring at 30-second intervals."
   },
   "you are aria...confused": {
     "action": "APPROACH",
     "confidence": 0.87,
-    "observation": "A person is staring at their screen with a furrowed brow, hand raised to their forehead, body leaning forward — classic signs of cognitive struggle.",
+    "observation": "A person is staring at their screen with a furrowed brow, hand raised to their forehead, body leaning forward - classic signs of cognitive struggle.",
     "reason": "Body language strongly indicates the person is stuck on a problem and may benefit from assistance or a prompt.",
-    "next_step": "ARIA moves to within 1.5 metres, pauses, and offers a soft audio cue — 'Can I help?'"
+    "next_step": "ARIA moves to within 1.5 metres, pauses, and offers a soft audio cue - 'Can I help?'"
   },
   "you are aria...waving": {
     "action": "APPROACH",
     "confidence": 0.96,
     "observation": "The person is making direct eye contact with the camera and raising their hand in a clear waving gesture, signalling intentional interaction.",
-    "reason": "The person has explicitly initiated contact — ARIA should respond promptly and move closer to begin interaction.",
+    "reason": "The person has explicitly initiated contact - ARIA should respond promptly and move closer to begin interaction.",
     "next_step": "ARIA approaches at low speed, stops at 1 metre, activates the interaction LED, and awaits the person's request."
   },
   "you are aria...distressed": {
     "action": "ALERT",
     "confidence": 0.89,
     "observation": "A person is slumped forward over the desk with their head resting on their arms, showing no visible movement or responsiveness.",
-    "reason": "The posture is inconsistent with normal rest or sleep at a desk — unresponsiveness in a workplace context warrants an immediate welfare check.",
+    "reason": "The posture is inconsistent with normal rest or sleep at a desk - unresponsiveness in a workplace context warrants an immediate welfare check.",
     "next_step": "ARIA broadcasts an alert to the nearest registered caregiver, activates proximity sensor for 60 seconds, and remains stationary nearby."
   },
   "you are aria...leaving": {
     "action": "RETREAT",
     "confidence": 0.81,
     "observation": "The person has turned away from the desk and is moving toward the exit, with no indication of wanting interaction.",
-    "reason": "The person is clearly leaving and has not requested assistance — following would be intrusive.",
+    "reason": "The person is clearly leaving and has not requested assistance - following would be intrusive.",
     "next_step": "ARIA reverses 0.5 metres, switches to standby mode, and logs the interaction as resolved."
   },
 
@@ -47,20 +47,20 @@
     "action": "WAIT",
     "confidence": 0.91,
     "observation": "Person is typing on a laptop with calm, focused posture and no signs of distress or need.",
-    "reason": "No intervention required — the person is productive and undisturbed.",
+    "reason": "No intervention required - the person is productive and undisturbed.",
     "next_step": "ARIA holds position and re-evaluates in 30 seconds."
   },
   "aria confused": {
     "action": "APPROACH",
     "confidence": 0.85,
-    "observation": "Person has hand on forehead, furrowed brow, and is staring intently at their screen — signs of confusion or frustration.",
-    "reason": "High probability of needing assistance — proactive approach is appropriate.",
+    "observation": "Person has hand on forehead, furrowed brow, and is staring intently at their screen - signs of confusion or frustration.",
+    "reason": "High probability of needing assistance - proactive approach is appropriate.",
     "next_step": "ARIA moves to 1.5m, pauses, and offers help via audio prompt."
   },
   "aria waving": {
     "action": "APPROACH",
     "confidence": 0.97,
-    "observation": "Person is looking directly at ARIA and waving — unambiguous request for interaction.",
+    "observation": "Person is looking directly at ARIA and waving - unambiguous request for interaction.",
     "reason": "Explicit human-initiated contact should always be responded to promptly.",
     "next_step": "ARIA approaches at low speed, stops at 1m, and awaits instruction."
   },
@@ -68,7 +68,7 @@
     "action": "ALERT",
     "confidence": 0.88,
     "observation": "Person is slumped with head down on desk, no visible movement detected over observation period.",
-    "reason": "Unresponsive posture in a work environment requires immediate welfare escalation — cannot be ignored.",
+    "reason": "Unresponsive posture in a work environment requires immediate welfare escalation - cannot be ignored.",
     "next_step": "ARIA sends welfare alert, stays nearby, activates audio check-in every 10 seconds."
   },
   "person at desk": {
