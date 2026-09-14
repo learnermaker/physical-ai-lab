@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Physical AI Workshop — Setup Guide</title>
+<title>Physical AI Lab — Setup Guide</title>
 <style>
   /* ── Typefaces ────────────────────────────────────────────── */
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
@@ -282,9 +282,9 @@
 
 <!-- ── HEADER ────────────────────────────────────────────────── -->
 <header>
-  <p class="eyebrow">Workshop Documentation</p>
-  <h1>Physical AI Workshop<br>Setup Guide</h1>
-  <p class="sub">Everything you need to go from a fresh machine to running the workshop hub — usually under 15 minutes.</p>
+  <p class="eyebrow">Lab Documentation</p>
+  <h1>Physical AI Lab<br>Setup Guide</h1>
+  <p class="sub">Everything you need to go from a fresh machine to running the lab hub — usually under 15 minutes.</p>
   <span class="by">Written by Jim Seelan</span>
 </header>
 
@@ -407,7 +407,7 @@ Setup complete: 13/14 checks passed</code></pre>
 
   <h2>1. Clone the repo</h2>
   <pre><code><span class="kw">git clone</span> &lt;repo-url&gt;
-<span class="kw">cd</span> physical-ai-workshop</code></pre>
+<span class="kw">cd</span> physical-ai-lab</code></pre>
 
   <h2>2. Create and activate a virtual environment</h2>
   <p>This keeps the workshop packages separate from everything else on your machine.</p>
@@ -434,7 +434,7 @@ Setup complete: 13/14 checks passed</code></pre>
 <span class="kw">python -c</span> "import torch; print(torch.__version__)"
 <span class="c"># Should print: 2.14.0+cpu</span></code></pre>
 
-  <h2>5. Install workshop packages</h2>
+  <h2>5. Install lab packages</h2>
   <pre><code><span class="kw">pip install -r</span> requirements.txt
 
 <span class="c"># Installs: numpy, mujoco, gymnasium, stable-baselines3,
@@ -442,7 +442,7 @@ Setup complete: 13/14 checks passed</code></pre>
 # Around 500 MB. Takes 3–10 minutes.</span></code></pre>
 
   <h2>6. Register the Jupyter kernel</h2>
-  <pre><code><span class="kw">python -m ipykernel install</span> <span class="fl">--user --name</span> physical-ai <span class="fl">--display-name</span> "Physical AI Workshop"</code></pre>
+  <pre><code><span class="kw">python -m ipykernel install</span> <span class="fl">--user --name</span> physical-ai <span class="fl">--display-name</span> "Physical AI Lab"</code></pre>
 
   <h2>7. Hand landmark model</h2>
   <p>This should already be in <code>assets/</code> if you cloned the repo. If it's missing:</p>
@@ -518,7 +518,7 @@ modules/04_perception_to_action/exercise.py
 modules/05_foundation_models/exercise.py</code></pre>
 
   <h2>The notebooks</h2>
-  <p>In VS Code: File → Open Folder → select the repo. Then open a notebook and choose the <strong>Physical AI Workshop</strong> kernel from the picker in the top-right corner.</p>
+  <p>In VS Code: File → Open Folder → select the repo. Then open a notebook and choose the <strong>Physical AI Lab</strong> kernel from the picker in the top-right corner.</p>
   <pre><code>modules/00_kickoff/overview.ipynb
 modules/03_rl/01_mdp_concepts.ipynb
 modules/06_wrapup/concepts_map.ipynb</code></pre>
@@ -605,7 +605,7 @@ modules/06_wrapup/concepts_map.ipynb</code></pre>
   <div class="issue">
     <h3>The setup.bat window opens and immediately disappears</h3>
     <p>Right-click <code>setup.bat</code> → <strong>Open</strong> (instead of double-clicking) to keep the window visible. Or run it from a terminal:</p>
-    <pre><code><span class="kw">cd</span> C:\path\to\physical-ai-workshop
+    <pre><code><span class="kw">cd</span> C:\path\to\physical-ai-lab
 <span class="kw">.\setup.bat</span></code></pre>
   </div>
 
@@ -653,9 +653,9 @@ modules/06_wrapup/concepts_map.ipynb</code></pre>
 
   <div class="issue">
     <h3>VS Code is using the wrong Python kernel</h3>
-    <p>Click the kernel name in the top-right of any notebook → <strong>Python Environments…</strong> → pick <strong>Physical AI Workshop</strong>. If it's not there, re-register it:</p>
+    <p>Click the kernel name in the top-right of any notebook → <strong>Python Environments…</strong> → pick <strong>Physical AI Lab</strong>. If it's not there, re-register it:</p>
     <pre><code><span class="kw">.venv\Scripts\activate</span>
-<span class="kw">python -m ipykernel install</span> <span class="fl">--user --name</span> physical-ai <span class="fl">--display-name</span> "Physical AI Workshop"</code></pre>
+<span class="kw">python -m ipykernel install</span> <span class="fl">--user --name</span> physical-ai <span class="fl">--display-name</span> "Physical AI Lab"</code></pre>
   </div>
 
   <h2>Module 5 / Gemini</h2>
@@ -671,7 +671,7 @@ modules/06_wrapup/concepts_map.ipynb</code></pre>
 
 <!-- ── FOOTER ─────────────────────────────────────────────────── -->
 <footer>
-  <span>Physical AI Workshop — Jim Seelan</span>
+  <span>Physical AI Lab — Jim Seelan</span>
   <span>Open <a href="http://localhost:8000" target="_blank">localhost:8000</a> in Chrome or Edge after starting the server</span>
 </footer>
 
