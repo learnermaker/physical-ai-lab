@@ -27,9 +27,9 @@
   const resultEl        = document.getElementById('m5-result');
   const resultCard      = document.getElementById('m5-result-card');
   const cacheNotice     = document.getElementById('m5-cache-notice');
-  const annotationEl    = document.getElementById('m5-action-annotation');
   const samplesDiv      = document.getElementById('m5-samples');
-  const pipelineEl      = document.getElementById('m5-pipeline-step');
+  // Note: pipelineEl and annotationEl are looked up via getElementById at call time
+  // to avoid stale null captures in some browser module execution contexts.
 
   let stream         = null;   // active MediaStream, null when no camera
   let sampleLoaded   = false;  // true when a sample image is on the canvas
@@ -92,7 +92,8 @@
         const el = document.getElementById('m5-pipeline-step');
         if (el) el.textContent = `① Capture — "${label}" loaded — click Get robot action`;
         // Hide any previous annotation when a new image is chosen
-        if (annotationEl) annotationEl.style.display = 'none';
+        const ann = document.getElementById('m5-action-annotation');
+        if (ann) ann.style.display = 'none';
         resultEl.textContent = '—';
         cacheNotice.style.display = 'none';
       };
@@ -123,6 +124,23 @@
   // Track which sample image is selected so we can compare prediction vs result
   let _selectedPredict = null;
 
+  function _setAnnotation(action) {
+    const el = document.getElementById('m5-action-annotation');
+    if (!el) return;
+    const meaning = ACTION_MEANING[action];
+    if (!meaning) { el.style.display = 'none'; return; }
+    const predicted = _selectedPredict;
+    const correct   = predicted && predicted === action;
+    const incorrect = predicted && predicted !== action;
+    let text = action + ': ' + meaning;
+    if (correct)   text += '  \u2713 Matched your prediction.';
+    if (incorrect) text += '  You predicted ' + predicted + ' \u2014 Gemini chose ' + action + '. Both can be valid; the same scene on a real robot might read differently.';
+    el.textContent = text;
+    el.style.display  = '';
+    el.style.borderLeftColor = correct ? '#2e7d32' : incorrect ? '#c62828' : 'var(--accent)';
+    el.style.background      = correct ? '#f1f8e9' : incorrect ? '#fff5f5' : '#fdf8f3';
+  }
+
   // ── Result display ────────────────────────────────────────────────────────
   function showResult(data, isText) {
     resultCard.removeAttribute('aria-busy');
@@ -136,25 +154,11 @@
       : JSON.stringify(displayData, null, 2);
 
     // ── Action annotation (only for action responses) ──────────────────────
-    if (!isText && annotationEl) {
-      const action = data.action;
-      const meaning = ACTION_MEANING[action];
-      if (meaning) {
-        const predicted = _selectedPredict;
-        const correct   = predicted && predicted === action;
-        const incorrect = predicted && predicted !== action;
-        let text = `${action}: ${meaning}`;
-        if (correct)   text += `  ✓ Matched your prediction.`;
-        if (incorrect) text += `  You predicted ${predicted} — Gemini disagrees. Both could be valid; the same prompt on a real robot might give different results.`;
-        annotationEl.textContent = text;
-        annotationEl.style.display  = '';
-        annotationEl.style.borderLeftColor = correct ? '#2e7d32' : incorrect ? '#c62828' : 'var(--accent)';
-        annotationEl.style.background      = correct ? '#f1f8e9' : incorrect ? '#fff5f5' : '#fdf8f3';
-      } else {
-        annotationEl.style.display = 'none';
-      }
-    } else if (annotationEl) {
-      annotationEl.style.display = 'none';
+    if (!isText) {
+      _setAnnotation(data.action);
+    } else {
+      const el = document.getElementById('m5-action-annotation');
+      if (el) el.style.display = 'none';
     }
 
     const isCache = data._source === 'cache';
@@ -204,7 +208,8 @@
       showSamples();
       setStep('idle');
       _selectedPredict = null;
-      if (annotationEl) annotationEl.style.display = 'none';
+      const ann = document.getElementById('m5-action-annotation');
+      if (ann) ann.style.display = 'none';
       return;
     }
 
