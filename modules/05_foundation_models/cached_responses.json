@@ -1,15 +1,33 @@
 {
   "describe the scene in one sentence": "A desk with a laptop, some books, and a coffee mug in natural lighting.",
+
   "you are a robot controller...action suggestion": {"action": "WAIT", "reason": "Scene is clear, no objects detected"},
-  "you are a robot controller...left": {"action": "LEFT", "reason": "Object appears on the right side of the frame"},
-  "you are a robot controller...right": {"action": "RIGHT", "reason": "Object appears on the left side of the frame"},
+  "you are a robot controller...left":    {"action": "LEFT",    "reason": "Object appears on the right side of the frame"},
+  "you are a robot controller...right":   {"action": "RIGHT",   "reason": "Object appears on the left side of the frame"},
   "you are a robot controller...forward": {"action": "FORWARD", "reason": "Path ahead appears clear"},
-  "you are a robot controller...back": {"action": "BACK", "reason": "Obstacle detected in forward direction"},
+  "you are a robot controller...back":    {"action": "BACK",    "reason": "Obstacle detected in forward direction"},
+
   "describe objects": "Several everyday objects are visible on a flat surface.",
   "what gesture": "The hand appears to be making a pointing gesture with the index finger extended.",
   "joint angles": "The hand shows extended fingers with moderate joint angles across all digits.",
   "robot action from image": {"action": "WAIT", "reason": "Insufficient scene context to determine action"},
   "describe the scene": "A well-lit indoor environment with a person's hand visible in the foreground.",
   "what objects are present": "A keyboard, mouse, and monitor are visible on the desk.",
-  "what is the hand doing": "The hand is making a pinch gesture with the thumb and index finger close together."
+  "what is the hand doing": "The hand is making a pinch gesture with the thumb and index finger close together.",
+
+  "hand pointing": "A person's hand with the index finger clearly extended and pointing upward against a blue background.",
+  "hand pointing action": {"action": "FORWARD", "reason": "Hand is pointing forward — index finger indicates the direction of intended motion"},
+  "index finger extended": "A close-up of a hand with only the index finger raised, suggesting a directional command.",
+  "index finger action": {"action": "FORWARD", "reason": "Extended index finger points toward the target direction"},
+
+  "laptop desk": "A laptop computer on a wooden desk, viewed from above at an angle, in a dimly lit room.",
+  "laptop desk action": {"action": "WAIT", "reason": "No robot-relevant objects detected — environment appears to be a workspace, not an action scene"},
+  "keyboard visible": "A MacBook laptop keyboard and trackpad on a wood-grain desk surface.",
+  "desk environment": "An indoor desk environment with electronic equipment — no immediate obstacles or targets visible.",
+
+  "robot arm diagram": "A two-link robotic arm (Reacher-v5) shown in a top-down simulation view with joint angle indicators and a target marker.",
+  "robot arm action": {"action": "RIGHT", "reason": "The robot fingertip is above and to the left of the target — applying rightward and downward torque will reduce the distance"},
+  "reacher simulation": "The Reacher-v5 simulation environment showing a two-joint arm with the fingertip displaced from the red target marker.",
+  "reacher action": {"action": "RIGHT", "reason": "Fingertip is left of target — positive joint-1 torque (rightward) needed to close the distance"},
+  "two link arm": {"action": "FORWARD", "reason": "The arm appears to need extension toward the lower target position"}
 }
