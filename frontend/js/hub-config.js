@@ -301,7 +301,7 @@ const serverCheck = (() => {
         if (isNoKey) {
           msg = 'No key transmitted (internal error — try again).';
         } else if (reason.includes('401') || reason.includes('UNAUTHENTICATED')) {
-          msg = 'Key rejected (401) — this is not a valid Gemini API key.\n\nGemini API keys start with AIza... and are issued at:\nhttps://aistudio.google.com/app/apikey';
+          msg = 'Key rejected (401) — this is not a valid Gemini API key.\n\nGemini API keys now start with AQ. and are issued at:\nhttps://aistudio.google.com/app/apikey';
         } else if (reason.includes('429') || reason.includes('RESOURCE_EXHAUSTED')) {
           msg = 'Rate limit hit (429) — the key is valid but you\'ve exceeded the free quota.\n\nWait a minute and try again, or check usage at https://aistudio.google.com/';
         } else {

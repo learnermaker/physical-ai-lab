@@ -155,7 +155,7 @@ notepad .env
 The file should contain exactly one line with no spaces or quotes:
 
 ```
-GEMINI_API_KEY=AIzaSy...your_actual_key_here
+# GEMINI_API_KEY=AQ....your_actual_key_here
 ```
 
 ---
@@ -208,7 +208,7 @@ pip install -r requirements.txt
 
 # If you want to clear the rate limit sooner, wait 60 seconds, then retry.
 # Alternatively, use a second API key in .env and restart the server:
-# GEMINI_API_KEY=AIzaSy...second_key
+# GEMINI_API_KEY=AQ....second_key
 python api/server.py
 ```
 

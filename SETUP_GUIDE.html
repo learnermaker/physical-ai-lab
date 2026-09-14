@@ -386,7 +386,7 @@ Setup complete: 13/14 checks passed</code></pre>
         <pre><code><span class="c"># In the repo folder — Windows</span>
 <span class="kw">copy</span> .env.example .env
 <span class="c"># Open .env in Notepad and add your key:
-# GEMINI_API_KEY=AIzaSy...your_key</span></code></pre>
+# GEMINI_API_KEY=AQ....your_key</span></code></pre>
       </div>
     </li>
     <li>
@@ -478,7 +478,7 @@ Setup complete: 13/14 checks passed</code></pre>
   <h2>9. Add your Gemini key <span class="tag opt">optional</span></h2>
   <pre><code><span class="kw">copy</span> .env.example .env
 <span class="c"># Edit .env and set:
-# GEMINI_API_KEY=AIzaSy...your_key
+# GEMINI_API_KEY=AQ....your_key
 # Get a free key at https://aistudio.google.com/</span></code></pre>
 
   <h2>10. Start the hub</h2>
@@ -698,7 +698,7 @@ Setup complete: 13/14 checks passed</code></pre>
   <div class="issue">
     <h3>Gemini calls fail or return errors</h3>
     <p>Check <code>.env</code> exists in the repo root and has a valid key. Module 5 falls back to cached responses automatically if the key is missing — the lab works either way.</p>
-    <pre><code><span class="kw">type</span> .env   <span class="c"># should show GEMINI_API_KEY=AIzaSy...</span></code></pre>
+    <pre><code><span class="kw">type</span> .env   <span class="c"># should show GEMINI_API_KEY=AQ....</span></code></pre>
   </div>
 
 </div>
