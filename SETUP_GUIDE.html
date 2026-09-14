@@ -375,7 +375,7 @@
 [WARN] Camera unavailable -- fallback video will be used
 ...
 Setup complete: 13/14 checks passed</code></pre>
-        <p><code>[WARN]</code> is fine — the workshop has built-in fallbacks for webcam and OpenGL. <code>[FAIL]</code> means something needs fixing; the script prints the exact <code>pip install</code> command to run.</p>
+        <p><code>[WARN]</code> is fine — the lab has built-in fallbacks for webcam and OpenGL. <code>[FAIL]</code> means something needs fixing; the script prints the exact <code>pip install</code> command to run.</p>
       </div>
     </li>
     <li>
@@ -392,7 +392,7 @@ Setup complete: 13/14 checks passed</code></pre>
     <li>
       <div>
         <div class="step-title">Watch the HalfCheetah agent <span class="tag opt">optional</span></div>
-        <p>Before the workshop, run this to see what a trained RL agent actually looks like. It's a good warm-up for Module 3, and people tend to find it surprisingly impressive.</p>
+        <p>Before the session, run this to see what a trained RL agent actually looks like. It's a good warm-up for Module 3, and people tend to find it surprisingly impressive.</p>
         <pre><code><span class="kw">python</span> modules/02_simulation/03_pretrained_agent.py</code></pre>
         <p>A MuJoCo window opens with a cheetah robot running. No GPU required.</p>
       </div>
@@ -426,7 +426,7 @@ Setup complete: 13/14 checks passed</code></pre>
 <span class="kw">cd</span> physical-ai-lab</code></pre>
 
   <h2>2. Create and activate a virtual environment</h2>
-  <p>This keeps the workshop packages separate from everything else on your machine.</p>
+  <p>This keeps the lab packages separate from everything else on your machine.</p>
   <pre><code><span class="c"># Create</span>
 <span class="kw">py -3.12 -m venv</span> .venv
 
@@ -474,7 +474,7 @@ print('done')
 
   <h2>8. Verify</h2>
   <pre><code><span class="kw">python</span> verify_install.py</code></pre>
-  <p>All 14 checks should be <code>[PASS]</code> or <code>[WARN]</code>. A warning just means a fallback is active — the workshop still works.</p>
+  <p>All 14 checks should be <code>[PASS]</code> or <code>[WARN]</code>. A warning just means a fallback is active — the lab still works.</p>
 
   <h2>9. Add your Gemini key <span class="tag opt">optional</span></h2>
   <pre><code><span class="kw">copy</span> .env.example .env
@@ -549,7 +549,7 @@ modules/06_wrapup/concepts_map.ipynb</code></pre>
 
   <div class="note warn">
     <strong>Heads up</strong>
-    The workshop was built and tested on Windows 11. Mac and Linux work for most of it, but if something breaks the Windows instructions are your better reference.
+    The lab was built and tested on Windows 11. Mac and Linux work for most of it, but if something breaks the Windows instructions are your better reference.
   </div>
 
   <h2>Automated setup</h2>
@@ -614,7 +614,7 @@ modules/06_wrapup/concepts_map.ipynb</code></pre>
 ════════════════════════════════════════════════════════════ -->
 <div id="tab-trouble" class="tab-panel">
 
-  <p>Most issues fall into one of these categories. If none of these help, check <code>instructor/COMMON_ISSUES.md</code> in the repo — it has 13 failures documented with exact fix commands.</p>
+  <p>Most issues fall into one of these categories. If none of these help, open an issue on the <a href="https://github.com/learnermaker/physical-ai-lab/issues" target="_blank">GitHub repository</a> with the exact error message.</p>
 
   <h2>Setup</h2>
 
@@ -678,7 +678,7 @@ modules/06_wrapup/concepts_map.ipynb</code></pre>
 
   <div class="issue">
     <h3>Gemini calls fail or return errors</h3>
-    <p>Check <code>.env</code> exists in the repo root and has a valid key. Module 5 falls back to cached responses automatically if the key is missing — the workshop works either way.</p>
+    <p>Check <code>.env</code> exists in the repo root and has a valid key. Module 5 falls back to cached responses automatically if the key is missing — the lab works either way.</p>
     <pre><code><span class="kw">type</span> .env   <span class="c"># should show GEMINI_API_KEY=AIzaSy...</span></code></pre>
   </div>
 
