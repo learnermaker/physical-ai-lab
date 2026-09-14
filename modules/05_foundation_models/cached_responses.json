@@ -1,6 +1,5 @@
-﻿{
+{
   "describe the scene in one sentence": "A person is sitting at a desk in a modern workspace, appearing focused on their laptop screen.",
-
   "you are aria...working calmly": {
     "action": "WAIT",
     "confidence": 0.92,
@@ -36,13 +35,11 @@
     "reason": "The person is clearly leaving and has not requested assistance - following would be intrusive.",
     "next_step": "ARIA reverses 0.5 metres, switches to standby mode, and logs the interaction as resolved."
   },
-
   "describe objects": "A person is visible at a desk in an indoor workspace environment with a laptop, notepad, and office equipment.",
   "describe the scene": "An indoor Indian tech office with natural lighting, a person at a desk with a laptop visible in the foreground.",
   "what is the person doing": "The person appears to be working at their desk, using a laptop computer.",
   "what gesture": "The person appears to be looking toward the camera, possibly acknowledging the robot's presence.",
   "what objects are present": "A desk, laptop, office chair, and workspace accessories are visible in the scene.",
-
   "aria working": {
     "action": "WAIT",
     "confidence": 0.91,

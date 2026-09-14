@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """
 Module 5 Demo 2: Gemini Robot Brain
 ======================================
@@ -157,7 +157,7 @@ def get_robot_action(
     print("Calling Gemini...")
     try:
         response = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model="gemini-3.1-flash-lite",
             contents=[SYSTEM_PROMPT, image_part],
         )
 

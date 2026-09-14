@@ -1,4 +1,4 @@
-"""
+﻿"""
 Experience Hub — FastAPI backend for the Physical AI Lab.
 
 Start with:
@@ -815,7 +815,7 @@ async def gemini_describe(req: GeminiDescribeRequest) -> JSONResponse:
 
         client = genai.Client(api_key=key)
         response = client.models.generate_content(
-            model="gemini-2.5-flash-lite",
+            model="gemini-3.1-flash-lite",
             contents=contents,
         )
         result = {"text": response.text}
@@ -886,7 +886,7 @@ async def gemini_action(req: GeminiActionRequest) -> JSONResponse:
 
         client = genai.Client(api_key=key)
         response = client.models.generate_content(
-            model="gemini-2.5-flash-lite",
+            model="gemini-3.1-flash-lite",
             contents=contents,
         )
 

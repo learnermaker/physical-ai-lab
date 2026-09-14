@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """
 Module 5 Exercise: Design Your Own Robot Prompt
 =================================================
@@ -140,7 +140,7 @@ def ask_gemini(
     print("Calling Gemini...")
     try:
         response = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model="gemini-3.1-flash-lite",
             contents=[prompt, image_part],
         )
 

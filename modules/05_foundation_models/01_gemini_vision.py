@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """
 Module 5 Demo 1: Gemini Vision
 ================================
@@ -103,10 +103,10 @@ def main() -> None:
     client = genai.Client(api_key=api_key)
 
     # generate_content() sends both the text prompt and the image to the model.
-    # gemini-2.5-flash-lite is the fastest and cheapest Gemini model (Sep 2026).
+    # gemini-3.1-flash-lite is the fastest and cheapest Gemini model (Sep 2026).
     # It still handles vision tasks well for simple scene descriptions.
     response = client.models.generate_content(
-        model="gemini-2.5-flash-lite",
+        model="gemini-3.1-flash-lite",
         contents=[PROMPT, pil_image],
     )
     # response.text is the model's plain-text reply
