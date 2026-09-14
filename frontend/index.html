@@ -965,107 +965,138 @@ details.exercise-detail[open] summary.exercise-detail-summary::before { transfor
       </details>
 
       <div class="card mt-16">
-        <h3>Try it — capture a frame and ask Gemini</h3>
+        <h3>Try it — show ARIA a scene and see what she decides</h3>
 
-        <!-- ── Action vocabulary — always visible so participants know what FORWARD/LEFT etc mean ── -->
+        <!-- ── ARIA introduction ── -->
+        <div style="background:#f0f4ff;border:1px solid #c7d4f0;border-radius:4px;padding:12px 16px;margin-bottom:14px;display:flex;gap:16px;align-items:flex-start">
+          <img src="/assets/samples/aria_robot.jpg" alt="ARIA robot" style="width:110px;height:82px;object-fit:cover;border-radius:4px;flex-shrink:0;border:1px solid #c7d4f0">
+          <div>
+            <strong style="font-size:0.88rem;color:#1a2d6e">Meet ARIA — Assistive Robot for Intelligent Awareness</strong>
+            <p style="font-size:0.82rem;color:#2d3e7a;margin:4px 0 0;line-height:1.6">
+              A care robot that watches for when people need help.
+              It observes body language and decides whether to move in, stay back, raise an alert, or give someone space.
+              No special sensors: just a camera, a prompt, and a billion-parameter model reading the scene.
+              This is the same pattern used in real assistive robotics — Diligent Robotics' Moxi, Toyota HSR, and surgical care assistants all use vision to read human state.
+            </p>
+          </div>
+        </div>
+
+        <!-- ── ARIA action vocabulary ── -->
         <div style="background:#f8f6f2;border:1px solid var(--rule);border-radius:4px;padding:10px 14px;margin-bottom:14px;font-size:0.8rem;">
-          <strong style="font-size:0.78rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)">Action vocabulary</strong>
-          <div style="display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:6px">
-            <span><code style="background:#e8f5e9;color:#1b5e20;border:none;padding:1px 6px">FORWARD</code> move toward object</span>
-            <span><code style="background:#fff3e0;color:#e65100;border:none;padding:1px 6px">BACK</code> reverse away from obstacle</span>
-            <span><code style="background:#e3f2fd;color:#0d47a1;border:none;padding:1px 6px">LEFT</code> rotate left to face target</span>
-            <span><code style="background:#fce4ec;color:#880e4f;border:none;padding:1px 6px">RIGHT</code> rotate right to face target</span>
-            <span><code style="background:#f5f5f5;color:#424242;border:none;padding:1px 6px">WAIT</code> nothing actionable in scene</span>
+          <strong style="font-size:0.78rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)">ARIA's action vocabulary</strong>
+          <div style="display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:6px">
+            <span><code style="background:#e8f5e9;color:#1b5e20;border:none;padding:1px 6px">APPROACH</code> move toward the person — they may need help</span>
+            <span><code style="background:#f5f5f5;color:#424242;border:none;padding:1px 6px">WAIT</code> stay put — person is fine, don't interrupt</span>
+            <span><code style="background:#ffebee;color:#c62828;border:none;padding:1px 6px">ALERT</code> escalate — person appears unwell or in distress</span>
+            <span><code style="background:#fff3e0;color:#e65100;border:none;padding:1px 6px">RETREAT</code> move away — person wants space</span>
           </div>
           <details style="margin-top:10px">
-            <summary style="cursor:pointer;font-size:0.78rem;color:var(--muted)">What was sent to Gemini (the system prompt)</summary>
-            <pre style="margin:8px 0 0;font-size:0.76rem;background:#f0ede8;border-left:3px solid var(--ink2);padding:8px 10px;white-space:pre-wrap;line-height:1.5">You are a robot controller. Looking at this image, suggest an action.
+            <summary style="cursor:pointer;font-size:0.78rem;color:var(--muted)">What was sent to Gemini (the full system prompt)</summary>
+            <pre style="margin:8px 0 0;font-size:0.76rem;background:#f0ede8;border-left:3px solid var(--ink2);padding:8px 10px;white-space:pre-wrap;line-height:1.5">You are ARIA, an assistive robot in a workspace. Your job is to observe people
+and decide if they need help. Look at the person in this image.
 Respond ONLY in JSON with no markdown:
-{"action": "LEFT|RIGHT|FORWARD|BACK|WAIT", "reason": "one sentence"}</pre>
-            <p style="font-size:0.76rem;color:var(--muted);margin-top:6px">
-              That's the <em>entire</em> interface between Gemini and the robot — two lines of JSON schema.
-              Gemini never saw the action vocabulary before; you defined it in the prompt.
-              Change the prompt → the robot learns a new vocabulary without any retraining.
+{"action": "APPROACH|WAIT|ALERT|RETREAT", "reason": "one sentence"}
+— APPROACH if they seem confused, stuck, or are inviting interaction;
+  WAIT if they are working calmly and do not need help;
+  ALERT if they appear unwell, distressed, or unresponsive;
+  RETREAT if they are leaving or clearly want space.</pre>
+            <p style="font-size:0.76rem;color:var(--muted);margin-top:8px;line-height:1.6">
+              That's the <em>entire brain</em> — no training, no fine-tuning, no robot-specific data.
+              Gemini understands human body language, distress, and social cues from its pre-training.
+              The prompt just channels that knowledge into a structured decision.
+              <strong>Change the prompt → ARIA learns a new behaviour without any retraining.</strong>
             </p>
           </details>
         </div>
 
         <div class="two-col">
           <div class="panel">
-            <p class="card-lead">Camera feed</p>
+            <p class="card-lead">ARIA's camera view</p>
             <div class="cam-wrap">
               <video id="m5-video" class="cam-video" autoplay playsinline muted></video>
               <canvas id="m5-canvas" class="cam-canvas" width="320" height="240"></canvas>
             </div>
-            <!-- Sample robot-scenario images — always visible until live camera starts -->
+
+            <!-- Sample human-state images — shown when no live camera -->
             <div id="m5-samples" class="mt-10">
               <p class="text-muted" style="font-size:0.78rem;margin-bottom:8px">
-                No camera? Pick a robot scenario below — then click <strong>Get robot action</strong>. Predict the action first.
+                No camera? Pick a scenario — predict what ARIA should do, then click <strong>Ask ARIA</strong> to find out.
               </p>
               <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
 
                 <button class="m5-sample-btn"
-                        data-src="/assets/samples/scene_forward.jpg"
-                        data-predict="FORWARD"
-                        data-caption="Target straight ahead"
-                        title="Robot sees a green target directly ahead"
-                        style="padding:0;border:2px solid transparent;border-radius:5px;cursor:pointer;background:none;text-align:left">
-                  <img src="/assets/samples/scene_forward.jpg" alt="Green target ahead"
-                       style="width:100%;height:72px;object-fit:cover;border-radius:3px 3px 0 0;display:block">
-                  <div style="padding:4px 6px;font-size:0.72rem;line-height:1.4;background:#fafaf8;border-radius:0 0 3px 3px">
-                    Target straight ahead
-                    <span style="float:right;background:#e8f5e9;color:#1b5e20;padding:1px 5px;border-radius:3px;font-weight:600">→ FORWARD?</span>
-                  </div>
-                </button>
-
-                <button class="m5-sample-btn"
-                        data-src="/assets/samples/scene_obstacle.jpg"
-                        data-predict="BACK"
-                        data-caption="Obstacle blocking path"
-                        title="Robot sees a red crate blocking the full path"
-                        style="padding:0;border:2px solid transparent;border-radius:5px;cursor:pointer;background:none;text-align:left">
-                  <img src="/assets/samples/scene_obstacle.jpg" alt="Red obstacle blocking path"
-                       style="width:100%;height:72px;object-fit:cover;border-radius:3px 3px 0 0;display:block">
-                  <div style="padding:4px 6px;font-size:0.72rem;line-height:1.4;background:#fafaf8;border-radius:0 0 3px 3px">
-                    Obstacle blocking path
-                    <span style="float:right;background:#ffebee;color:#c62828;padding:1px 5px;border-radius:3px;font-weight:600">→ BACK?</span>
-                  </div>
-                </button>
-
-                <button class="m5-sample-btn"
-                        data-src="/assets/samples/scene_left.jpg"
-                        data-predict="LEFT"
-                        data-caption="Target on the left"
-                        title="Robot sees a yellow target to the left"
-                        style="padding:0;border:2px solid transparent;border-radius:5px;cursor:pointer;background:none;text-align:left">
-                  <img src="/assets/samples/scene_left.jpg" alt="Target on the left"
-                       style="width:100%;height:72px;object-fit:cover;border-radius:3px 3px 0 0;display:block">
-                  <div style="padding:4px 6px;font-size:0.72rem;line-height:1.4;background:#fafaf8;border-radius:0 0 3px 3px">
-                    Target on the left
-                    <span style="float:right;background:#e3f2fd;color:#0d47a1;padding:1px 5px;border-radius:3px;font-weight:600">→ LEFT?</span>
-                  </div>
-                </button>
-
-                <button class="m5-sample-btn"
-                        data-src="/assets/samples/scene_wait.jpg"
+                        data-src="/assets/samples/aria_working.jpg"
                         data-predict="WAIT"
-                        data-caption="Empty path, nothing to do"
-                        title="Robot sees an empty corridor with no target or obstacle"
+                        data-caption="Person working calmly"
+                        title="Person focused at desk — working normally"
                         style="padding:0;border:2px solid transparent;border-radius:5px;cursor:pointer;background:none;text-align:left">
-                  <img src="/assets/samples/scene_wait.jpg" alt="Empty corridor"
-                       style="width:100%;height:72px;object-fit:cover;border-radius:3px 3px 0 0;display:block">
-                  <div style="padding:4px 6px;font-size:0.72rem;line-height:1.4;background:#fafaf8;border-radius:0 0 3px 3px">
-                    Empty path, nothing to do
-                    <span style="float:right;background:#f5f5f5;color:#424242;padding:1px 5px;border-radius:3px;font-weight:600">→ WAIT?</span>
+                  <img src="/assets/samples/aria_working.jpg" alt="Person working at desk"
+                       style="width:100%;height:80px;object-fit:cover;border-radius:3px 3px 0 0;display:block">
+                  <div style="padding:5px 7px;font-size:0.72rem;line-height:1.5;background:#fafaf8;border-radius:0 0 3px 3px">
+                    Person working calmly
+                    <span style="float:right;background:#f5f5f5;color:#424242;padding:1px 5px;border-radius:3px;font-weight:600">WAIT?</span>
+                  </div>
+                </button>
+
+                <button class="m5-sample-btn"
+                        data-src="/assets/samples/aria_confused.jpg"
+                        data-predict="APPROACH"
+                        data-caption="Person looking confused"
+                        title="Person appears stuck or confused — needs help"
+                        style="padding:0;border:2px solid transparent;border-radius:5px;cursor:pointer;background:none;text-align:left">
+                  <img src="/assets/samples/aria_confused.jpg" alt="Person looking confused or stressed"
+                       style="width:100%;height:80px;object-fit:cover;border-radius:3px 3px 0 0;display:block">
+                  <div style="padding:5px 7px;font-size:0.72rem;line-height:1.5;background:#fafaf8;border-radius:0 0 3px 3px">
+                    Person looking confused
+                    <span style="float:right;background:#e8f5e9;color:#1b5e20;padding:1px 5px;border-radius:3px;font-weight:600">APPROACH?</span>
+                  </div>
+                </button>
+
+                <button class="m5-sample-btn"
+                        data-src="/assets/samples/aria_waving.jpg"
+                        data-predict="APPROACH"
+                        data-caption="Person waving at camera"
+                        title="Person making eye contact and waving — wants interaction"
+                        style="padding:0;border:2px solid transparent;border-radius:5px;cursor:pointer;background:none;text-align:left">
+                  <img src="/assets/samples/aria_waving.jpg" alt="Person waving at camera"
+                       style="width:100%;height:80px;object-fit:cover;border-radius:3px 3px 0 0;display:block">
+                  <div style="padding:5px 7px;font-size:0.72rem;line-height:1.5;background:#fafaf8;border-radius:0 0 3px 3px">
+                    Person waving at camera
+                    <span style="float:right;background:#e8f5e9;color:#1b5e20;padding:1px 5px;border-radius:3px;font-weight:600">APPROACH?</span>
+                  </div>
+                </button>
+
+                <button class="m5-sample-btn"
+                        data-src="/assets/samples/aria_slumped.jpg"
+                        data-predict="ALERT"
+                        data-caption="Person slumped, unresponsive"
+                        title="Person appears exhausted or unwell — needs a welfare check"
+                        style="padding:0;border:2px solid transparent;border-radius:5px;cursor:pointer;background:none;text-align:left">
+                  <img src="/assets/samples/aria_slumped.jpg" alt="Person slumped with head down"
+                       style="width:100%;height:80px;object-fit:cover;border-radius:3px 3px 0 0;display:block">
+                  <div style="padding:5px 7px;font-size:0.72rem;line-height:1.5;background:#fafaf8;border-radius:0 0 3px 3px">
+                    Person slumped, unresponsive
+                    <span style="float:right;background:#ffebee;color:#c62828;padding:1px 5px;border-radius:3px;font-weight:600">ALERT?</span>
                   </div>
                 </button>
 
               </div>
+
+              <!-- Webcam instructions -->
+              <div style="margin-top:10px;font-size:0.76rem;color:var(--muted);background:#f8f6f2;padding:8px 10px;border-radius:4px;line-height:1.6">
+                <strong style="color:var(--ink2)">With webcam:</strong>
+                act out different states and see if ARIA reads you correctly —
+                <em>sit and work normally</em> (WAIT?) &nbsp;·&nbsp;
+                <em>look confused and frustrated</em> (APPROACH?) &nbsp;·&nbsp;
+                <em>wave at the camera</em> (APPROACH?) &nbsp;·&nbsp;
+                <em>slump forward with head down</em> (ALERT?)
+              </div>
             </div>
+
             <div class="flex-row mt-10">
               <button class="btn-secondary" id="m5-cam-btn">Start Camera</button>
               <button class="btn-primary" id="m5-describe-btn" data-requires-server disabled>Describe scene</button>
-              <button class="btn-primary" id="m5-action-btn" data-requires-server disabled>Get robot action</button>
+              <button class="btn-primary" id="m5-action-btn" data-requires-server disabled>Ask ARIA</button>
             </div>
             <p id="m5-pipeline-step" class="text-muted mt-8" style="font-size:0.78rem;display:none"></p>
           </div>
