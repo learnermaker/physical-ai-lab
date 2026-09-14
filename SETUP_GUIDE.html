@@ -592,9 +592,19 @@ Setup complete: 13/14 checks passed</code></pre>
 
 <span class="c"># Everything else is identical</span>
 <span class="kw">pip install</span> torch==2.14.0+cpu <span class="fl">--index-url</span> <span class="ur">https://download.pytorch.org/whl/cpu</span>
+<span class="c"># If that exact version isn't available yet, omit the ==2.14.0+cpu pin:</span>
+<span class="kw">pip install</span> torch <span class="fl">--index-url</span> <span class="ur">https://download.pytorch.org/whl/cpu</span>
 <span class="kw">pip install -r</span> requirements.txt
+<span class="kw">python</span> download_model.py
 <span class="kw">python</span> verify_install.py
 <span class="kw">python</span> api/server.py</code></pre>
+
+  <div class="note tip">
+    <strong>On subsequent days</strong>
+    You don't need to redo the pip installs. Use <code>start_hub.sh</code> instead:
+    <pre style="margin-top:8px"><code><span class="kw">bash</span> start_hub.sh</code></pre>
+    Or manually: <code>source .venv/bin/activate &amp;&amp; python api/server.py</code>
+  </div>
 
   <h2>A few things worth knowing</h2>
   <table>

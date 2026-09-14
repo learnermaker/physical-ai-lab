@@ -117,6 +117,7 @@ Unblock-File -Path setup.bat
 **Fix:** Find and terminate the conflicting process.
 
 ```bash
+# Windows
 # Find the PID of the process using port 8000
 netstat -ano | findstr :8000
 
@@ -124,6 +125,12 @@ netstat -ano | findstr :8000
 taskkill /PID <PID> /F
 
 # Then start the server again
+python api/server.py
+```
+
+```bash
+# Linux / macOS
+lsof -ti tcp:8000 | xargs kill -9
 python api/server.py
 ```
 

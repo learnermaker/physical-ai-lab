@@ -27,49 +27,60 @@ HEALTH_POLL_S = 0.5
 
 
 def free_port(port: int) -> None:
-    """Kill any process currently *listening* on *port* (Windows only).
+    """Kill any process currently *listening* on *port*.
 
-    Filters strictly to LISTENING lines so that established connections
-    (browser tabs, TIME_WAIT sockets) are never targeted.
+    Cross-platform: uses taskkill on Windows, lsof/kill on Linux/macOS.
+    Wrapped in a broad try/except — entirely non-fatal; the server will
+    report any remaining conflict on startup.
     """
     try:
-        result = subprocess.run(
-            ["netstat", "-ano"],
-            capture_output=True, text=True
-        )
-        seen_pids: set[str] = set()
-        for line in result.stdout.splitlines():
-            # Match only the listener: "0.0.0.0:<port>  0.0.0.0:0  LISTENING  <pid>"
-            if f":{port} " in line and "LISTENING" in line:
-                parts = line.split()
-                pid = parts[-1]
-                if pid.isdigit() and pid not in seen_pids:
-                    seen_pids.add(pid)
-                    subprocess.run(
-                        ["taskkill", "/F", "/PID", pid],
-                        capture_output=True
-                    )
-        if seen_pids:
-            # Give the OS a moment to release the socket before we bind again.
-            time.sleep(0.5)
+        if sys.platform == "win32":
+            result = subprocess.run(
+                ["netstat", "-ano"],
+                capture_output=True, text=True
+            )
+            seen_pids: set[str] = set()
+            for line in result.stdout.splitlines():
+                # Match only the listener: "0.0.0.0:<port>  0.0.0.0:0  LISTENING  <pid>"
+                if f":{port} " in line and "LISTENING" in line:
+                    parts = line.split()
+                    pid = parts[-1]
+                    if pid.isdigit() and pid not in seen_pids:
+                        seen_pids.add(pid)
+                        subprocess.run(
+                            ["taskkill", "/F", "/PID", pid],
+                            capture_output=True
+                        )
+            if seen_pids:
+                time.sleep(0.5)
+        else:
+            # Linux / macOS: lsof finds the PID, xargs kill terminates it
+            result = subprocess.run(
+                ["lsof", "-ti", f"tcp:{port}"],
+                capture_output=True, text=True
+            )
+            pids = [p.strip() for p in result.stdout.splitlines() if p.strip().isdigit()]
+            for pid in pids:
+                subprocess.run(["kill", "-9", pid], capture_output=True)
+            if pids:
+                time.sleep(0.5)
     except Exception:
         pass  # non-fatal — server will report the conflict if it persists
 
 
 def launch_server() -> None:
-    """Open a new console window running the API server with the venv Python.
+    """Start the API server in a detached process.
 
-    Uses ``subprocess.Popen`` with ``CREATE_NEW_CONSOLE`` (Windows flag
-    ``0x10``) so the server gets its own visible terminal without requiring
-    the ``start`` shell built-in, which can block in some environments
-    (e.g. VS Code integrated terminal, Kiro terminal).
+    On Windows: opens a new console window (CREATE_NEW_CONSOLE).
+    On Linux/macOS: detaches from the parent session (start_new_session=True)
+    so the server survives even if the launching terminal is closed.
     """
-    CREATE_NEW_CONSOLE = 0x00000010
-    subprocess.Popen(
-        [sys.executable, str(SERVER)],
-        cwd=Path(__file__).parent,
-        creationflags=CREATE_NEW_CONSOLE,
-    )
+    kwargs: dict = {"cwd": Path(__file__).parent}
+    if sys.platform == "win32":
+        kwargs["creationflags"] = 0x00000010  # CREATE_NEW_CONSOLE
+    else:
+        kwargs["start_new_session"] = True    # detach on Linux/macOS
+    subprocess.Popen([sys.executable, str(SERVER)], **kwargs)
 
 
 def wait_for_server(timeout: float = HEALTH_TIMEOUT_S) -> bool:

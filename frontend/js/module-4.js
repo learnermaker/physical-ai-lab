@@ -299,7 +299,9 @@
       } else if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
         status.textContent = 'Camera permission denied \u2014 allow camera in browser settings, then click Start.';
       } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
-        status.textContent = 'No camera found \u2014 connect a webcam or check Windows privacy settings.';
+        status.textContent = 'No camera found \u2014 connect a webcam or check system camera permissions.';
+        // Linux: sudo usermod -aG video $USER then log out/in
+        // Windows: Settings \u2192 Privacy \u2192 Camera
       } else {
         status.textContent = 'Error: ' + m;
       }

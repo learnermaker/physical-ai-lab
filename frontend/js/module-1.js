@@ -201,7 +201,9 @@ const mediapipeHandler = (() => {
       } else if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
         msg = 'Camera permission denied \u2014 allow camera access in browser settings, then click Start again.';
       } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
-        msg = 'No camera found \u2014 connect a webcam or check Windows camera privacy settings.';
+        msg = 'No camera found \u2014 connect a webcam or check system camera permissions.';
+        // Linux: may need  sudo usermod -aG video $USER  then log out/in
+        // Windows: check Settings \u2192 Privacy \u2192 Camera
       } else {
         msg = 'Error: ' + m;
       }
