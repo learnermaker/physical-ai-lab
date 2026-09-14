@@ -186,17 +186,14 @@ IF %ERRORLEVEL% NEQ 0 (
 echo.
 
 :: ============================================================
-:: STEP 7 - hand_landmarker.task model
+:: STEP 7 - Download models and demo assets
 :: ============================================================
-echo [7/9] Checking hand_landmarker.task model...
-IF EXIST "assets\hand_landmarker.task" (
-    echo [OK] Already present.
-    goto :step8
-)
-echo Downloading hand_landmarker.task (~8 MB^)...
+echo [7/9] Downloading models and demo assets...
+echo        (hand_landmarker.task, sac-HalfCheetah-v5.zip, fallback demo video)
 python "%~dp0download_model.py"
 IF %ERRORLEVEL% NEQ 0 (
-    echo Warning: Download failed. Place the file in assets\ manually.
+    echo Warning: One or more assets failed to download - see above.
+    echo          Re-run setup.bat when connectivity is restored.
 )
 :step8
 echo.

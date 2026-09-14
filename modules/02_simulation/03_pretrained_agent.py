@@ -53,7 +53,9 @@ def main() -> None:
     if not MODEL_PATH.exists():
         raise FileNotFoundError(
             f"Pre-trained model not found: {MODEL_PATH}\n"
-            "Ensure 'models/sac-HalfCheetah-v5.zip' is present in the repository."
+            "Run this from the repo root to download it:\n"
+            "    python download_model.py\n"
+            "(download_model.py fetches sac-HalfCheetah-v5.zip from HuggingFace, ~3 MB)"
         )
 
     # SAC.load() reads the trained neural network weights from disk.

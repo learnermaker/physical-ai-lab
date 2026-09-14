@@ -64,12 +64,13 @@ echo "Registering Jupyter kernel..."
 python -m ipykernel install --user --name physical-ai --display-name "Physical AI Workshop"
 
 # ---------------------------------------------------------------------------
-# Step 7: Download hand_landmarker.task if not already present
+# Step 7: Download models and demo assets (idempotent — safe to re-run)
+#   - assets/hand_landmarker.task   (~8 MB, MediaPipe)
+#   - models/sac-HalfCheetah-v5.zip (~3 MB, HuggingFace)
+#   - assets/fallback_hand_demo.mp4  (copied from frontend/assets/)
 # ---------------------------------------------------------------------------
-if [ ! -f "assets/hand_landmarker.task" ]; then
-    echo "Downloading hand_landmarker.task (~8 MB)..."
-    python -c "import urllib.request; urllib.request.urlretrieve('https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/latest/hand_landmarker.task', 'assets/hand_landmarker.task')"
-fi
+echo "Downloading models and demo assets..."
+python download_model.py || echo "Warning: one or more assets failed to download — re-run setup.sh when connectivity is restored."
 
 # ---------------------------------------------------------------------------
 # Step 8: Run the verification script (non-fatal)
