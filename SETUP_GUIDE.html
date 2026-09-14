@@ -308,7 +308,7 @@
 <div class="tabs">
   <button class="tab-btn active" onclick="showTab('quick')">Quick Start</button>
   <button class="tab-btn" onclick="showTab('manual')">Manual Setup</button>
-  <button class="tab-btn" onclick="showTab('day')">On the Day</button>
+  <button class="tab-btn" onclick="showTab('day')">Start the Lab</button>
   <button class="tab-btn" onclick="showTab('maclinux')">Mac &amp; Linux</button>
   <button class="tab-btn" onclick="showTab('trouble')">Troubleshooting</button>
 </div>
@@ -501,43 +501,53 @@ print('done')
 ════════════════════════════════════════════════════════════ -->
 <div id="tab-day" class="tab-panel">
 
-  <p>If you've been through the setup already, you just need two lines to get going:</p>
-  <pre><code><span class="c"># Option A — terminal</span>
+  <p>If setup is done, two commands get you running:</p>
+  <pre><code><span class="c"># Option A — terminal (recommended)</span>
 <span class="kw">.venv\Scripts\activate</span>
 <span class="kw">python</span> api/server.py
 
 <span class="c"># Option B — double-click setup.bat again.
-# It'll see the .venv exists and skip straight to launching the server.</span></code></pre>
-  <p>Then open <strong>http://localhost:8000</strong> in Chrome or Edge and you're in.</p>
+# It detects the .venv and skips straight to launching the server.</span></code></pre>
+  <p>Open <strong>http://localhost:8000</strong> in Chrome or Edge. That's the hub — everything runs from there.</p>
 
-  <h2>What's in the hub</h2>
+  <h2>What happens in each module</h2>
   <table>
-    <thead><tr><th>Module</th><th>What you actually do</th><th>Server?</th></tr></thead>
+    <thead><tr><th>Module</th><th>What you build</th><th>What you'll see</th></tr></thead>
     <tbody>
-      <tr><td>0 — Kickoff</td><td>Overview notebook, pipeline diagram</td><td>—</td></tr>
-      <tr><td>1 — Perception</td><td>Live hand tracking in the browser — no server needed</td><td>No</td></tr>
-      <tr><td>2 — Simulation</td><td>Reacher-v5 environment streaming live from the server</td><td>Yes</td></tr>
-      <tr><td>3 — RL</td><td>Train a PPO agent, watch the reward chart update in real time</td><td>Yes</td></tr>
-      <tr><td>4 — Perception → Action</td><td>Move your hand, watch the Reacher arm follow</td><td>Yes</td></tr>
-      <tr><td>5 — Foundation Models</td><td>Camera frame goes to Gemini, robot action comes back</td><td>Yes</td></tr>
-      <tr><td>6 — Wrap-up</td><td>Concept map, sim-to-real, what's next</td><td>—</td></tr>
+      <tr><td>0 — Kickoff</td><td>The pipeline diagram. Print your first state vector.</td><td>Four numbers. That's the whole robot brain, right now.</td></tr>
+      <tr><td>1 — Perception</td><td>Webcam → 21 landmarks → 4 joint angles</td><td>Green dots on your hand in real time. Angles printing as you move.</td></tr>
+      <tr><td>2 — Simulation</td><td>Step CartPole and Reacher environments</td><td>The 11 numbers Reacher sees. The 2 torques you'll control in M4.</td></tr>
+      <tr><td>3 — Reinforcement Learning</td><td>Train a PPO agent on CartPole from scratch</td><td>Flat reward curve → sharp climb. The agent discovers balance around 20–30k steps. Don't talk over it.</td></tr>
+      <tr><td>4 — Perception → Action</td><td>Wire your hand to the robot arm. One line of code.</td><td>Move your finger. The Reacher arm follows. The loop is closed.</td></tr>
+      <tr><td>5 — Foundation Models</td><td>Replace your hand with Gemini as the controller</td><td>Camera frame goes in. JSON action comes back. Same pattern as RT-2.</td></tr>
+      <tr><td>6 — Wrap-up</td><td>Map everything to real research tools</td><td>MuJoCo, SB3, MediaPipe — not toys. What comes next.</td></tr>
     </tbody>
   </table>
 
-  <h2>The exercise files</h2>
-  <p>Every module has an <code>exercise.py</code>. Open it in VS Code next to the browser window. Each one has a <code># TODO START / END</code> block — usually 3–5 lines of code, completable in 10–15 minutes. The <code># SOLUTION</code> block at the bottom can be uncommented if you get stuck.</p>
-  <pre><code>modules/00_kickoff/exercise.py
-modules/01_perception/exercise.py
-modules/02_simulation/exercise.py
-modules/03_rl/exercise.py
-modules/04_perception_to_action/exercise.py
-modules/05_foundation_models/exercise.py</code></pre>
+  <h2>The exercises</h2>
+  <p>Every module has an <code>exercise.py</code> with a <code># TODO START / END</code> block — usually 3–5 lines, 10–15 minutes each. A <code># SOLUTION</code> block at the bottom can be uncommented if you get stuck. Open it in VS Code alongside the browser.</p>
+  <table>
+    <thead><tr><th>Module</th><th>What the exercise asks</th></tr></thead>
+    <tbody>
+      <tr><td>M0</td><td>Print a numpy state vector — <code>np.array([145.2, 163.8, 171.4, 158.0], dtype=np.float32)</code></td></tr>
+      <tr><td>M1</td><td>Add the ring finger angle (landmarks 13→14) to make a 4-element vector</td></tr>
+      <tr><td>M2</td><td>Print <code>observation_space.low</code> and <code>.high</code> for Reacher — understand the bounds</td></tr>
+      <tr><td>M3</td><td>Change <code>total_timesteps</code> and re-run. Watch the curve shape change.</td></tr>
+      <tr><td>M4</td><td>Add landmark 4 (thumb tip) as a third torque channel via <code>ActionSliceWrapper</code></td></tr>
+      <tr><td>M5</td><td>Write your own <code>MY_PROMPT</code>. Watch how phrasing changes the model's output.</td></tr>
+    </tbody>
+  </table>
 
   <h2>The notebooks</h2>
-  <p>In VS Code: File → Open Folder → select the repo. Then open a notebook and choose the <strong>Physical AI Lab</strong> kernel from the picker in the top-right corner.</p>
-  <pre><code>modules/00_kickoff/overview.ipynb
-modules/03_rl/01_mdp_concepts.ipynb
-modules/06_wrapup/concepts_map.ipynb</code></pre>
+  <p>Open these in VS Code — File → Open Folder → select the repo, then pick the <strong>Physical AI Lab</strong> kernel top-right.</p>
+  <table>
+    <thead><tr><th>Notebook</th><th>When to open it</th></tr></thead>
+    <tbody>
+      <tr><td><code>modules/00_kickoff/overview.ipynb</code></td><td>First thing — run all cells, draws the full pipeline</td></tr>
+      <tr><td><code>modules/03_rl/01_mdp_concepts.ipynb</code></td><td>M3 — MDP concepts, run alongside the training script</td></tr>
+      <tr><td><code>modules/06_wrapup/concepts_map.ipynb</code></td><td>End — maps every module to real-world equivalents</td></tr>
+    </tbody>
+  </table>
 
 </div>
 
