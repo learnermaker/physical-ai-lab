@@ -37,11 +37,11 @@
   // ── Pipeline step indicator ──────────────────────────────────────────────
   const STEPS = {
     idle:    '',
-    capture: '① Capture — frame drawn to canvas',
-    encode:  '② Encode — converting to base64 JPEG…',
-    send:    '③ Send — POST to /api/gemini/…',
-    parse:   '④ Parse — reading JSON response…',
-    done:    '⑤ Act — response ready',
+    capture: '\u2460 Capture \u2014 image loaded in camera view',
+    encode:  '\u2461 Encode \u2014 converting to base64 JPEG\u2026',
+    send:    '\u2462 Send \u2014 POST to /api/gemini/action with image + prompt',
+    parse:   '\u2463 Parse \u2014 reading JSON from Gemini\u2026',
+    done:    '\u2464 Decide \u2014 ARIA\u2019s response ready',
   };
 
   function setStep(key) {
@@ -110,13 +110,13 @@
     return canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
   }
 
-  // ── Action annotation — plain-English meaning of each action ────────────
+  // ── Action annotation — plain-English meaning of each ARIA action ────────
+  // ARIA: Assistive Robot for Intelligent Awareness
   const ACTION_MEANING = {
-    FORWARD: 'Move toward the object — it\'s directly ahead.',
-    BACK:    'Reverse — something is blocking the path forward.',
-    LEFT:    'Rotate left — the target is on the left side.',
-    RIGHT:   'Rotate right — the target is on the right side.',
-    WAIT:    'Stay still — nothing actionable is visible in the scene.',
+    APPROACH: 'Move toward the person — they may need assistance or are inviting interaction.',
+    WAIT:     'Stay put — the person is working calmly and does not need help right now.',
+    ALERT:    'Raise an alert — the person appears unwell, distressed, or unresponsive.',
+    RETREAT:  'Move away — the person is leaving or clearly wants space.',
   };
 
   // Track which sample image is selected so we can compare prediction vs result

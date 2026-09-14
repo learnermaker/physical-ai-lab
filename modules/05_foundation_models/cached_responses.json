@@ -1,33 +1,33 @@
 {
-  "describe the scene in one sentence": "A desk with a laptop, some books, and a coffee mug in natural lighting.",
+  "describe the scene in one sentence": "A person is sitting at a desk with a laptop, appearing focused on their work in a well-lit workspace.",
 
-  "you are a robot controller...action suggestion": {"action": "WAIT", "reason": "Scene is clear, no objects detected"},
-  "you are a robot controller...left":    {"action": "LEFT",    "reason": "Object appears on the right side of the frame"},
-  "you are a robot controller...right":   {"action": "RIGHT",   "reason": "Object appears on the left side of the frame"},
-  "you are a robot controller...forward": {"action": "FORWARD", "reason": "Path ahead appears clear"},
-  "you are a robot controller...back":    {"action": "BACK",    "reason": "Obstacle detected in forward direction"},
+  "you are aria...working calmly":  {"action": "WAIT",     "reason": "The person is focused and working at their desk — no assistance needed at this time"},
+  "you are aria...confused":        {"action": "APPROACH", "reason": "The person appears confused or stuck — moving closer to offer assistance"},
+  "you are aria...waving":          {"action": "APPROACH", "reason": "The person is looking at the camera and appears to be requesting interaction"},
+  "you are aria...distressed":      {"action": "ALERT",    "reason": "The person appears slumped and unresponsive — escalating to a caregiver"},
+  "you are aria...leaving":         {"action": "RETREAT",  "reason": "The person is moving away — giving them space"},
 
-  "describe objects": "Several everyday objects are visible on a flat surface.",
-  "what gesture": "The hand appears to be making a pointing gesture with the index finger extended.",
-  "joint angles": "The hand shows extended fingers with moderate joint angles across all digits.",
-  "robot action from image": {"action": "WAIT", "reason": "Insufficient scene context to determine action"},
-  "describe the scene": "A well-lit indoor environment with a person's hand visible in the foreground.",
-  "what objects are present": "A keyboard, mouse, and monitor are visible on the desk.",
-  "what is the hand doing": "The hand is making a pinch gesture with the thumb and index finger close together.",
+  "describe objects": "A person is visible in an indoor workspace environment with typical office equipment.",
+  "what is the person doing": "The person appears to be working at a desk, possibly using a computer or laptop.",
+  "what gesture": "The person appears to be looking toward the camera, possibly acknowledging the robot's presence.",
+  "joint angles": "The person's posture appears relaxed and seated, consistent with desk work.",
+  "describe the scene": "An indoor workspace with a person visible — the lighting and environment suggest a professional setting.",
+  "what objects are present": "A desk, laptop, chair, and office equipment are visible in the workspace.",
+  "what is the person doing with hands": "The person's hands are positioned near a keyboard or laptop, suggesting active work.",
 
-  "robot camera view forward": {"action": "FORWARD", "reason": "A green target object is visible directly ahead on the floor — moving forward will reach it"},
-  "green ball ahead":          {"action": "FORWARD", "reason": "Target is centred in the frame at mid-distance — no obstacles between the robot and the goal"},
-  "scene_forward describe":    "A robot's-eye-view showing a light-blue sky, a receding floor grid, and a green spherical target object centred in the path ahead.",
+  "aria working":   {"action": "WAIT",     "reason": "Person is engaged in focused work at their desk — no intervention warranted"},
+  "person at desk": {"action": "WAIT",     "reason": "Individual appears calm and productive — ARIA should stand by without interrupting"},
+  "aria working describe": "A person sits at a desk with a laptop, focused on their screen in a typical workspace setting.",
 
-  "robot camera view obstacle": {"action": "BACK", "reason": "A large red crate is blocking the full path ahead — the robot must reverse before it can navigate around"},
-  "red crate blocking":         {"action": "BACK", "reason": "Obstacle fills the forward field of view — immediate reversal needed to avoid collision"},
-  "scene_obstacle describe":    "A robot's-eye-view showing a large red rectangular crate labelled OBSTACLE blocking the entire forward path.",
+  "aria confused":       {"action": "APPROACH", "reason": "Person shows signs of confusion or frustration — ARIA should approach to offer help"},
+  "person confused":     {"action": "APPROACH", "reason": "Individual appears to be struggling with a task — moving closer to assist"},
+  "aria confused describe": "A person at a desk with a furrowed expression, hand near their face, appearing to be stuck on a problem.",
 
-  "robot camera view left":  {"action": "LEFT", "reason": "The target object is visible on the left side of the frame — turning left will align the robot with it"},
-  "yellow ball left side":   {"action": "LEFT", "reason": "Target is offset to the left — the robot should rotate left to centre it before approaching"},
-  "scene_left describe":     "A robot's-eye-view showing a yellow spherical target on the left side of the floor, with a directional arrow indicating left.",
+  "aria waving":         {"action": "APPROACH", "reason": "Person is making eye contact and gesturing — actively requesting ARIA's attention"},
+  "person waving":       {"action": "APPROACH", "reason": "Direct eye contact and waving gesture indicates the person wants to interact"},
+  "aria waving describe": "A person looking directly toward the camera and waving, clearly initiating an interaction.",
 
-  "robot camera view wait":  {"action": "WAIT", "reason": "The path ahead is empty — no target or obstacle is visible, so no movement is warranted"},
-  "empty corridor":          {"action": "WAIT", "reason": "Scene contains no actionable objects — robot should wait for further instruction"},
-  "scene_wait describe":     "A robot's-eye-view of an empty room with bare floor and walls — no objects, obstacles, or targets visible."
+  "aria slumped":        {"action": "ALERT",    "reason": "Person appears unresponsive with head down — this requires immediate attention from a caregiver"},
+  "person slumped":      {"action": "ALERT",    "reason": "Slumped posture and lack of movement suggests the person may be unwell or in distress"},
+  "aria slumped describe": "A person with their head resting on the desk or slumped forward, appearing exhausted or unresponsive."
 }

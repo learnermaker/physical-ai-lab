@@ -62,21 +62,26 @@ load_cache = _fm.load_cache
 from utils.camera import open_camera  # noqa: E402
 
 # ---------------------------------------------------------------------------
-# Structured action prompt
+# ARIA — Assistive Robot for Intelligent Awareness
 # ---------------------------------------------------------------------------
-# This prompt IS the robot's action vocabulary.
-# Changing it changes what the robot can do — without any retraining.
+# ARIA observes people in a workspace and decides what to do.
+# This prompt IS the robot's behaviour policy — change it, change the robot.
 #
-# Key design choices here:
-#   1. "Respond ONLY in JSON with no markdown" — prevents the model from
-#      wrapping the JSON in ```json fences, which would break json.loads().
-#   2. The pipe-separated options (LEFT|RIGHT|...) constrain the action space —
-#      any other word is rejected by the validator below.
-#   3. "one sentence" for reason keeps the response short and parseable.
+# Key design choices:
+#   1. "Respond ONLY in JSON with no markdown" — keeps json.loads() reliable.
+#   2. Four actions constrain the space to what a care robot actually does.
+#   3. The inline guidance (APPROACH if confused...) ensures Gemini reasons
+#      about human states, not just object geometry.
+#   4. Real photos of people with no labels — Gemini must read body language.
 SYSTEM_PROMPT = (
-    'You are a robot controller. Looking at this image, suggest an action. '
-    'Respond ONLY in JSON with no markdown: '
-    '{"action": "LEFT|RIGHT|FORWARD|BACK|WAIT", "reason": "one sentence"}'
+    "You are ARIA, an assistive robot in a workspace. Your job is to observe people "
+    "and decide if they need help. Look at the person in this image. "
+    "Respond ONLY in JSON with no markdown: "
+    '{"action": "APPROACH|WAIT|ALERT|RETREAT", "reason": "one sentence"} '
+    "— APPROACH if they seem confused, stuck, or are inviting interaction; "
+    "WAIT if they are working calmly and do not need help; "
+    "ALERT if they appear unwell, distressed, or unresponsive; "
+    "RETREAT if they are leaving or clearly want space."
 )
 
 
