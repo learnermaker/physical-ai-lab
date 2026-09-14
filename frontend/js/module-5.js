@@ -27,9 +27,9 @@
   const resultEl        = document.getElementById('m5-result');
   const resultCard      = document.getElementById('m5-result-card');
   const cacheNotice     = document.getElementById('m5-cache-notice');
+  const annotationEl    = document.getElementById('m5-action-annotation');
+  const pipelineEl      = document.getElementById('m5-pipeline-step');
   const samplesDiv      = document.getElementById('m5-samples');
-  // Note: pipelineEl and annotationEl are looked up via getElementById at call time
-  // to avoid stale null captures in some browser module execution contexts.
 
   let stream         = null;   // active MediaStream, null when no camera
   let sampleLoaded   = false;  // true when a sample image is on the canvas
@@ -45,14 +45,13 @@
   };
 
   function setStep(key) {
-    const el = document.getElementById('m5-pipeline-step');
-    if (!el) return;
+    if (!pipelineEl) return;
     if (!key || key === 'idle') {
-      el.style.display = 'none';
-      el.textContent = '';
+      pipelineEl.style.display = 'none';
+      pipelineEl.textContent = '';
     } else {
-      el.style.display = '';
-      el.textContent = STEPS[key] || key;
+      pipelineEl.style.display = '';
+      pipelineEl.textContent = STEPS[key] || key;
     }
   }
 
@@ -89,11 +88,10 @@
         actionBtn.disabled   = false;
         setStep('capture');
         const label = btn.dataset.caption || btn.getAttribute('title') || 'sample image';
-        const el = document.getElementById('m5-pipeline-step');
-        if (el) el.textContent = `① Capture — "${label}" loaded — click Get robot action`;
+        const el = pipelineEl;
+        if (el) el.textContent = `\u2460 Capture \u2014 "${label}" loaded \u2014 click Get robot action`;
         // Hide any previous annotation when a new image is chosen
-        const ann = document.getElementById('m5-action-annotation');
-        if (ann) ann.style.display = 'none';
+        if (annotationEl) annotationEl.style.display = 'none';
         resultEl.textContent = '—';
         cacheNotice.style.display = 'none';
       };
@@ -125,20 +123,19 @@
   let _selectedPredict = null;
 
   function _setAnnotation(action) {
-    const el = document.getElementById('m5-action-annotation');
-    if (!el) return;
+    if (!annotationEl) return;
     const meaning = ACTION_MEANING[action];
-    if (!meaning) { el.style.display = 'none'; return; }
+    if (!meaning) { annotationEl.style.display = 'none'; return; }
     const predicted = _selectedPredict;
     const correct   = predicted && predicted === action;
     const incorrect = predicted && predicted !== action;
     let text = action + ': ' + meaning;
     if (correct)   text += '  \u2713 Matched your prediction.';
     if (incorrect) text += '  You predicted ' + predicted + ' \u2014 Gemini chose ' + action + '. Both can be valid; the same scene on a real robot might read differently.';
-    el.textContent = text;
-    el.style.display  = '';
-    el.style.borderLeftColor = correct ? '#2e7d32' : incorrect ? '#c62828' : 'var(--accent)';
-    el.style.background      = correct ? '#f1f8e9' : incorrect ? '#fff5f5' : '#fdf8f3';
+    annotationEl.textContent = text;
+    annotationEl.style.display  = '';
+    annotationEl.style.borderLeftColor = correct ? '#2e7d32' : incorrect ? '#c62828' : 'var(--accent)';
+    annotationEl.style.background      = correct ? '#f1f8e9' : incorrect ? '#fff5f5' : '#fdf8f3';
   }
 
   // ── Result display ────────────────────────────────────────────────────────
@@ -157,8 +154,7 @@
     if (!isText) {
       _setAnnotation(data.action);
     } else {
-      const el = document.getElementById('m5-action-annotation');
-      if (el) el.style.display = 'none';
+      if (annotationEl) annotationEl.style.display = 'none';
     }
 
     const isCache = data._source === 'cache';
@@ -208,8 +204,7 @@
       showSamples();
       setStep('idle');
       _selectedPredict = null;
-      const ann = document.getElementById('m5-action-annotation');
-      if (ann) ann.style.display = 'none';
+      if (annotationEl) annotationEl.style.display = 'none';
       return;
     }
 
