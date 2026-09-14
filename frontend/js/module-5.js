@@ -18,17 +18,18 @@
 'use strict';
 
 (() => {
-  const camBtn       = document.getElementById('m5-cam-btn');
-  const describeBtn  = document.getElementById('m5-describe-btn');
-  const actionBtn    = document.getElementById('m5-action-btn');
-  const video        = document.getElementById('m5-video');
-  const canvas       = document.getElementById('m5-canvas');
-  const ctx          = canvas.getContext('2d');
-  const resultEl     = document.getElementById('m5-result');
-  const resultCard   = document.getElementById('m5-result-card');
-  const cacheNotice  = document.getElementById('m5-cache-notice');
-  const samplesDiv   = document.getElementById('m5-samples');
-  const pipelineEl   = document.getElementById('m5-pipeline-step');
+  const camBtn          = document.getElementById('m5-cam-btn');
+  const describeBtn     = document.getElementById('m5-describe-btn');
+  const actionBtn       = document.getElementById('m5-action-btn');
+  const video           = document.getElementById('m5-video');
+  const canvas          = document.getElementById('m5-canvas');
+  const ctx             = canvas.getContext('2d');
+  const resultEl        = document.getElementById('m5-result');
+  const resultCard      = document.getElementById('m5-result-card');
+  const cacheNotice     = document.getElementById('m5-cache-notice');
+  const annotationEl    = document.getElementById('m5-action-annotation');
+  const samplesDiv      = document.getElementById('m5-samples');
+  const pipelineEl      = document.getElementById('m5-pipeline-step');
 
   let stream         = null;   // active MediaStream, null when no camera
   let sampleLoaded   = false;  // true when a sample image is on the canvas
@@ -77,6 +78,7 @@
     btn.addEventListener('click', () => {
       const src = btn.dataset.src;
       if (!src) return;
+      _selectedPredict = btn.dataset.predict || null;   // capture prediction for comparison
       const img = new Image();
       img.crossOrigin = 'anonymous'; // required for getImageData on same-origin images in some browsers
       img.onload = () => {
@@ -86,9 +88,13 @@
         describeBtn.disabled = false;
         actionBtn.disabled   = false;
         setStep('capture');
-        // Show which image was selected in the pipeline indicator
-        const label = btn.getAttribute('title') || 'sample image';
-        pipelineEl.textContent = `① Capture — "${label}" loaded onto canvas`;
+        const label = btn.dataset.caption || btn.getAttribute('title') || 'sample image';
+        const el = document.getElementById('m5-pipeline-step');
+        if (el) el.textContent = `① Capture — "${label}" loaded — click Get robot action`;
+        // Hide any previous annotation when a new image is chosen
+        if (annotationEl) annotationEl.style.display = 'none';
+        resultEl.textContent = '—';
+        cacheNotice.style.display = 'none';
       };
       img.onerror = () => {
         resultEl.textContent = `Could not load sample image: ${src}`;
@@ -105,6 +111,18 @@
     return canvas.toDataURL('image/jpeg', 0.7).split(',')[1];
   }
 
+  // ── Action annotation — plain-English meaning of each action ────────────
+  const ACTION_MEANING = {
+    FORWARD: 'Move toward the object — it\'s directly ahead.',
+    BACK:    'Reverse — something is blocking the path forward.',
+    LEFT:    'Rotate left — the target is on the left side.',
+    RIGHT:   'Rotate right — the target is on the right side.',
+    WAIT:    'Stay still — nothing actionable is visible in the scene.',
+  };
+
+  // Track which sample image is selected so we can compare prediction vs result
+  let _selectedPredict = null;
+
   // ── Result display ────────────────────────────────────────────────────────
   function showResult(data, isText) {
     resultCard.removeAttribute('aria-busy');
@@ -117,11 +135,33 @@
       ? (data.text || JSON.stringify(displayData))
       : JSON.stringify(displayData, null, 2);
 
+    // ── Action annotation (only for action responses) ──────────────────────
+    if (!isText && annotationEl) {
+      const action = data.action;
+      const meaning = ACTION_MEANING[action];
+      if (meaning) {
+        const predicted = _selectedPredict;
+        const correct   = predicted && predicted === action;
+        const incorrect = predicted && predicted !== action;
+        let text = `${action}: ${meaning}`;
+        if (correct)   text += `  ✓ Matched your prediction.`;
+        if (incorrect) text += `  You predicted ${predicted} — Gemini disagrees. Both could be valid; the same prompt on a real robot might give different results.`;
+        annotationEl.textContent = text;
+        annotationEl.style.display  = '';
+        annotationEl.style.borderLeftColor = correct ? '#2e7d32' : incorrect ? '#c62828' : 'var(--accent)';
+        annotationEl.style.background      = correct ? '#f1f8e9' : incorrect ? '#fff5f5' : '#fdf8f3';
+      } else {
+        annotationEl.style.display = 'none';
+      }
+    } else if (annotationEl) {
+      annotationEl.style.display = 'none';
+    }
+
     const isCache = data._source === 'cache';
     if (isCache) {
       const reason = data._reason || 'unknown';
       const reasonText = reason === 'no_api_key'
-        ? 'No API key set — using pre-cached responses.'
+        ? 'No API key set — using pre-cached responses. Add a key above for live Gemini inference.'
         : `Gemini API unavailable — using pre-cached response. (${reason.substring(0, 80)})`;
       cacheNotice.textContent = reasonText;
       cacheNotice.style.display = 'block';
@@ -163,6 +203,8 @@
       selectThumbnail(null);
       showSamples();
       setStep('idle');
+      _selectedPredict = null;
+      if (annotationEl) annotationEl.style.display = 'none';
       return;
     }
 

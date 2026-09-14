@@ -15,19 +15,19 @@
   "what objects are present": "A keyboard, mouse, and monitor are visible on the desk.",
   "what is the hand doing": "The hand is making a pinch gesture with the thumb and index finger close together.",
 
-  "hand pointing": "A person's hand with the index finger clearly extended and pointing upward against a blue background.",
-  "hand pointing action": {"action": "FORWARD", "reason": "Hand is pointing forward — index finger indicates the direction of intended motion"},
-  "index finger extended": "A close-up of a hand with only the index finger raised, suggesting a directional command.",
-  "index finger action": {"action": "FORWARD", "reason": "Extended index finger points toward the target direction"},
+  "robot camera view forward": {"action": "FORWARD", "reason": "A green target object is visible directly ahead on the floor — moving forward will reach it"},
+  "green ball ahead":          {"action": "FORWARD", "reason": "Target is centred in the frame at mid-distance — no obstacles between the robot and the goal"},
+  "scene_forward describe":    "A robot's-eye-view showing a light-blue sky, a receding floor grid, and a green spherical target object centred in the path ahead.",
 
-  "laptop desk": "A laptop computer on a wooden desk, viewed from above at an angle, in a dimly lit room.",
-  "laptop desk action": {"action": "WAIT", "reason": "No robot-relevant objects detected — environment appears to be a workspace, not an action scene"},
-  "keyboard visible": "A MacBook laptop keyboard and trackpad on a wood-grain desk surface.",
-  "desk environment": "An indoor desk environment with electronic equipment — no immediate obstacles or targets visible.",
+  "robot camera view obstacle": {"action": "BACK", "reason": "A large red crate is blocking the full path ahead — the robot must reverse before it can navigate around"},
+  "red crate blocking":         {"action": "BACK", "reason": "Obstacle fills the forward field of view — immediate reversal needed to avoid collision"},
+  "scene_obstacle describe":    "A robot's-eye-view showing a large red rectangular crate labelled OBSTACLE blocking the entire forward path.",
 
-  "robot arm diagram": "A two-link robotic arm (Reacher-v5) shown in a top-down simulation view with joint angle indicators and a target marker.",
-  "robot arm action": {"action": "RIGHT", "reason": "The robot fingertip is above and to the left of the target — applying rightward and downward torque will reduce the distance"},
-  "reacher simulation": "The Reacher-v5 simulation environment showing a two-joint arm with the fingertip displaced from the red target marker.",
-  "reacher action": {"action": "RIGHT", "reason": "Fingertip is left of target — positive joint-1 torque (rightward) needed to close the distance"},
-  "two link arm": {"action": "FORWARD", "reason": "The arm appears to need extension toward the lower target position"}
+  "robot camera view left":  {"action": "LEFT", "reason": "The target object is visible on the left side of the frame — turning left will align the robot with it"},
+  "yellow ball left side":   {"action": "LEFT", "reason": "Target is offset to the left — the robot should rotate left to centre it before approaching"},
+  "scene_left describe":     "A robot's-eye-view showing a yellow spherical target on the left side of the floor, with a directional arrow indicating left.",
+
+  "robot camera view wait":  {"action": "WAIT", "reason": "The path ahead is empty — no target or obstacle is visible, so no movement is warranted"},
+  "empty corridor":          {"action": "WAIT", "reason": "Scene contains no actionable objects — robot should wait for further instruction"},
+  "scene_wait describe":     "A robot's-eye-view of an empty room with bare floor and walls — no objects, obstacles, or targets visible."
 }

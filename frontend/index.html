@@ -966,6 +966,30 @@ details.exercise-detail[open] summary.exercise-detail-summary::before { transfor
 
       <div class="card mt-16">
         <h3>Try it — capture a frame and ask Gemini</h3>
+
+        <!-- ── Action vocabulary — always visible so participants know what FORWARD/LEFT etc mean ── -->
+        <div style="background:#f8f6f2;border:1px solid var(--rule);border-radius:4px;padding:10px 14px;margin-bottom:14px;font-size:0.8rem;">
+          <strong style="font-size:0.78rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)">Action vocabulary</strong>
+          <div style="display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:6px">
+            <span><code style="background:#e8f5e9;color:#1b5e20;border:none;padding:1px 6px">FORWARD</code> move toward object</span>
+            <span><code style="background:#fff3e0;color:#e65100;border:none;padding:1px 6px">BACK</code> reverse away from obstacle</span>
+            <span><code style="background:#e3f2fd;color:#0d47a1;border:none;padding:1px 6px">LEFT</code> rotate left to face target</span>
+            <span><code style="background:#fce4ec;color:#880e4f;border:none;padding:1px 6px">RIGHT</code> rotate right to face target</span>
+            <span><code style="background:#f5f5f5;color:#424242;border:none;padding:1px 6px">WAIT</code> nothing actionable in scene</span>
+          </div>
+          <details style="margin-top:10px">
+            <summary style="cursor:pointer;font-size:0.78rem;color:var(--muted)">What was sent to Gemini (the system prompt)</summary>
+            <pre style="margin:8px 0 0;font-size:0.76rem;background:#f0ede8;border-left:3px solid var(--ink2);padding:8px 10px;white-space:pre-wrap;line-height:1.5">You are a robot controller. Looking at this image, suggest an action.
+Respond ONLY in JSON with no markdown:
+{"action": "LEFT|RIGHT|FORWARD|BACK|WAIT", "reason": "one sentence"}</pre>
+            <p style="font-size:0.76rem;color:var(--muted);margin-top:6px">
+              That's the <em>entire</em> interface between Gemini and the robot — two lines of JSON schema.
+              Gemini never saw the action vocabulary before; you defined it in the prompt.
+              Change the prompt → the robot learns a new vocabulary without any retraining.
+            </p>
+          </details>
+        </div>
+
         <div class="two-col">
           <div class="panel">
             <p class="card-lead">Camera feed</p>
@@ -973,30 +997,69 @@ details.exercise-detail[open] summary.exercise-detail-summary::before { transfor
               <video id="m5-video" class="cam-video" autoplay playsinline muted></video>
               <canvas id="m5-canvas" class="cam-canvas" width="320" height="240"></canvas>
             </div>
-            <!-- Sample images — always visible until live camera starts -->
+            <!-- Sample robot-scenario images — always visible until live camera starts -->
             <div id="m5-samples" class="mt-10">
-              <p class="text-muted" style="font-size:0.78rem;margin-bottom:6px">
-                No camera? Pick a sample image — or use your webcam above:
+              <p class="text-muted" style="font-size:0.78rem;margin-bottom:8px">
+                No camera? Pick a robot scenario below — then click <strong>Get robot action</strong>. Predict the action first.
               </p>
-              <div class="flex-row" style="gap:8px;flex-wrap:wrap">
-                <button class="m5-sample-btn" data-src="/assets/samples/hand_pointing.jpg"
-                        title="Pointing hand — index finger extended"
-                        style="padding:0;border:2px solid transparent;border-radius:4px;cursor:pointer;background:none">
-                  <img src="/assets/samples/hand_pointing.jpg" alt="Pointing hand"
-                       style="width:96px;height:72px;object-fit:cover;border-radius:3px;display:block">
+              <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
+
+                <button class="m5-sample-btn"
+                        data-src="/assets/samples/scene_forward.jpg"
+                        data-predict="FORWARD"
+                        data-caption="Target straight ahead"
+                        title="Robot sees a green target directly ahead"
+                        style="padding:0;border:2px solid transparent;border-radius:5px;cursor:pointer;background:none;text-align:left">
+                  <img src="/assets/samples/scene_forward.jpg" alt="Green target ahead"
+                       style="width:100%;height:72px;object-fit:cover;border-radius:3px 3px 0 0;display:block">
+                  <div style="padding:4px 6px;font-size:0.72rem;line-height:1.4;background:#fafaf8;border-radius:0 0 3px 3px">
+                    Target straight ahead
+                    <span style="float:right;background:#e8f5e9;color:#1b5e20;padding:1px 5px;border-radius:3px;font-weight:600">→ FORWARD?</span>
+                  </div>
                 </button>
-                <button class="m5-sample-btn" data-src="/assets/samples/desk_scene.jpg"
-                        title="Desk with laptop — everyday environment"
-                        style="padding:0;border:2px solid transparent;border-radius:4px;cursor:pointer;background:none">
-                  <img src="/assets/samples/desk_scene.jpg" alt="Desk scene"
-                       style="width:96px;height:72px;object-fit:cover;border-radius:3px;display:block">
+
+                <button class="m5-sample-btn"
+                        data-src="/assets/samples/scene_obstacle.jpg"
+                        data-predict="BACK"
+                        data-caption="Obstacle blocking path"
+                        title="Robot sees a red crate blocking the full path"
+                        style="padding:0;border:2px solid transparent;border-radius:5px;cursor:pointer;background:none;text-align:left">
+                  <img src="/assets/samples/scene_obstacle.jpg" alt="Red obstacle blocking path"
+                       style="width:100%;height:72px;object-fit:cover;border-radius:3px 3px 0 0;display:block">
+                  <div style="padding:4px 6px;font-size:0.72rem;line-height:1.4;background:#fafaf8;border-radius:0 0 3px 3px">
+                    Obstacle blocking path
+                    <span style="float:right;background:#ffebee;color:#c62828;padding:1px 5px;border-radius:3px;font-weight:600">→ BACK?</span>
+                  </div>
                 </button>
-                <button class="m5-sample-btn" data-src="/assets/samples/robot_arm.jpg"
-                        title="Reacher-v5 robot arm simulation"
-                        style="padding:0;border:2px solid transparent;border-radius:4px;cursor:pointer;background:none">
-                  <img src="/assets/samples/robot_arm.jpg" alt="Robot arm"
-                       style="width:96px;height:72px;object-fit:cover;border-radius:3px;display:block">
+
+                <button class="m5-sample-btn"
+                        data-src="/assets/samples/scene_left.jpg"
+                        data-predict="LEFT"
+                        data-caption="Target on the left"
+                        title="Robot sees a yellow target to the left"
+                        style="padding:0;border:2px solid transparent;border-radius:5px;cursor:pointer;background:none;text-align:left">
+                  <img src="/assets/samples/scene_left.jpg" alt="Target on the left"
+                       style="width:100%;height:72px;object-fit:cover;border-radius:3px 3px 0 0;display:block">
+                  <div style="padding:4px 6px;font-size:0.72rem;line-height:1.4;background:#fafaf8;border-radius:0 0 3px 3px">
+                    Target on the left
+                    <span style="float:right;background:#e3f2fd;color:#0d47a1;padding:1px 5px;border-radius:3px;font-weight:600">→ LEFT?</span>
+                  </div>
                 </button>
+
+                <button class="m5-sample-btn"
+                        data-src="/assets/samples/scene_wait.jpg"
+                        data-predict="WAIT"
+                        data-caption="Empty path, nothing to do"
+                        title="Robot sees an empty corridor with no target or obstacle"
+                        style="padding:0;border:2px solid transparent;border-radius:5px;cursor:pointer;background:none;text-align:left">
+                  <img src="/assets/samples/scene_wait.jpg" alt="Empty corridor"
+                       style="width:100%;height:72px;object-fit:cover;border-radius:3px 3px 0 0;display:block">
+                  <div style="padding:4px 6px;font-size:0.72rem;line-height:1.4;background:#fafaf8;border-radius:0 0 3px 3px">
+                    Empty path, nothing to do
+                    <span style="float:right;background:#f5f5f5;color:#424242;padding:1px 5px;border-radius:3px;font-weight:600">→ WAIT?</span>
+                  </div>
+                </button>
+
               </div>
             </div>
             <div class="flex-row mt-10">
@@ -1004,13 +1067,13 @@ details.exercise-detail[open] summary.exercise-detail-summary::before { transfor
               <button class="btn-primary" id="m5-describe-btn" data-requires-server disabled>Describe scene</button>
               <button class="btn-primary" id="m5-action-btn" data-requires-server disabled>Get robot action</button>
             </div>
-            <!-- Pipeline step indicator — shows which step is active -->
             <p id="m5-pipeline-step" class="text-muted mt-8" style="font-size:0.78rem;display:none"></p>
           </div>
           <div class="panel">
             <div class="card" style="min-height:200px;" id="m5-result-card">
               <h3>Gemini response</h3>
               <pre id="m5-result" class="gemini-out">—</pre>
+              <p id="m5-action-annotation" style="display:none;font-size:0.8rem;margin-top:8px;padding:8px 10px;border-radius:4px;border-left:3px solid var(--accent)"></p>
               <p id="m5-cache-notice" class="cache-notice" style="display:none;"></p>
             </div>
           </div>
