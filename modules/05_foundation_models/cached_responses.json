@@ -1,33 +1,81 @@
 {
-  "describe the scene in one sentence": "A person is sitting at a desk with a laptop, appearing focused on their work in a well-lit workspace.",
+  "describe the scene in one sentence": "A person is sitting at a desk in a modern workspace, appearing focused on their laptop screen.",
 
-  "you are aria...working calmly":  {"action": "WAIT",     "reason": "The person is focused and working at their desk — no assistance needed at this time"},
-  "you are aria...confused":        {"action": "APPROACH", "reason": "The person appears confused or stuck — moving closer to offer assistance"},
-  "you are aria...waving":          {"action": "APPROACH", "reason": "The person is looking at the camera and appears to be requesting interaction"},
-  "you are aria...distressed":      {"action": "ALERT",    "reason": "The person appears slumped and unresponsive — escalating to a caregiver"},
-  "you are aria...leaving":         {"action": "RETREAT",  "reason": "The person is moving away — giving them space"},
+  "you are aria...working calmly": {
+    "action": "WAIT",
+    "confidence": 0.92,
+    "observation": "A person is seated at a desk, typing on a laptop with focused posture and calm body language.",
+    "reason": "The individual is productively engaged and shows no signs of needing assistance — interrupting would disrupt their workflow.",
+    "next_step": "ARIA maintains a respectful distance and continues passive monitoring at 30-second intervals."
+  },
+  "you are aria...confused": {
+    "action": "APPROACH",
+    "confidence": 0.87,
+    "observation": "A person is staring at their screen with a furrowed brow, hand raised to their forehead, body leaning forward — classic signs of cognitive struggle.",
+    "reason": "Body language strongly indicates the person is stuck on a problem and may benefit from assistance or a prompt.",
+    "next_step": "ARIA moves to within 1.5 metres, pauses, and offers a soft audio cue — 'Can I help?'"
+  },
+  "you are aria...waving": {
+    "action": "APPROACH",
+    "confidence": 0.96,
+    "observation": "The person is making direct eye contact with the camera and raising their hand in a clear waving gesture, signalling intentional interaction.",
+    "reason": "The person has explicitly initiated contact — ARIA should respond promptly and move closer to begin interaction.",
+    "next_step": "ARIA approaches at low speed, stops at 1 metre, activates the interaction LED, and awaits the person's request."
+  },
+  "you are aria...distressed": {
+    "action": "ALERT",
+    "confidence": 0.89,
+    "observation": "A person is slumped forward over the desk with their head resting on their arms, showing no visible movement or responsiveness.",
+    "reason": "The posture is inconsistent with normal rest or sleep at a desk — unresponsiveness in a workplace context warrants an immediate welfare check.",
+    "next_step": "ARIA broadcasts an alert to the nearest registered caregiver, activates proximity sensor for 60 seconds, and remains stationary nearby."
+  },
+  "you are aria...leaving": {
+    "action": "RETREAT",
+    "confidence": 0.81,
+    "observation": "The person has turned away from the desk and is moving toward the exit, with no indication of wanting interaction.",
+    "reason": "The person is clearly leaving and has not requested assistance — following would be intrusive.",
+    "next_step": "ARIA reverses 0.5 metres, switches to standby mode, and logs the interaction as resolved."
+  },
 
-  "describe objects": "A person is visible in an indoor workspace environment with typical office equipment.",
-  "what is the person doing": "The person appears to be working at a desk, possibly using a computer or laptop.",
+  "describe objects": "A person is visible at a desk in an indoor workspace environment with a laptop, notepad, and office equipment.",
+  "describe the scene": "An indoor Indian tech office with natural lighting, a person at a desk with a laptop visible in the foreground.",
+  "what is the person doing": "The person appears to be working at their desk, using a laptop computer.",
   "what gesture": "The person appears to be looking toward the camera, possibly acknowledging the robot's presence.",
-  "joint angles": "The person's posture appears relaxed and seated, consistent with desk work.",
-  "describe the scene": "An indoor workspace with a person visible — the lighting and environment suggest a professional setting.",
-  "what objects are present": "A desk, laptop, chair, and office equipment are visible in the workspace.",
-  "what is the person doing with hands": "The person's hands are positioned near a keyboard or laptop, suggesting active work.",
+  "what objects are present": "A desk, laptop, office chair, and workspace accessories are visible in the scene.",
 
-  "aria working":   {"action": "WAIT",     "reason": "Person is engaged in focused work at their desk — no intervention warranted"},
-  "person at desk": {"action": "WAIT",     "reason": "Individual appears calm and productive — ARIA should stand by without interrupting"},
-  "aria working describe": "A person sits at a desk with a laptop, focused on their screen in a typical workspace setting.",
-
-  "aria confused":       {"action": "APPROACH", "reason": "Person shows signs of confusion or frustration — ARIA should approach to offer help"},
-  "person confused":     {"action": "APPROACH", "reason": "Individual appears to be struggling with a task — moving closer to assist"},
-  "aria confused describe": "A person at a desk with a furrowed expression, hand near their face, appearing to be stuck on a problem.",
-
-  "aria waving":         {"action": "APPROACH", "reason": "Person is making eye contact and gesturing — actively requesting ARIA's attention"},
-  "person waving":       {"action": "APPROACH", "reason": "Direct eye contact and waving gesture indicates the person wants to interact"},
-  "aria waving describe": "A person looking directly toward the camera and waving, clearly initiating an interaction.",
-
-  "aria slumped":        {"action": "ALERT",    "reason": "Person appears unresponsive with head down — this requires immediate attention from a caregiver"},
-  "person slumped":      {"action": "ALERT",    "reason": "Slumped posture and lack of movement suggests the person may be unwell or in distress"},
-  "aria slumped describe": "A person with their head resting on the desk or slumped forward, appearing exhausted or unresponsive."
+  "aria working": {
+    "action": "WAIT",
+    "confidence": 0.91,
+    "observation": "Person is typing on a laptop with calm, focused posture and no signs of distress or need.",
+    "reason": "No intervention required — the person is productive and undisturbed.",
+    "next_step": "ARIA holds position and re-evaluates in 30 seconds."
+  },
+  "aria confused": {
+    "action": "APPROACH",
+    "confidence": 0.85,
+    "observation": "Person has hand on forehead, furrowed brow, and is staring intently at their screen — signs of confusion or frustration.",
+    "reason": "High probability of needing assistance — proactive approach is appropriate.",
+    "next_step": "ARIA moves to 1.5m, pauses, and offers help via audio prompt."
+  },
+  "aria waving": {
+    "action": "APPROACH",
+    "confidence": 0.97,
+    "observation": "Person is looking directly at ARIA and waving — unambiguous request for interaction.",
+    "reason": "Explicit human-initiated contact should always be responded to promptly.",
+    "next_step": "ARIA approaches at low speed, stops at 1m, and awaits instruction."
+  },
+  "aria slumped": {
+    "action": "ALERT",
+    "confidence": 0.88,
+    "observation": "Person is slumped with head down on desk, no visible movement detected over observation period.",
+    "reason": "Unresponsive posture in a work environment requires immediate welfare escalation — cannot be ignored.",
+    "next_step": "ARIA sends welfare alert, stays nearby, activates audio check-in every 10 seconds."
+  },
+  "person at desk": {
+    "action": "WAIT",
+    "confidence": 0.83,
+    "observation": "Individual appears calm and engaged with their work at the desk.",
+    "reason": "No indicators of distress or need for assistance at this time.",
+    "next_step": "ARIA continues passive monitoring."
+  }
 }

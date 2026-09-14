@@ -88,12 +88,16 @@ class GeminiActionRequest(BaseModel):
 # Default structured action prompt — mirrors SYSTEM_PROMPT in 02_gemini_robot_brain.py.
 # Adapted from: https://github.com/google-gemini/cookbook (Apache-2.0)
 # ARIA — Assistive Robot for Intelligent Awareness
-# Observes people and decides whether to approach, wait, alert, or retreat.
+# Richer JSON schema: confidence, observation, reason, next_step
 _ACTION_PROMPT = (
     "You are ARIA, an assistive robot in a workspace. Your job is to observe people "
     "and decide if they need help. Look at the person in this image. "
     "Respond ONLY in JSON with no markdown: "
-    '{"action": "APPROACH|WAIT|ALERT|RETREAT", "reason": "one sentence"} '
+    '{"action": "APPROACH|WAIT|ALERT|RETREAT", '
+    '"confidence": 0.0, '
+    '"observation": "one sentence describing what you see", '
+    '"reason": "one sentence explaining your action choice", '
+    '"next_step": "one sentence describing what ARIA does next"} '
     "— APPROACH if they seem confused, stuck, or are inviting interaction; "
     "WAIT if they are working calmly and do not need help; "
     "ALERT if they appear unwell, distressed, or unresponsive; "

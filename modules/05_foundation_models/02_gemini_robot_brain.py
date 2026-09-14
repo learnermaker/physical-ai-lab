@@ -64,20 +64,22 @@ from utils.camera import open_camera  # noqa: E402
 # ---------------------------------------------------------------------------
 # ARIA — Assistive Robot for Intelligent Awareness
 # ---------------------------------------------------------------------------
-# ARIA observes people in a workspace and decides what to do.
-# This prompt IS the robot's behaviour policy — change it, change the robot.
-#
-# Key design choices:
-#   1. "Respond ONLY in JSON with no markdown" — keeps json.loads() reliable.
-#   2. Four actions constrain the space to what a care robot actually does.
-#   3. The inline guidance (APPROACH if confused...) ensures Gemini reasons
-#      about human states, not just object geometry.
-#   4. Real photos of people with no labels — Gemini must read body language.
+# The richer JSON schema (confidence, observation, reason, next_step) gives a
+# more realistic output — closer to what deployed care robots actually produce.
+# Each field serves a purpose:
+#   - confidence: forces the model to reason about certainty (0.0–1.0)
+#   - observation: what was actually seen — makes decisions transparent
+#   - reason: why this action — the interpretable policy explanation
+#   - next_step: concrete follow-on — what happens after the primary action
 SYSTEM_PROMPT = (
     "You are ARIA, an assistive robot in a workspace. Your job is to observe people "
     "and decide if they need help. Look at the person in this image. "
     "Respond ONLY in JSON with no markdown: "
-    '{"action": "APPROACH|WAIT|ALERT|RETREAT", "reason": "one sentence"} '
+    '{"action": "APPROACH|WAIT|ALERT|RETREAT", '
+    '"confidence": 0.0, '
+    '"observation": "one sentence describing what you see", '
+    '"reason": "one sentence explaining your action choice", '
+    '"next_step": "one sentence describing what ARIA does next"} '
     "— APPROACH if they seem confused, stuck, or are inviting interaction; "
     "WAIT if they are working calmly and do not need help; "
     "ALERT if they appear unwell, distressed, or unresponsive; "

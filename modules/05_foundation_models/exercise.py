@@ -2,35 +2,46 @@
 """
 Module 5 Exercise: Design Your Own Robot Prompt
 =================================================
-In 02_gemini_robot_brain.py the system prompt defines the action vocabulary:
-  LEFT / RIGHT / FORWARD / BACK / WAIT
+ARIA's prompt (in 02_gemini_robot_brain.py) defines a full JSON schema:
 
-Your task: write a DIFFERENT system prompt and observe how the model's
-reasoning changes.  Try things like:
-  - A different action set (e.g. PICK_UP / PUT_DOWN / ROTATE)
-  - Joint torques instead of directional commands
-  - A different output schema (e.g. {"gesture": "...", "confidence": 0.9})
+    {
+      "action":      "APPROACH|WAIT|ALERT|RETREAT",
+      "confidence":  0.0,
+      "observation": "what was seen",
+      "reason":      "why this action",
+      "next_step":   "what ARIA does next"
+    }
 
-Remember: the prompt IS the interface between the LLM and the robot's hardware.
+Your task: write a DIFFERENT system prompt for a DIFFERENT robot.
+Try things like:
+  - A warehouse picking robot: PICK / PLACE / NAVIGATE / WAIT
+  - A surgical assistant:      HAND_TOOL / RETRACT / HOLD / WAIT
+  - A home companion:          GREET / REMIND / ASSIST / STANDBY
+  - Joint torques instead of named actions
+
+Remember: the prompt IS the robot's brain.
 Changing it changes what the robot can do — without any code changes or retraining.
+This is exactly how production VLA systems like RT-2 and π0 are programmed.
 
-Start here:  Find the TODO block below (~line 165) and define MY_PROMPT,
-             then call ask_gemini() with it.
-             The solution is commented out at the bottom of this file.
+Start here: Find the TODO block below (~line 165) and define MY_PROMPT.
 
 Expected output (varies with your prompt and camera scene):
-  Calling Gemini...
-  Done.
-  action: INSPECT
-  reason: Several objects are visible on the desk
+    Calling Gemini...
+    Done.
+    action: NAVIGATE
+    confidence: 0.84
+    observation: A clear path is visible in the workspace
+    reason: No items to pick and the aisle is clear — robot should reposition
+    next_step: Move to the next waypoint at row B, slot 7
 
 No API key?  The cache fallback runs automatically and a cached response is used.
-The cache may not match your custom prompt — that's fine for understanding the structure.
+The cache may not exactly match your custom prompt — that's intentional.
+Notice what the model returns when the prompt doesn't match the cache.
 
 Run from the repo root:
-  python modules/05_foundation_models/exercise.py
+    python modules/05_foundation_models/exercise.py
 
-Adapted from: https://github.com/google-gemini/cookbook (Apache-2.0)
+See the full ARIA prompt in:  modules/05_foundation_models/02_gemini_robot_brain.py
 """
 
 import importlib.util
@@ -61,12 +72,20 @@ from utils.camera import open_camera  # noqa: E402
 
 
 # ---------------------------------------------------------------------------
-# Default prompt (used only by the fallback path below — replace in the TODO)
+# Default prompt — ARIA schema (same as 02_gemini_robot_brain.py)
+# Replace this entirely in the TODO block below
 # ---------------------------------------------------------------------------
 _DEFAULT_PROMPT = (
-    'You are a robot controller. Looking at this image, suggest an action. '
-    'Respond ONLY in JSON with no markdown: '
-    '{"action": "LEFT|RIGHT|FORWARD|BACK|WAIT", "reason": "one sentence"}'
+    "You are ARIA, an assistive robot in a workspace. Your job is to observe people "
+    "and decide if they need help. Look at the person in this image. "
+    "Respond ONLY in JSON with no markdown: "
+    '{"action": "APPROACH|WAIT|ALERT|RETREAT", '
+    '"confidence": 0.0, '
+    '"observation": "one sentence describing what you see", '
+    '"reason": "one sentence explaining your action choice", '
+    '"next_step": "one sentence describing what ARIA does next"} '
+    "— APPROACH if they seem confused; WAIT if calm; "
+    "ALERT if unwell; RETREAT if leaving."
 )
 
 
@@ -169,33 +188,37 @@ def main() -> None:
         ]
         frame = None  # ask_gemini handles None via the api_key-absent branch
 
-    # TODO START — Write your own prompt and observe how the robot reasons ──
+    # TODO START — Write your own prompt for a different robot ─────────────
     #
-    # Step 1: Define a custom system prompt string.
-    #   Example:
-    #     MY_PROMPT = (
-    #         'Describe the main objects you can see. '
-    #         'Respond ONLY in JSON with no markdown: '
-    #         '{"action": "INSPECT", "reason": "one sentence describing the objects"}'
-    #     )
-    #   TIP: Always include "Respond ONLY in JSON with no markdown:" so the
-    #        parser can read the response.  The JSON schema you define here
-    #        IS your robot's action vocabulary.
+    # ARIA's schema (in 02_gemini_robot_brain.py) is:
+    #   {action, confidence, observation, reason, next_step}
     #
-    # Step 2: Call ask_gemini() with your prompt:
+    # Your task: define a prompt for a DIFFERENT kind of robot.
+    # Example — warehouse picking robot:
+    #
+    #   MY_PROMPT = (
+    #       'You are a warehouse picking robot. Look at this image of the workspace. '
+    #       'Decide what to do next. '
+    #       'Respond ONLY in JSON with no markdown: '
+    #       '{"action": "PICK|PLACE|NAVIGATE|WAIT", '
+    #       '"confidence": 0.0, '
+    #       '"observation": "what you see in the image", '
+    #       '"reason": "why this action", '
+    #       '"next_step": "specific movement or task to execute"}'
+    #   )
+    #
+    # Then call ask_gemini() and print the result:
     #   result = ask_gemini(MY_PROMPT, frame, api_key, cache)
-    #
-    # Step 3: Print each key-value pair from the result dict:
     #   for key, value in result.items():
     #       print(f"{key}: {value}")
+    #
+    # TIP: Always include "Respond ONLY in JSON with no markdown:" or the
+    #      json.loads() parser will fail on markdown-wrapped responses.
     raise NotImplementedError(
-        "Implement main() at the TODO block around line 164. "
-        "See # EXPECTED OUTPUT comment below."
+        "Define MY_PROMPT in the TODO block and call ask_gemini().\n"
+        "See modules/05_foundation_models/02_gemini_robot_brain.py for the ARIA example."
     )
     # TODO END ──────────────────────────────────────────────────────────────
-    # EXPECTED OUTPUT (varies with your prompt):
-    # action: <value from your prompt schema>
-    # reason: <one-sentence explanation from the model>
 
 
 if __name__ == "__main__":
@@ -208,23 +231,25 @@ if __name__ == "__main__":
 # def main() -> None:
 #     load_dotenv(REPO_ROOT / ".env")
 #     api_key: str = os.getenv("GEMINI_API_KEY", "").strip()
-#
 #     cache = load_cache()
-#
 #     cap = open_camera()
 #     ret, frame = cap.read()
 #     cap.release()
-#
 #     if not ret or frame is None:
 #         frame = None
 #
+#     # Warehouse picking robot — different robot, different vocabulary, same pipeline
 #     MY_PROMPT = (
-#         'Describe the main objects you can see in the scene. '
+#         'You are a warehouse picking robot. Look at this image of the workspace. '
+#         'Decide what to do next based on what you see. '
 #         'Respond ONLY in JSON with no markdown: '
-#         '{"action": "INSPECT", "reason": "one sentence describing the objects"}'
+#         '{"action": "PICK|PLACE|NAVIGATE|WAIT", '
+#         '"confidence": 0.0, '
+#         '"observation": "one sentence describing what you see in the workspace", '
+#         '"reason": "one sentence explaining why you chose this action", '
+#         '"next_step": "specific movement or task to execute next"}'
 #     )
 #
 #     result = ask_gemini(MY_PROMPT, frame, api_key, cache)
-#
 #     for key, value in result.items():
 #         print(f"{key}: {value}")

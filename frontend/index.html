@@ -995,7 +995,11 @@ details.exercise-detail[open] summary.exercise-detail-summary::before { transfor
             <pre style="margin:8px 0 0;font-size:0.76rem;background:#f0ede8;border-left:3px solid var(--ink2);padding:8px 10px;white-space:pre-wrap;line-height:1.5">You are ARIA, an assistive robot in a workspace. Your job is to observe people
 and decide if they need help. Look at the person in this image.
 Respond ONLY in JSON with no markdown:
-{"action": "APPROACH|WAIT|ALERT|RETREAT", "reason": "one sentence"}
+{"action": "APPROACH|WAIT|ALERT|RETREAT",
+ "confidence": 0.0,
+ "observation": "one sentence describing what you see",
+ "reason": "one sentence explaining your action choice",
+ "next_step": "one sentence describing what ARIA does next"}
 — APPROACH if they seem confused, stuck, or are inviting interaction;
   WAIT if they are working calmly and do not need help;
   ALERT if they appear unwell, distressed, or unresponsive;
@@ -1034,7 +1038,6 @@ Respond ONLY in JSON with no markdown:
                        style="width:100%;height:80px;object-fit:cover;border-radius:3px 3px 0 0;display:block">
                   <div style="padding:5px 7px;font-size:0.72rem;line-height:1.5;background:#fafaf8;border-radius:0 0 3px 3px">
                     Person working calmly
-                    <span style="float:right;background:#f5f5f5;color:#424242;padding:1px 5px;border-radius:3px;font-weight:600">WAIT?</span>
                   </div>
                 </button>
 
@@ -1048,7 +1051,6 @@ Respond ONLY in JSON with no markdown:
                        style="width:100%;height:80px;object-fit:cover;border-radius:3px 3px 0 0;display:block">
                   <div style="padding:5px 7px;font-size:0.72rem;line-height:1.5;background:#fafaf8;border-radius:0 0 3px 3px">
                     Person looking confused
-                    <span style="float:right;background:#e8f5e9;color:#1b5e20;padding:1px 5px;border-radius:3px;font-weight:600">APPROACH?</span>
                   </div>
                 </button>
 
@@ -1062,7 +1064,6 @@ Respond ONLY in JSON with no markdown:
                        style="width:100%;height:80px;object-fit:cover;border-radius:3px 3px 0 0;display:block">
                   <div style="padding:5px 7px;font-size:0.72rem;line-height:1.5;background:#fafaf8;border-radius:0 0 3px 3px">
                     Person waving at camera
-                    <span style="float:right;background:#e8f5e9;color:#1b5e20;padding:1px 5px;border-radius:3px;font-weight:600">APPROACH?</span>
                   </div>
                 </button>
 
@@ -1076,7 +1077,6 @@ Respond ONLY in JSON with no markdown:
                        style="width:100%;height:80px;object-fit:cover;border-radius:3px 3px 0 0;display:block">
                   <div style="padding:5px 7px;font-size:0.72rem;line-height:1.5;background:#fafaf8;border-radius:0 0 3px 3px">
                     Person slumped, unresponsive
-                    <span style="float:right;background:#ffebee;color:#c62828;padding:1px 5px;border-radius:3px;font-weight:600">ALERT?</span>
                   </div>
                 </button>
 
@@ -1084,12 +1084,12 @@ Respond ONLY in JSON with no markdown:
 
               <!-- Webcam instructions -->
               <div style="margin-top:10px;font-size:0.76rem;color:var(--muted);background:#f8f6f2;padding:8px 10px;border-radius:4px;line-height:1.6">
-                <strong style="color:var(--ink2)">With webcam:</strong>
-                act out different states and see if ARIA reads you correctly —
-                <em>sit and work normally</em> (WAIT?) &nbsp;·&nbsp;
-                <em>look confused and frustrated</em> (APPROACH?) &nbsp;·&nbsp;
-                <em>wave at the camera</em> (APPROACH?) &nbsp;·&nbsp;
-                <em>slump forward with head down</em> (ALERT?)
+                <strong style="color:var(--ink2)">With your webcam:</strong>
+                act out different states and see if ARIA reads your body language correctly —
+                <em>sit and work normally</em> &nbsp;·&nbsp;
+                <em>look confused and frustrated</em> &nbsp;·&nbsp;
+                <em>wave at the camera</em> &nbsp;·&nbsp;
+                <em>slump forward with head down</em>
               </div>
             </div>
 
@@ -1112,11 +1112,17 @@ Respond ONLY in JSON with no markdown:
       </div>
 
       <div class="card mt-16">
-        <h3>Exercise — <code>modules/05_foundation_models/exercise.py</code></h3>
+        <h3>Exercise — <code>modules/05_foundation_models/exercise.py</code> <button class="open-btn" data-path="modules/05_foundation_models/exercise.py" title="Open in VS Code">open</button></h3>
+        <p class="text-muted" style="font-size:0.8rem;margin-top:4px">
+          The ARIA system prompt lives in
+          <code>modules/05_foundation_models/02_gemini_robot_brain.py</code>
+          <button class="open-btn" data-path="modules/05_foundation_models/02_gemini_robot_brain.py" title="Open in VS Code">open</button>
+          — that's where you'll see the full JSON schema and action vocabulary.
+        </p>
       <details class="exercise-detail">
-        <summary class="exercise-detail-summary">Details & why this matters</summary>
-        <p>Write your own system prompt. Change the action vocabulary entirely. See what the model does with it.</p>
-        <p class="card-lead mt-10">This is the real exercise: how do you make a model that's good at everything be reliably good at one very specific thing? Try asking for joint torques instead of directions — watch how the JSON reliability changes. That gap is what separates demos from deployed systems.</p>
+        <summary class="exercise-detail-summary">Details &amp; why this matters</summary>
+        <p>The ARIA prompt defines a JSON schema with five fields: <code>action</code>, <code>confidence</code>, <code>observation</code>, <code>reason</code>, and <code>next_step</code>. Your exercise: change the schema entirely for a different robot.</p>
+        <p class="card-lead mt-10">Try designing a prompt for a <strong>warehouse picking robot</strong> (PICK / PLACE / NAVIGATE / WAIT), or a <strong>surgical assistant</strong> (HAND_TOOL / RETRACT / HOLD / WAIT). Notice how changing two lines of text gives the robot a completely different vocabulary — without touching any other code. That's the power, and the responsibility, of prompt-based robotics.</p>
       </details>
       </div>
 
