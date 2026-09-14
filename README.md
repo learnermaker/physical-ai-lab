@@ -36,7 +36,7 @@ Double-click **`setup.bat`**. It handles everything:
 | 2 | Creates `.venv` virtual environment in the repo folder |
 | 3–5 | Installs PyTorch (CPU-only) and all lab packages |
 | 6 | Registers the Jupyter kernel for VS Code |
-| 7 | Downloads the MediaPipe hand landmark model (~8 MB) |
+| 7 | Downloads the MediaPipe hand model (~8 MB), pre-trained SAC agent for Module 2 (~3 MB), and demo video |
 | 8 | Runs `verify_install.py` to confirm everything works |
 | 9 | Launches the hub and opens http://localhost:8000 |
 

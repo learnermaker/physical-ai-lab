@@ -357,7 +357,7 @@
             <tr><td>[4/9]</td><td>Installs PyTorch CPU-only (the big one — about 200 MB)</td></tr>
             <tr><td>[5/9]</td><td>Installs everything else from <code>requirements.txt</code></td></tr>
             <tr><td>[6/9]</td><td>Registers the kernel so VS Code notebooks can use this environment</td></tr>
-            <tr><td>[7/9]</td><td>Downloads the MediaPipe hand landmark model (about 8 MB)</td></tr>
+            <tr><td>[7/9]</td><td>Downloads models and demo assets: hand_landmarker.task (~8 MB), the pre-trained SAC agent for Module 2 (~3 MB), and the fallback demo video</td></tr>
             <tr><td>[8/9]</td><td>Runs a quick check — prints pass/warn/fail for each package</td></tr>
             <tr><td>[9/9]</td><td>Opens the hub server and launches the browser</td></tr>
           </tbody>
@@ -422,7 +422,7 @@ Setup complete: 13/14 checks passed</code></pre>
   </ul>
 
   <h2>1. Clone the repo</h2>
-  <pre><code><span class="kw">git clone</span> &lt;repo-url&gt;
+  <pre><code><span class="kw">git clone</span> https://github.com/learnermaker/physical-ai-lab.git
 <span class="kw">cd</span> physical-ai-lab</code></pre>
 
   <h2>2. Create and activate a virtual environment</h2>
@@ -460,17 +460,16 @@ Setup complete: 13/14 checks passed</code></pre>
   <h2>6. Register the Jupyter kernel</h2>
   <pre><code><span class="kw">python -m ipykernel install</span> <span class="fl">--user --name</span> physical-ai <span class="fl">--display-name</span> "Physical AI Lab"</code></pre>
 
-  <h2>7. Hand landmark model</h2>
-  <p>This should already be in <code>assets/</code> if you cloned the repo. If it's missing:</p>
-  <pre><code><span class="kw">python -c</span> "
-import urllib.request, pathlib
-pathlib.Path('assets').mkdir(exist_ok=True)
-urllib.request.urlretrieve(
-    'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/latest/hand_landmarker.task',
-    'assets/hand_landmarker.task'
-)
-print('done')
-"</code></pre>
+  <h2>7. Download models and demo assets</h2>
+  <p>These are gitignored large binaries — <code>download_model.py</code> fetches them in one step. Run it from the activated environment:</p>
+  <pre><code><span class="kw">python</span> download_model.py</code></pre>
+  <p>This downloads:</p>
+  <ul class="check">
+    <li><code>assets/hand_landmarker.task</code> — MediaPipe hand landmark model (~8 MB)</li>
+    <li><code>models/sac-HalfCheetah-v5.zip</code> — pre-trained SAC agent for Module 2 (~3 MB, from HuggingFace)</li>
+    <li><code>assets/fallback_hand_demo.mp4</code> — demo video for no-webcam participants (copied from the repo)</li>
+  </ul>
+  <p>All three are idempotent — safe to re-run, skips anything already present.</p>
 
   <h2>8. Verify</h2>
   <pre><code><span class="kw">python</span> verify_install.py</code></pre>
