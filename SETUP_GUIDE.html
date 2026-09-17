@@ -275,6 +275,20 @@
   }
 
   hr { border: none; border-top: 1px dashed var(--rule); margin: 24px 0; }
+
+  /* ── Mobile ───────────────────────────────────────────── */
+  @media (max-width: 600px) {
+    .wrap { padding: 0 16px 60px; }
+    h1 { font-size: 1.5rem; }
+    h2 { font-size: 1rem; }
+    pre { font-size: 0.7rem; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .tabs { gap: 0; flex-wrap: wrap; }
+    .tab-btn { flex: 1 1 40%; font-size: 0.72rem; padding: 8px 4px; }
+    table { font-size: 0.75rem; }
+    table td, table th { padding: 5px 6px; }
+    .qr-grid { grid-template-columns: 1fr; }
+    footer { flex-direction: column; gap: 4px; }
+  }
 </style>
 </head>
 <body>
@@ -282,7 +296,7 @@
 
 <!-- ── HEADER ────────────────────────────────────────────────── -->
 <header>
-  <p class="eyebrow">Lab Documentation</p>
+  <p class="eyebrow">For participants and self-guided learners</p>
   <h1>Physical AI Lab<br>Setup Guide</h1>
   <p class="sub">Everything you need to go from a fresh machine to running the lab hub — usually under 15 minutes.</p>
   <span class="by">Written by Jim Seelan</span>
@@ -306,9 +320,9 @@
 
 <!-- ── TABS ──────────────────────────────────────────────────── -->
 <div class="tabs">
+  <button class="tab-btn" onclick="showTab('day')">Start the Lab</button>
   <button class="tab-btn active" onclick="showTab('quick')">Quick Start</button>
   <button class="tab-btn" onclick="showTab('manual')">Manual Setup</button>
-  <button class="tab-btn" onclick="showTab('day')">Start the Lab</button>
   <button class="tab-btn" onclick="showTab('maclinux')">Mac &amp; Linux</button>
   <button class="tab-btn" onclick="showTab('trouble')">Troubleshooting</button>
 </div>
@@ -389,15 +403,14 @@ Setup complete: 13/14 checks passed</code></pre>
 # GEMINI_API_KEY=AQ....your_key</span></code></pre>
       </div>
     </li>
-    <li>
-      <div>
-        <div class="step-title">Watch the HalfCheetah agent <span class="tag opt">optional</span></div>
-        <p>Before the session, run this to see what a trained RL agent actually looks like. It's a good warm-up for Module 3, and people tend to find it surprisingly impressive.</p>
-        <pre><code><span class="kw">python</span> modules/02_simulation/03_pretrained_agent.py</code></pre>
-        <p>A MuJoCo window opens with a cheetah robot running. No GPU required.</p>
-      </div>
-    </li>
   </ol>
+
+  <div class="note tip">
+    <strong>Optional warm-up before Module 3</strong>
+    Run this to see what a million training steps actually looks like before you train your own agent:
+    <pre style="margin-top:8px"><code><span class="kw">python</span> modules/02_simulation/03_pretrained_agent.py</code></pre>
+    A MuJoCo window opens with a HalfCheetah robot running. No GPU required.
+  </div>
 
   <div class="note tip">
     <strong>Safe to re-run</strong>
@@ -412,7 +425,7 @@ Setup complete: 13/14 checks passed</code></pre>
 ════════════════════════════════════════════════════════════ -->
 <div id="tab-manual" class="tab-panel">
 
-  <p>If you'd rather do it yourself — or if <code>setup.bat</code> is giving you grief — here are the individual steps. You'll need Python 3.12 installed first.</p>
+  <p>If you'd rather do it yourself — or if <code>setup.bat</code> is giving you grief — here are the individual steps. You'll need Python 3.12 installed first. <strong>Estimated time: 20–30 minutes</strong> on a decent connection.</p>
 
   <h2>What you need</h2>
   <ul class="check">
@@ -484,6 +497,11 @@ Setup complete: 13/14 checks passed</code></pre>
   <h2>10. Start the hub</h2>
   <pre><code><span class="kw">python</span> api/server.py</code></pre>
   <p>Open <a href="http://localhost:8000" target="_blank">http://localhost:8000</a> in Chrome or Edge.</p>
+
+  <div class="note tip" style="border-left-color:var(--green);background:#eefaef;">
+    <strong style="color:var(--green);">✓ You're ready</strong>
+    If you see the Physical AI Lab hub in Chrome or Edge, setup is complete. You're ready to start.
+  </div>
 
   <div class="note tip">
     <strong>Next time you sit down</strong>
@@ -708,6 +726,7 @@ Setup complete: 13/14 checks passed</code></pre>
 <footer>
   <span>Physical AI Lab — Jim Seelan</span>
   <span>Open <a href="http://localhost:8000" target="_blank">localhost:8000</a> in Chrome or Edge after starting the server</span>
+  <span><a href="https://physical-ai.boltage.in/slides/?view=scroll" target="_blank" rel="noopener noreferrer" style="color:inherit;">Read the handbook →</a></span>
   <span><a href="https://physical-ai.boltage.in/" target="_blank" rel="noopener noreferrer" style="color:inherit;">physical-ai.boltage.in</a></span>
 </footer>
 
