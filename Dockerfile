@@ -32,7 +32,7 @@ COPY requirements.txt /tmp/requirements.txt
 # Explicit CPU PyTorch index prevents accidentally pulling a CUDA build.
 RUN python -m pip install --upgrade pip \
     && python -m pip install torch --index-url https://download.pytorch.org/whl/cpu \
-    && python -m pip install -r /tmp/requirements.txt
+    && python -m pip install --no-build-isolation -r /tmp/requirements.txt
 
 COPY . /workspace
 
