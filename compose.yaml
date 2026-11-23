@@ -1,0 +1,29 @@
+name: physical-ai-lab
+
+services:
+  lab:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: physical-ai-lab:local
+    container_name: physical-ai-lab
+    init: true
+    ports:
+      - "${PHYSICAL_AI_PORT:-8000}:8000"
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      PORT: "8000"
+      PYTHONUNBUFFERED: "1"
+      MPLBACKEND: "Agg"
+      MUJOCO_GL: "osmesa"
+    volumes:
+      # Keep source, notebooks, downloaded models and participant work on host.
+      - .:/workspace
+      - physical-ai-model-cache:/home/labuser/.cache
+    shm_size: "1gb"
+    restart: unless-stopped
+
+volumes:
+  physical-ai-model-cache:
