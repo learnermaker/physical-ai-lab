@@ -8,12 +8,14 @@ The container runs the lab's Python environment, FastAPI hub, reinforcement-lear
 
 The browser requests webcam permission from the host operating system. The hub's camera path uses browser `getUserMedia`, not container-side `cv2.VideoCapture(0)`. Do not pass the webcam into the container for the hub workflow.
 
+The current MediaPipe pin (`<0.10.22`) has a CPython 3.12 Linux x86-64 wheel but no Linux ARM64 wheel. Docker on ARM-based hosts therefore needs an x86-64 emulation path or a future MediaPipe Tasks API migration in the lab. The current setup is intended for x86-64 Linux containers; Apple Silicon may build/run under emulation, with a performance penalty, and is not yet validated. See the architecture note below.
+
 The default image is CPU-only. No CUDA toolkit or GPU is required. MuJoCo is configured for headless software rendering. Physics, observations, actions and RL training work without a desktop display. This does not promise an interactive native MuJoCo desktop window inside Docker.
 
 ## Requirements
 
 - Docker Desktop on Windows/macOS, or Docker Engine plus the Compose plugin on Linux.
-- Docker Compose v2 (`docker compose`).
+- Docker Compose v2.24 or later (`docker compose`); optional `.env` loading in the supplied Compose file uses the `required: false` property added in Compose 2.24.
 - Supported 64-bit host and internet access for the first image, package and model downloads.
 - Chrome or Edge recommended for the workshop browser hub.
 
@@ -97,6 +99,8 @@ There are two separate access paths:
 
 The default image uses CPU PyTorch and `MUJOCO_GL=osmesa` for headless software rendering. No GPU is needed for the core workshop. Some standalone exercises that explicitly open an interactive MuJoCo window may not display a window from this container; use the host-native setup for those workflows.
 
+**Architecture support:** the pinned MediaPipe release `0.10.21` publishes Linux wheels for x86-64, not Linux ARM64. The current image is therefore an x86-64-compatible build. On Apple Silicon, Docker Desktop can emulate an AMD64 container, but this may be slower and less reliable than native ARM64. The current Docker setup has not been validated on ARM Linux or Apple Silicon. We should not claim native multi-architecture support until the MediaPipe dependency/API is migrated and both architectures are built and tested.
+
 An NVIDIA GPU option is not enabled by default. Docker Desktop GPU passthrough on Windows requires an NVIDIA GPU, compatible current drivers, an up-to-date WSL 2 kernel and the WSL 2 backend. Compose GPU reservations additionally require compatible Docker Engine/NVIDIA Container Toolkit configuration. CPU-only must remain the reliable baseline for the workshop.
 
 ## Troubleshooting
@@ -106,7 +110,7 @@ An NVIDIA GPU option is not enabled by default. Docker Desktop GPU passthrough o
 | `docker` command not found | Install Docker Desktop (Windows/macOS) or Docker Engine + Compose plugin (Linux), then restart the terminal. |
 | Docker daemon unavailable | Start Docker Desktop or the Linux Docker service. |
 | First build fails downloading packages | Check network/proxy access and retry `docker compose build --no-cache`. |
-| Port 8000 already allocated | Set `PHYSICAL_AI_PORT=8001` before starting and open `http://localhost:8001`. |
+| Port 8000 already allocated | Set `PHYSICAL_AI_PORT=8001` in the shell before starting and open `http://localhost:8001` (PowerShell: `$env:PHYSICAL_AI_PORT=8001`; Command Prompt: `set PHYSICAL_AI_PORT=8001`; macOS/Linux: `export PHYSICAL_AI_PORT=8001`). |
 | Hub does not become ready | Run `docker compose logs --tail=200 lab`. |
 | No camera prompt appears | Open the hub on the host browser, start a perception module, and check OS camera privacy settings plus browser permission for `localhost`. |
 | Camera works in hub but not a Python script | Expected: browser camera and container camera are separate access paths. Use host-native Python or tested platform-specific device passthrough. |
