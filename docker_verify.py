@@ -14,7 +14,6 @@ from __future__ import annotations
 import argparse
 import importlib
 import sys
-from pathlib import Path
 
 PACKAGES = [
     "numpy",
@@ -68,10 +67,12 @@ def main() -> int:
     def reacher():
         import gymnasium as gym
         env = gym.make("Reacher-v5")
-        obs, _ = env.reset(seed=7)
-        env.step(env.action_space.sample())
-        env.close()
-        return f"observation shape={obs.shape}"
+        try:
+            obs, _ = env.reset(seed=7)
+            env.step(env.action_space.sample())
+            return f"observation shape={obs.shape}"
+        finally:
+            env.close()
 
     ok = check("MuJoCo Reacher physics step", reacher)
     passed += int(ok)
