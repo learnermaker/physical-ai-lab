@@ -22,7 +22,7 @@ Every module has a working fallback — no GPU, no dedicated webcam, no Gemini A
 
 Docker gives participants a consistent Python environment without installing Python, PyTorch, MuJoCo or the lab packages on the host.
 
-**Prerequisite:** Install and start Docker Desktop (Windows/macOS) or Docker Engine + Docker Compose v2 (Linux): https://docs.docker.com/get-started/get-docker/
+**Prerequisite:** Install and start Docker Desktop (Windows/macOS) or Docker Engine + Docker Compose v2 (Linux; Compose 2.24+): https://docs.docker.com/get-started/get-docker/
 
 1. Clone this repository.
 2. Open the repository folder.
