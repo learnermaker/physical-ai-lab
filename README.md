@@ -18,6 +18,31 @@ Every module has a working fallback — no GPU, no dedicated webcam, no Gemini A
 
 ---
 
+## Quick start with Docker (recommended)
+
+Docker gives participants a consistent Python environment without installing Python, PyTorch, MuJoCo or the lab packages on the host.
+
+**Prerequisite:** Install and start Docker Desktop (Windows/macOS) or Docker Engine + Docker Compose v2 (Linux): https://docs.docker.com/get-started/get-docker/
+
+1. Clone this repository.
+2. Open the repository folder.
+3. Start the lab:
+   - **Windows:** double-click `docker-start.bat`
+   - **macOS/Linux:** run `./docker-start.sh`
+4. Open **http://localhost:8000** in Chrome or Edge.
+
+The first run builds the image and downloads dependencies. Later starts reuse the image. The repository is mounted into the container, so exercises, notebooks and downloaded assets remain on your computer.
+
+The hub obtains webcam access through the **host browser**. Allow camera access for `localhost` when prompted. Do not expect Docker to expose the webcam to standalone Python/OpenCV scripts automatically. The default container is CPU-only and uses headless MuJoCo rendering; no GPU is required.
+
+Optional: download model assets after the first start with `docker compose exec lab python download_model.py`. Configure Gemini by copying `.env.example` to `.env` and adding your key.
+
+See **[DOCKER_SETUP.md](DOCKER_SETUP.md)** for complete instructions, notebook usage, camera/GPU boundaries and troubleshooting.
+
+Stop the lab with `docker compose down` or double-click `docker-stop.bat` on Windows.
+
+---
+
 ## Prerequisites
 
 - Windows 11 (Mac/Linux: use `setup.sh` — best-effort, not fully tested)
