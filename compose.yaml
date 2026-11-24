@@ -21,6 +21,7 @@ services:
       dockerfile: Dockerfile
     image: physical-ai-lab:latest
     container_name: physical-ai-lab
+    init: true
     ports:
       - "127.0.0.1:${HOST_PORT:-8000}:8000"
     volumes:
