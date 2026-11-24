@@ -263,6 +263,27 @@ Native and Docker share the same `requirements.txt`, `download_model.py`, `api/s
 
 ---
 
+## J. Organiser pre-workshop validation (Docker host required)
+
+Run once on a machine with Docker Desktop before distributing to participants. This is the release gate — a green CI build alone is not enough.
+
+```bash
+git pull origin main
+docker compose up --build -d
+docker compose exec lab python verify_docker.py   # expect 0 failed (backend-health PASS this time)
+curl http://localhost:8000/api/config
+curl http://localhost:8000/api/status
+# open http://localhost:8000 in Chrome/Edge:
+#   Module 1 Start (allow camera) or Demo video; Module 2 Start simulation;
+#   Module 3 Start training (chart moves); Module 5 without key (cache response)
+docker compose down && docker compose up -d       # assets/models persist
+./docker-stop.sh   # or docker-stop.bat
+```
+
+Accept only if: image builds, `verify_docker.py` reports 0 failed, both endpoints return 200, all four browser checks behave, and files/models survive the down/up cycle.
+
+---
+
 ## Quick reference
 
 ```bash
