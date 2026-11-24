@@ -1,0 +1,71 @@
+name: docker-build
+
+on:
+  push:
+    paths:
+      - "Dockerfile"
+      - "compose.yaml"
+      - "requirements.txt"
+      - "verify_docker.py"
+      - "api/**"
+      - ".github/workflows/docker-build.yml"
+  pull_request:
+    paths:
+      - "Dockerfile"
+      - "compose.yaml"
+      - "requirements.txt"
+      - "verify_docker.py"
+      - "api/**"
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Verify Docker file syntax (static)
+        run: |
+          pip install pyyaml
+          python -m py_compile verify_docker.py download_model.py api/server.py start_hub.py
+          python -c "import yaml; yaml.safe_load(open('compose.yaml')); print('compose.yaml: valid YAML')"
+
+      - name: Compose config check
+        run: |
+          docker compose version
+          docker compose -f compose.yaml config > /dev/null
+          echo "compose config: OK"
+
+      - name: Build image (amd64)
+        run: |
+          docker build -t physical-ai-lab:ci .
+          docker images physical-ai-lab:ci
+
+      - name: Run headless verification inside image
+        run: |
+          docker run --rm \
+            -e MUJOCO_GL=osmesa -e MPLBACKEND=Agg -e PYTHONUNBUFFERED=1 \
+            physical-ai-lab:ci python verify_docker.py
+
+      - name: Start stack and probe health endpoint
+        run: |
+          docker compose -f compose.yaml up -d
+          for i in $(seq 1 60); do
+            if curl -sf http://localhost:8000/api/config > /dev/null; then
+              echo "backend healthy"
+              break
+            fi
+            sleep 2
+            if [ "$i" -eq 60 ]; then
+              docker compose -f compose.yaml logs --tail=200
+              echo "backend did not become healthy"
+              exit 1
+            fi
+          done
+          curl -sf http://localhost:8000/api/status | head -c 500
+          docker compose -f compose.yaml down

@@ -1,0 +1,63 @@
+# Git metadata
+.git/
+.gitignore
+.gitattributes
+
+# Virtual environments / conda
+.venv/
+venv/
+env/
+conda-meta/
+
+# Python caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+.pytest_cache/
+.hypothesis/
+.ipynb_checkpoints/
+
+# Secrets — never bake into the image
+.env
+*.pem
+*.key
+
+# Downloaded workshop assets — mounted at runtime, not baked in.
+# .gitkeep files are kept so the directories exist in the image.
+assets/*.task
+assets/*.mp4
+assets/*.avi
+assets/*.mov
+models/*.zip
+models/*.pt
+models/*.onnx
+models/*.bin
+*.log
+
+# IDE / OS metadata
+.vscode/
+.idea/
+.kilo/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Local dev artefacts
+_run_start_hub_test.py
+test_out.txt
+test_err.txt
+test_output.txt
+tmp/
+temp/
+
+# Docker / CI artefacts themselves (not needed inside the image)
+Dockerfile
+compose.yaml
+docker-compose.yml
+docker-start.sh
+docker-stop.sh
+docker-start.bat
+docker-stop.bat
+DOCKER_SETUP.md

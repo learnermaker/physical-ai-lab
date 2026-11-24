@@ -18,17 +18,31 @@ Every module has a working fallback — no GPU, no dedicated webcam, no Gemini A
 
 ---
 
+## Quick start (recommended: Docker)
+
+No Python installation needed. Install [Docker Desktop](https://www.docker.com/products/docker-desktop/), then:
+
+**Windows** — double-click **`docker-start.bat`**
+**macOS / Linux** — `./docker-start.sh`
+
+Then open **http://localhost:8000** in Chrome or Edge.
+
+This runs Python 3.12, PyTorch CPU, MediaPipe, MuJoCo (headless), Gymnasium, Stable-Baselines3, OpenCV and FastAPI inside one container. Your notebooks, edits and downloaded models stay in this folder. See **[DOCKER_SETUP.md](DOCKER_SETUP.md)** for prerequisites, daily usage, camera notes, troubleshooting and platform support.
+
+---
+
 ## Prerequisites
 
-- Windows 11 (Mac/Linux: use `setup.sh` — best-effort, not fully tested)
-- Internet connection for the initial ~700 MB package download
+- Docker Desktop (for the Docker route above) **or** Python 3.12 (for native setup below)
+- Windows 10/11, macOS (Intel/Apple Silicon), or Ubuntu/Linux
+- Internet connection for the initial download (Docker image ~1–1.5 GB; native ~700 MB)
 - Chrome or Edge browser (not Firefox — MediaPipe requires SharedArrayBuffer)
 
 ---
 
-## Setup (once, before the lab)
+## Native setup (alternative, no Docker)
 
-Double-click **`setup.bat`**. It handles everything:
+Double-click **`setup.bat`** (Windows) or run `bash setup.sh` (Mac/Linux). It handles everything:
 
 | Step | What happens |
 |---|---|
@@ -77,12 +91,18 @@ Open **http://localhost:8000** in Chrome or Edge.
 
 | File | Purpose |
 |---|---|
-| `setup.bat` | One-click full setup — run once before the lab |
-| `start_hub.bat` | Start the hub on the day — health-checks before opening the browser |
+| `docker-start.bat` / `docker-start.sh` | Recommended: build, start, health-check and open the lab in Docker |
+| `docker-stop.bat` / `docker-stop.sh` | Stop the container (participant files, models and caches are kept) |
+| `compose.yaml` | Single-service Compose config (localhost-only port, bind-mount + cache volumes) |
+| `Dockerfile` | CPU-first image: Python 3.12-slim, PyTorch CPU, headless MuJoCo (`osmesa`) |
+| `verify_docker.py` | Headless container verification (no webcam/display assumed) |
+| `DOCKER_SETUP.md` | Full Docker guide: prerequisites, camera, models, troubleshooting |
+| `setup.bat` / `setup.sh` | Native one-click setup (no Docker) — still supported |
+| `start_hub.bat` | Native: start the hub on the day — health-checks before opening the browser |
 | `start_hub.py` | Hub launcher (called by both bat files; also run directly to restart) |
-| `verify_install.py` | Checks all dependencies are installed correctly |
-| `download_model.py` | Downloads the MediaPipe hand landmark model (called by setup.bat) |
-| `SETUP_GUIDE.html` | Visual setup guide — open in any browser |
+| `verify_install.py` | Native checks (expects webcam/display where available) |
+| `download_model.py` | Downloads model assets (used by both Docker and native setup, idempotent) |
+| `SETUP_GUIDE.html` | Visual native setup guide — open in any browser |
 | `api/server.py` | FastAPI server — simulation stream, Gemini calls, training SSE, file open |
 
 ---

@@ -1,0 +1,54 @@
+# Physical AI Lab — Docker Compose v2 (single service, CPU-first workshop).
+# Usage:
+#   docker compose up --build -d     # start (or: docker-start.sh / docker-start.bat)
+#   docker compose logs -f            # follow logs
+#   docker compose down               # stop (participant files are kept)
+#
+# Design notes:
+# - Backend runs in the container; the browser runs natively on the host.
+# - The repo is bind-mounted to /workspace so notebooks, source edits,
+#   downloaded models and participant files persist on the host.
+# - Caches (pip, HuggingFace, matplotlib) use named volumes for speed.
+# - Port binds to localhost only by default; override with HOST_PORT=8001.
+# - .env is optional (required: false) — server works without a Gemini key.
+
+name: physical-ai-lab
+
+services:
+  lab:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: physical-ai-lab:latest
+    container_name: physical-ai-lab
+    ports:
+      - "127.0.0.1:${HOST_PORT:-8000}:8000"
+    volumes:
+      - .:/workspace:cached
+      - pip-cache:/home/lab/.cache/pip
+      - hf-cache:/home/lab/.cache/huggingface
+      - mpl-cache:/home/lab/.cache/matplotlib
+    env_file:
+      - path: ./.env
+        required: false
+    environment:
+      PORT: 8000
+      MUJOCO_GL: ${MUJOCO_GL:-osmesa}
+      MPLBACKEND: Agg
+      PYTHONUNBUFFERED: 1
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+    shm_size: 1gb
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/config', timeout=4)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  pip-cache:
+  hf-cache:
+  mpl-cache:
