@@ -149,9 +149,9 @@ python -m pip install --upgrade pip --quiet 2>nul
 echo [4/9] Installing PyTorch CPU-only (~200 MB, may take a few minutes)...
 :: Try 2.14.0 first (current stable as of Sep 2026).
 :: If the wheel isn't on the index yet, fall back to whatever is latest stable.
-pip install torch==2.14.0 --index-url https://download.pytorch.org/whl/cpu --quiet
+pip install torch==2.14.0+cpu --index-url https://download.pytorch.org/whl/cpu --quiet
 IF %ERRORLEVEL% NEQ 0 (
-    echo [!] torch==2.14.0 not found on stable index - trying latest available...
+    echo [!] torch==2.14.0+cpu not found on stable index - trying latest available...
     pip install torch --index-url https://download.pytorch.org/whl/cpu
     IF %ERRORLEVEL% NEQ 0 (
         echo PyTorch install failed. Check internet and re-run setup.bat.

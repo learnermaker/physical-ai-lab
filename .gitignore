@@ -31,6 +31,7 @@ assets/*.mov
 models/*.zip
 models/*.pt
 models/*.onnx
+models/*.bin
 
 # Runtime
 *.log

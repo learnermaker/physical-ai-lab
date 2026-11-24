@@ -84,6 +84,7 @@ Open **http://localhost:8000** in Chrome or Edge.
 | 3 — Reinforcement Learning | [modules/03_rl/](modules/03_rl/) | Watch a PPO agent learn CartPole from zero. Watch the chart. |
 | 4 — Perception to Action | [modules/04_perception_to_action/](modules/04_perception_to_action/) | Your hand drives the robot arm. The loop closes. |
 | 5 — Foundation Models | [modules/05_foundation_models/](modules/05_foundation_models/) | Send a camera frame to Gemini. Get a structured robot action back. |
+| 6 — Wrap-up | [modules/06_wrapup/](modules/06_wrapup/) | Recap the closed loop and pick from 9 next projects. |
 
 ---
 
