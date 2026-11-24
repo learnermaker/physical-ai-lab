@@ -67,5 +67,19 @@ jobs:
               exit 1
             fi
           done
-          curl -sf http://localhost:8000/api/status | head -c 500
-          docker compose -f compose.yaml down
+          # /api/status must report the core workshop deps as importable.
+          # This exercises the real app (not just a TCP listen check).
+          python - <<'EOF'
+          import json, urllib.request
+          with urllib.request.urlopen("http://localhost:8000/api/status", timeout=10) as r:
+              status = json.load(r)
+          print(json.dumps(status, indent=1)[:800])
+          deps = status.get("deps", {})
+          for pkg in ("gymnasium", "mujoco", "stable_baselines3"):
+              assert deps.get(pkg) is True, f"{pkg} not importable in container: {deps}"
+          print("status deps: OK")
+          EOF
+
+      - name: Stop stack (always)
+        if: always()
+        run: docker compose -f compose.yaml down

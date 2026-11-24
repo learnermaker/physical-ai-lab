@@ -9,11 +9,11 @@ setlocal enabledelayedexpansion
 
 cd /d "%~dp0"
 
-set "HOST_PORT=8000"
+:: HOST_PORT may be set in the environment before calling this script:
+::   set HOST_PORT=8001 && docker-start.bat
+:: (compose.yaml honours the same variable, so both stay in sync.)
+if "%HOST_PORT%"=="" set "HOST_PORT=8000"
 if not "%HOST_PORT_OVERRIDE%"=="" set "HOST_PORT=%HOST_PORT_OVERRIDE%"
-if not "%HOST_PORT_ENV%"=="" set "HOST_PORT=%HOST_PORT_ENV%"
-:: Allow HOST_PORT env from the outside (compose also honours it)
-if not "%HOST_PORT%"=="" set "HOST_PORT=%HOST_PORT%"
 
 set "HEALTH_URL=http://localhost:%HOST_PORT%/api/config"
 

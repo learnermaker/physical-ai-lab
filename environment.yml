@@ -16,7 +16,7 @@ dependencies:
     - gymnasium[classic_control,mujoco]==1.3.0
     - stable-baselines3==2.9.0
     - opencv-python==4.13.0.92
-    - mediapipe==1.0.0
+    - mediapipe==0.10.21  # must match requirements.txt: last version with BOTH Tasks API and mp.solutions (used by modules/01_perception and 04_perception_to_action). 1.x removed mp.solutions.
     - cvzone
     - google-genai
     - huggingface_hub
@@ -26,3 +26,5 @@ dependencies:
     - ipykernel
     - imageio[ffmpeg]
     - python-dotenv
+    - fastapi
+    - uvicorn[standard]

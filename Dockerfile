@@ -56,14 +56,19 @@ WORKDIR /workspace
 # Torch CPU is installed first via the PyTorch CPU index; the pinned version
 # is tried first with a fallback to latest stable CPU if the pin disappears.
 # requirements.txt intentionally does NOT list torch (see its header comment).
-# Its mediapipe range (>=0.10.14,<0.10.22) resolves to 0.10.21, which retains
-# both the Tasks API and mp.solutions used by modules/01_perception.
+# requirements.txt pins mediapipe==0.10.21, which retains both the Tasks API
+# and mp.solutions used by modules/01_perception and 04_perception_to_action.
 # ---------------------------------------------------------------------------
 COPY --chown=lab:lab requirements.txt ./
 
+# torch 2.14.0+cpu verified on the CPU index for cp312: linux x86_64, linux
+# aarch64, win_amd64, win_arm64. The fallback below is for future-proofing only
+# (e.g. if the pin is yanked); it prints a loud warning so a silent environment
+# change can never go unnoticed in build logs.
 RUN pip install --upgrade pip \
     && (pip install "torch==2.14.0+cpu" --index-url https://download.pytorch.org/whl/cpu \
-        || pip install torch --index-url https://download.pytorch.org/whl/cpu) \
+        || (echo "WARNING: pinned torch==2.14.0+cpu not found - falling back to latest stable CPU build" >&2 \
+            && pip install torch --index-url https://download.pytorch.org/whl/cpu)) \
     && pip install -r requirements.txt
 
 # ---------------------------------------------------------------------------

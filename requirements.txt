@@ -6,7 +6,7 @@ mujoco>=3.1,<4.0
 gymnasium[classic_control,mujoco]>=1.0,<2.0
 stable-baselines3>=2.3,<3.0
 opencv-python>=4.9,<5.0
-mediapipe>=0.10.14,<0.10.22  # pinned: 0.10.22+ removed mp.solutions API
+mediapipe==0.10.21  # last version with BOTH Tasks API and mp.solutions API (0.10.22+ removed solutions; 1.x also lacks it). Verified wheels: cp312 win_amd64, manylinux x86_64, macOS universal2. No Linux ARM64 wheel — use AMD64 emulation there.
 cvzone
 google-genai
 huggingface_hub

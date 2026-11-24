@@ -166,9 +166,8 @@ try:
     from utils.gym_utils import make_env  # noqa: E402
 
     # 7. CartPole creation without rendering (training path).
-    env = make_env("CartPole-v1", render_mode=None) if False else None
-    # make_env always probes human->rgb_array->None; for a pure headless check
-    # use gym.make directly with render_mode=None first.
+    # NOTE: make_env always probes human->rgb_array->None from the top, so for
+    # a pure headless training-path check we use gym.make directly here.
     import gymnasium as gym  # noqa: PLC0415
 
     env = gym.make("CartPole-v1", render_mode=None)

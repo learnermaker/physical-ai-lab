@@ -152,6 +152,8 @@ To fully reset (deletes caches but **not** your repo files):
 docker compose down -v
 ```
 
+**Closing the terminal / restarting your computer:** the lab runs detached (`-d`) with `restart: unless-stopped`, so closing the terminal is safe — the container keeps running. After a reboot, just start Docker Desktop and run `docker compose up -d` (no rebuild needed); your files, models and caches are still there. Use the stop scripts only when you want the lab shut down.
+
 ---
 
 ## D. Camera access — browser vs container (important)
@@ -240,7 +242,7 @@ docker compose exec lab python -c "import torch, mediapipe, mujoco; print(torch.
 | Windows 10/11 x86-64 | Supported (primary) | Use `docker-start.bat`. WSL2 backend recommended |
 | Linux x86-64 | Supported (best-tested container arch) | All wheels native, `osmesa` headless works |
 | macOS Intel | Supported | Use `./docker-start.sh` |
-| macOS Apple Silicon (ARM64) | Works via AMD64 emulation; native ARM has one known gap | **MediaPipe 0.10.21** (required for `mp.solutions` in `02_hand_tracking.py`) publishes **Linux x86-64 wheels only, no Linux ARM64 wheel**. Docker Desktop on Apple Silicon can run the AMD64 image via Rosetta 2 emulation (enable in Docker Desktop → Settings → General → Rosetta). Expect slower startup. Browser MediaPipe (Module 1, WASM) is unaffected. Do not claim native ARM support until `pip install mediapipe==0.10.21` succeeds on `linux/arm64` |
+| macOS Apple Silicon (ARM64) | Works via AMD64 emulation; native install preferred if emulation is slow | **MediaPipe 0.10.21** (required for `mp.solutions` in `02_hand_tracking.py`) has **no Linux ARM64 wheel** (verified: cp312 wheels exist for manylinux x86-64, win_amd64, macOS universal2/x86_64 — but not manylinux aarch64). Docker Desktop on Apple Silicon can run the AMD64 image via Rosetta 2 emulation (enable in Docker Desktop → Settings → General → Rosetta). Expect slower startup. If emulation is too slow, use the **native** macOS setup (`bash setup.sh`) instead — the macOS universal2 wheel installs natively on Apple Silicon. Browser MediaPipe (Module 1, WASM) is unaffected either way |
 | ARM64 Windows (Snapdragon) | Not validated | MuJoCo has no ARM64 Windows wheel either (see `instructor/COMMON_ISSUES.md`). Use WSL2 + emulation or native x86-64 laptop |
 | NVIDIA GPU | Not required, not used by default | CPU-only PyTorch. GPU is a future optional enhancement — do not install CUDA Toolkit for this workshop |
 
