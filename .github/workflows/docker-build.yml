@@ -6,7 +6,9 @@ on:
       - "Dockerfile"
       - "compose.yaml"
       - "requirements.txt"
+      - "environment.yml"
       - "verify_docker.py"
+      - "tests/test_docker_config.py"
       - "api/**"
       - ".github/workflows/docker-build.yml"
   pull_request:
@@ -14,7 +16,9 @@ on:
       - "Dockerfile"
       - "compose.yaml"
       - "requirements.txt"
+      - "environment.yml"
       - "verify_docker.py"
+      - "tests/test_docker_config.py"
       - "api/**"
   workflow_dispatch:
 
